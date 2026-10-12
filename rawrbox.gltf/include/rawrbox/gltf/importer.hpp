@@ -127,12 +127,7 @@ namespace rawrbox {
 		std::string name;
 		rawrbox::Matrix4x4 matrix = {};
 
-		GLTFNode(size_t idx, size_t nodeIndex, const fastgltf::Node& node) : index(idx), node(nodeIndex), name(std::move(node.name)) {
-			auto [translation, rotation, scale] = std::get<fastgltf::TRS>(node.transform);
-
-			this->matrix = rawrbox::Matrix4x4::mtxSRT({scale.x(), scale.y(), scale.z()}, {rotation.x(), rotation.y(), rotation.z(), rotation.w()}, {translation.x(), translation.y(), translation.z()});
-			this->matrix.toLeftHand();
-		};
+		GLTFNode(size_t idx, size_t nodeIndex, const fastgltf::Node& node, const rawrbox::Matrix4x4& world) : index(idx), node(nodeIndex), name(node.name), matrix(rawrbox::Matrix4x4::mtxLeftHand(world)) {};
 	};
 
 	struct GLTFLight : public rawrbox::GLTFNode {
@@ -150,7 +145,7 @@ namespace rawrbox {
 		float intensity = 1.F;
 		float radius = 0.F;
 
-		GLTFLight(size_t idx, size_t nodeIndex, const fastgltf::Node& node, const fastgltf::Light& light) : rawrbox::GLTFNode(idx, nodeIndex, node) {
+		GLTFLight(size_t idx, size_t nodeIndex, const fastgltf::Node& node, const rawrbox::Matrix4x4& world, const fastgltf::Light& light) : rawrbox::GLTFNode(idx, nodeIndex, node, world) {
 			this->color = rawrbox::Colorf(light.color.x(), light.color.y(), light.color.z(), 1.0F).toSRGB();
 			this->radius = light.range.value_or(10.F);
 
@@ -192,7 +187,7 @@ namespace rawrbox {
 
 		rawrbox::Skeleton* skeleton = nullptr;
 
-		GLTFMesh(size_t idx, size_t nodeIndex, const fastgltf::Node& node) : rawrbox::GLTFNode(idx, nodeIndex, node) {};
+		GLTFMesh(size_t idx, size_t nodeIndex, const fastgltf::Node& node, const rawrbox::Matrix4x4& world) : rawrbox::GLTFNode(idx, nodeIndex, node, world) {};
 	};
 
 	struct GLTFAnimation {
@@ -216,6 +211,7 @@ namespace rawrbox {
 		// HIERARCHY ---
 		std::vector<std::optional<size_t>> _nodeParents = {};
 		std::unordered_map<size_t, rawrbox::GLTFMesh*> _nodeMeshes = {};
+		std::vector<rawrbox::Matrix4x4> _nodeWorld = {};
 		// -------------
 
 		// SKELETONS ---
@@ -233,6 +229,8 @@ namespace rawrbox {
 		// POST-LOAD ---
 		virtual void postLoadFixSceneNames(fastgltf::Asset& scene);
 		virtual bool buildHierarchy(const fastgltf::Asset& scene);
+
+		[[nodiscard]] static rawrbox::Matrix4x4 getLocalMatrix(const fastgltf::Node& node);
 		//-----------
 
 		// MATERIALS ---

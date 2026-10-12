@@ -95,7 +95,11 @@ namespace rawrbox {
 
 	// UTILS -----
 	void CameraBase::setPos(const rawrbox::Vector3f& pos) {
+		if (this->_pos == pos) return;
+		if ((pos - this->_pos).length() > TELEPORT_DISTANCE) this->_teleportRevision = rawrbox::FRAME;
+
 		this->_pos = pos;
+		this->_moveRevision = rawrbox::FRAME;
 		this->updateMtx();
 	}
 
@@ -104,13 +108,23 @@ namespace rawrbox {
 	}
 
 	void CameraBase::setAngle(const rawrbox::Vector4f& angle) {
+		if (this->_angle == angle) return;
+
+		const auto forward = this->getForward();
 		this->_angle = angle;
+
+		if (this->getForward().dot(forward) < TELEPORT_ANGLE) this->_teleportRevision = rawrbox::FRAME;
+
+		this->_moveRevision = rawrbox::FRAME;
 		this->updateMtx();
 	}
 
 	const rawrbox::Vector4f& CameraBase::getAngle() const {
 		return this->_angle;
 	}
+
+	uint64_t CameraBase::getMoveRevision() const { return this->_moveRevision; }
+	uint64_t CameraBase::getTeleportRevision() const { return this->_teleportRevision; }
 
 	float CameraBase::getZFar() const { return this->_z_far; }
 	float CameraBase::getZNear() const { return this->_z_near; }

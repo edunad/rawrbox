@@ -67,6 +67,14 @@ namespace rawrbox {
 
 		rawrbox::Matrix4x4 _world = {};
 
+		// MOTION ----
+		static constexpr float TELEPORT_DISTANCE = 0.5F;
+		static constexpr float TELEPORT_ANGLE = 0.966F;
+
+		uint64_t _moveRevision = 0;
+		uint64_t _teleportRevision = 0; // Far positions
+		// -----------
+
 		uint32_t _layers = 0; // None by default, it's up to the user to use this or not
 
 		// Renderer ----
@@ -106,6 +114,9 @@ namespace rawrbox {
 		[[nodiscard]] virtual rawrbox::Vector3f getForward() const;
 		[[nodiscard]] virtual rawrbox::Vector3f getRight() const;
 		[[nodiscard]] virtual rawrbox::Vector3f getUp() const;
+
+		[[nodiscard]] virtual uint64_t getMoveRevision() const;
+		[[nodiscard]] virtual uint64_t getTeleportRevision() const;
 
 		[[nodiscard]] virtual float getZFar() const;
 		[[nodiscard]] virtual float getZNear() const;

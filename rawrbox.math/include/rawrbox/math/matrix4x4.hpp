@@ -46,7 +46,8 @@ namespace rawrbox {
 		rawrbox::Matrix4x4& translate(const rawrbox::Vector3f& pos);
 		rawrbox::Matrix4x4& scale(const rawrbox::Vector3f& scale);
 
-		rawrbox::Matrix4x4& toLeftHand(); // Convert right hand matrix to left hand
+		rawrbox::Matrix4x4& toLeftHand(bool mirror = false); // Convert right hand matrix to left hand.
+		rawrbox::Matrix4x4& toNormal();
 
 		[[nodiscard]] rawrbox::Vector3f getPos() const;
 		[[nodiscard]] rawrbox::Vector3f getScale() const;
@@ -72,13 +73,15 @@ namespace rawrbox {
 
 		[[nodiscard]] rawrbox::Vector3f mulVec(const rawrbox::Vector3f& other) const;
 		[[nodiscard]] rawrbox::Vector4f mulVec(const rawrbox::Vector4f& other) const;
+		[[nodiscard]] rawrbox::Vector3f mulDir(const rawrbox::Vector3f& other) const;
 
 		rawrbox::Matrix4x4& inverse();
 		rawrbox::Matrix4x4& lookAt(const rawrbox::Vector3f& _eye, const rawrbox::Vector3f& _at, const rawrbox::Vector3f& _up);
 		// ------
 
 		// STATIC UTILS ----
-		static rawrbox::Matrix4x4 mtxLeftHand(rawrbox::Matrix4x4 mtx);
+		static rawrbox::Matrix4x4 mtxLeftHand(rawrbox::Matrix4x4 mtx, bool mirror = false);
+		static rawrbox::Matrix4x4 mtxNormal(rawrbox::Matrix4x4 mtx);
 
 		static rawrbox::Matrix4x4 mtxTranspose(rawrbox::Matrix4x4 mtx);
 		static rawrbox::Matrix4x4 mtxInverse(rawrbox::Matrix4x4 mtx);

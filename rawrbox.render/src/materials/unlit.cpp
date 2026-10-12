@@ -1,6 +1,7 @@
 
 #include <rawrbox/render/materials/unlit.hpp>
 #include <rawrbox/render/plugins/clustered.hpp>
+#include <rawrbox/render/plugins/shadows.hpp>
 
 namespace rawrbox {
 
@@ -36,6 +37,9 @@ namespace rawrbox {
 		if (cluster != nullptr) {
 			settings.macros = cluster->getClusterMacros() + helper;
 		}
+
+		auto* shadows = rawrbox::RENDERER->getPlugin<rawrbox::ShadowPlugin>("Shadows");
+		if (shadows != nullptr) shadows->createCasterPipeline(id, layout, helper, false);
 
 		rawrbox::PipelineUtils::createPipeline(id, settings);
 

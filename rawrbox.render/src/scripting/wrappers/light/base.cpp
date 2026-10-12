@@ -33,6 +33,12 @@ namespace rawrbox {
 
 		    .addFunction("getDirection", &LightBase::getDirection)
 		    .addFunction("setDirection", &LightBase::setDirection)
+
+		    .addFunction("castShadows", &LightBase::castShadows)
+		    .addFunction("setCastShadows", &LightBase::setCastShadows)
+		
+		    .addFunction("getShadowLodBias", &LightBase::getShadowLodBias)
+		    .addFunction("setShadowLodBias", &LightBase::setShadowLodBias)
 		    .endClass();
 	}
 } // namespace rawrbox

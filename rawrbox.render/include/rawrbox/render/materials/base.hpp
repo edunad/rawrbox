@@ -29,6 +29,7 @@ namespace rawrbox {
 		Diligent::IPipelineState* wireframe = nullptr;
 		Diligent::IPipelineState* cullnone = nullptr;
 		Diligent::IPipelineState* cullnone_alpha = nullptr;
+		Diligent::IPipelineState* shadow = nullptr;
 
 		MaterialBase() = default;
 		MaterialBase(MaterialBase&&) = delete;
@@ -56,16 +57,16 @@ namespace rawrbox {
 
 		template <typename T = rawrbox::VertexData>
 			requires(std::derived_from<T, rawrbox::VertexData>)
-		rawrbox::BindlessPixelBuffer bindBasePixelUniforms(const rawrbox::Mesh<T>& mesh) {
+		static rawrbox::BindlessPixelBuffer bindBasePixelUniforms(const rawrbox::Mesh<T>& mesh) {
 			return {
-			    mesh.textures.getTextureIDs(),
-			    mesh.textures.getTextureData(),
-			    mesh.textures.getData()};
+			    .textureIDs = mesh.textures.getTextureIDs(),
+			    .textureData = mesh.textures.getTextureData(),
+			    .pixelData = mesh.textures.getData()};
 		}
 
 		template <typename T = rawrbox::VertexData>
 			requires(std::derived_from<T, rawrbox::VertexData>)
-		rawrbox::BindlessVertexSkinnedBuffer bindBaseVertexSkinnedUniforms(const rawrbox::Mesh<T>& mesh) {
+		static rawrbox::BindlessVertexSkinnedBuffer bindBaseVertexSkinnedUniforms(const rawrbox::Mesh<T>& mesh) {
 			return {
 			    mesh.boneTransforms};
 		}
@@ -110,7 +111,7 @@ namespace rawrbox {
 
 		template <typename T = rawrbox::VertexData>
 			requires(std::derived_from<T, rawrbox::VertexData>)
-		bool bindVertexSkinnedUniforms(const rawrbox::Mesh<T>& /*mesh*/) { return false; }
+		static bool bindVertexSkinnedUniforms(const rawrbox::Mesh<T>& /*mesh*/) { return false; }
 
 		template <typename T = rawrbox::VertexData>
 			requires(std::derived_from<T, rawrbox::VertexData>)

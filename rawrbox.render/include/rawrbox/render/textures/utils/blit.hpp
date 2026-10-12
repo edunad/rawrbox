@@ -3,9 +3,9 @@
 #include <rawrbox/math/vector2.hpp>
 #include <rawrbox/render/textures/base.hpp>
 
+#include <GPUCompletionAwaitQueue.hpp>
 #include <RefCntAutoPtr.hpp>
 
-#include <Fence.h>
 #include <Texture.h>
 
 #include <functional>
@@ -14,7 +14,8 @@ namespace rawrbox {
 	class TextureBLIT : public rawrbox::TextureBase {
 	protected:
 		std::unique_ptr<rawrbox::Logger> _logger = std::make_unique<rawrbox::Logger>("RawrBox-TextureBLIT");
-		Diligent::RefCntAutoPtr<Diligent::IFence> _copyFence;
+		std::unique_ptr<Diligent::GPUCompletionAwaitQueue<Diligent::RefCntAutoPtr<Diligent::ITexture>>> _copies;
+		bool _pending = false;
 
 		std::vector<std::function<void()>> _callbacks = {};
 

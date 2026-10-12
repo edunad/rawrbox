@@ -1,18 +1,39 @@
-
+#include <rawrbox/gltf/resources/model.hpp>
+#include <rawrbox/math/utils/math.hpp>
 #include <rawrbox/render/cameras/orbit.hpp>
-#include <rawrbox/render/lights/directional.hpp>
 #include <rawrbox/render/lights/point.hpp>
 #include <rawrbox/render/lights/spot.hpp>
-#include <rawrbox/render/models/utils/mesh.hpp>
 #include <rawrbox/render/plugins/clustered.hpp>
+#include <rawrbox/render/plugins/post_process.hpp>
+#include <rawrbox/render/post_process/noise.hpp>
 #include <rawrbox/render/resources/font.hpp>
-#include <rawrbox/render/resources/texture.hpp>
 #include <rawrbox/resources/manager.hpp>
 #include <rawrbox/utils/keys.hpp>
 
 #include <light/game.hpp>
+#include <magic_enum/magic_enum.hpp>
+
+#include <array>
+#include <string_view>
 
 namespace light {
+	constexpr float SCALE = 0.003F;
+	static rawrbox::Vector3f scale(const float x, const float y, const float z) {
+		return rawrbox::Vector3f{x, y, -z} * SCALE;
+	}
+
+	static const std::array<Room, 5> ROOMS = {{
+	    {.name = "LIVING ROOM", .pos = scale(-450.F, 520.F, 150.F), .yaw = 90.F, .pitch = -15.F},
+	    {.name = "KITCHEN", .pos = scale(-1000.F, 540.F, 700.F), .yaw = -51.F, .pitch = -13.F},
+	    {.name = "HALLWAY", .pos = scale(-300.F, 560.F, -620.F), .yaw = -58.F, .pitch = -6.F},
+	    {.name = "BATHROOM", .pos = scale(-1100.F, 560.F, -600.F), .yaw = -66.F, .pitch = -16.F},
+	    {.name = "BASEMENT", .pos = scale(900.F, -350.F, -450.F), .yaw = -124.F, .pitch = -19.F},
+	}};
+
+	static float hash(float n) {
+		const float s = std::sin(n * 12.9898F) * 43758.5453F;
+		return s - std::floor(s);
+	}
 
 	void Game::setupGLFW() {
 #if defined(_DEBUG) && defined(RAWRBOX_SUPPORT_DX12)
@@ -21,7 +42,7 @@ namespace light {
 		auto* window = rawrbox::Window::createWindow();
 #endif
 		window->setMonitor(-1);
-		window->setTitle("LIGHT TEST");
+		window->setTitle("LIGHT + SHADOW TEST");
 #ifdef _DEBUG
 		window->init(1600, 900, rawrbox::WindowFlags::Window::WINDOWED);
 #else
@@ -35,8 +56,14 @@ namespace light {
 		auto* window = rawrbox::Window::getWindow();
 
 		// Setup renderer
-		auto* render = window->createRenderer(rawrbox::Colorf{0.0F, 0.0F, 0.0F, 0.0F});
+		auto* render = window->createRenderer(rawrbox::Colorf{0.0F, 0.0F, 0.0F, 1.0F});
+
 		render->addPlugin<rawrbox::ClusteredPlugin>();
+		this->_shadows = render->addPlugin<rawrbox::ShadowPlugin>();
+
+		auto* postProcess = render->addPlugin<rawrbox::PostProcessPlugin>();
+		this->_noise = postProcess->add<rawrbox::PostProcessNoise>(0.08F);
+
 		render->onIntroCompleted = [this]() { this->loadContent(); };
 		render->setDrawCall([this](const rawrbox::CameraBase& /*camera*/, const rawrbox::DrawPass& pass) {
 			if (pass == rawrbox::DrawPass::PASS_WORLD) {
@@ -48,36 +75,44 @@ namespace light {
 		// ---------------
 
 		// Setup camera
-		auto* cam = render->createCamera<rawrbox::CameraOrbit>(*window);
-		cam->setPos({0.F, 5.F, -5.F});
-		cam->setAngle({0.F, rawrbox::MathUtils::toRad(-45), 0.F, 0.F});
-		cam->canUseKeyboard([]() { return true; });
-		cam->canUseMouse([]() { return true; });
+		this->_camera = render->createCamera<rawrbox::CameraOrbit>(*window, 70.F, 0.05F, 60.F);
+		this->_camera->setMoveSpeed(4.F);
+		this->_camera->canUseKeyboard([]() { return true; });
+		this->_camera->canUseMouse([]() { return true; });
 		// --------------
 
 		// BINDS ----
 		window->onKey += [this](rawrbox::Window& /*w*/, uint32_t key, uint32_t /*scancode*/, uint32_t action, uint32_t /*mods*/) {
 			if (!this->_ready || action != rawrbox::KEY_ACTION_UP) return;
 
-			if (key == rawrbox::KEY_F1) rawrbox::LIGHTS::setEnabled(!rawrbox::LIGHTS::isEnabled());
-			if (key == rawrbox::KEY_F2) rawrbox::LIGHTS::setDebug(!rawrbox::LIGHTS::isDebug());
+			if (key == rawrbox::KEY_F1) this->_shadows->setEnabled(!this->_shadows->isEnabled());
+			if (key == rawrbox::KEY_F2) this->_shadows->setLodBias(this->_shadows->getLodBias() >= 4.F ? 0.F : this->_shadows->getLodBias() + 1.F);
+
+			if (key == rawrbox::KEY_F3) rawrbox::LIGHTS::setEnabled(!rawrbox::LIGHTS::isEnabled());
+
+			if (key == rawrbox::KEY_F4) this->_shadows->setDither(this->_shadows->getDither() >= 3.F ? 0.F : this->_shadows->getDither() + 1.F);
+#ifdef _DEBUG
+			if (key == rawrbox::KEY_F5) this->_shadows->setDebug(static_cast<rawrbox::SHADOW_DEBUG>((static_cast<uint32_t>(this->_shadows->getDebug()) + 1U) % static_cast<uint32_t>(rawrbox::SHADOW_DEBUG::COUNT)));
+#endif
+			if (key == rawrbox::KEY_F6) this->_shadows->setBudget(this->_shadows->getBudget() >= 64 ? 0 : std::max(this->_shadows->getBudget() * 2U, 8U));
+
+			if (key >= rawrbox::KEY_1 && key < rawrbox::KEY_1 + ROOMS.size()) this->setRoom(key - rawrbox::KEY_1);
 		};
 		// -----
 
+		this->setRoom(0);
+
 		// Add loaders ----
 		rawrbox::RESOURCES::addLoader<rawrbox::FontLoader>();
-		rawrbox::RESOURCES::addLoader<rawrbox::TextureLoader>();
+		rawrbox::RESOURCES::addLoader<rawrbox::GLTFLoader>();
 		// -----
 
 		render->init();
 	}
 
 	void Game::loadContent() {
-		std::vector<std::pair<std::string, uint32_t>> initialContentFiles = {
-		    {"./assets/textures/decals.png", 64},
-		    {"./assets/textures/light_test/planks.png", 0},
-		    {"./assets/textures/light_test/planksSpec.png", 0},
-		    {"./assets/textures/light_test/planksNorm.png", 0}};
+		const std::vector<std::pair<std::string, uint32_t>> initialContentFiles = {
+		    {"./assets/models/kelley_road/scene.gltf", rawrbox::GLTFLoadFlags::IMPORT_TEXTURES | rawrbox::GLTFLoadFlags::IMPORT_ANIMATIONS}};
 
 		rawrbox::RESOURCES::loadListAsync(initialContentFiles, [this]() {
 			rawrbox::runOnRenderThread([this]() {
@@ -89,91 +124,119 @@ namespace light {
 	void Game::contentLoaded() {
 		if (this->_ready) return;
 
-		auto* tex = rawrbox::RESOURCES::getFile<rawrbox::ResourceTexture>("./assets/textures/light_test/planks.png")->get();
-		auto* texNorm = rawrbox::RESOURCES::getFile<rawrbox::ResourceTexture>("./assets/textures/light_test/planksNorm.png")->get();
-		auto* texRought = rawrbox::RESOURCES::getFile<rawrbox::ResourceTexture>("./assets/textures/light_test/planksSpec.png")->get();
+		const auto* mdl = rawrbox::RESOURCES::getFile<rawrbox::ResourceGLTF>("./assets/models/kelley_road/scene.gltf")->get();
 
-		// Setup
-		{
-			auto mesh = rawrbox::MeshUtils::generateGrid<>(12, {0.F, 0.F, 0.F});
-			this->_model->addMesh(mesh);
+		// House ----
+		this->_house->load(*mdl);
+		this->_house->removeMeshIf([](const auto& mesh) { return mesh.skeleton != nullptr || !mesh.isMergeable(); });
+
+		// Lamp glow ---
+		auto* hallwayShade = this->_house->getMeshByName("Icosphere.001_accessories_0");
+		auto* kitchenShade = this->_house->getMeshByName("Icosphere_accessories_0");
+
+		for (auto* shade : {hallwayShade, kitchenShade}) {
+			if (shade == nullptr) continue;
+
+			shade->setMergeable(false);
+			shade->textures.emission = shade->textures.texture;
 		}
+		// ----------
 
-		{
-			auto mesh = rawrbox::MeshUtils::generatePlane<rawrbox::MaterialLit>({3.5F, 0.F, -0.01F}, {3.F, 3.F}, rawrbox::Colors::White());
+		this->_house->setScale({SCALE, SCALE, SCALE});
+		this->_house->upload();
+		this->_house->setShadowMode(rawrbox::ShadowMode::STATIC);
+		// ----------
 
-			mesh.setEulerAngle({rawrbox::MathUtils::toRad(90), 0, 0});
-			mesh.setTexture(tex);
-			mesh.setNormalTexture(texNorm);
-			mesh.setSpecularFactor(0.05F);
-			mesh.setRoughtMetalTexture(texRought);
+		// Props ----
+		this->_props->load(*mdl);
+		this->_props->removeMeshIf([](const auto& mesh) { return mesh.skeleton != nullptr || mesh.isMergeable(); });
+		this->_props->setScale({SCALE, SCALE, SCALE});
+		this->_props->upload();
+		this->_props->setShadowMode(rawrbox::ShadowMode::DYNAMIC);
+		this->_props->playAnimation(true);
+		// ----------
 
-			this->_model2->addMesh(mesh);
-		}
+		// Monster ----
+		this->_monster->load(*mdl);
+		this->_monster->removeMeshIf([](const auto& mesh) { return mesh.skeleton == nullptr; });
+		this->_monster->setScale({SCALE, SCALE, SCALE});
+		this->_monster->upload();
+		this->_monster->setShadowMode(rawrbox::ShadowMode::DYNAMIC);
+		this->_monster->playAnimation(true);
+		// ----------
 
-		{
-			auto mesh = rawrbox::MeshUtils::generatePlane<rawrbox::MaterialLit>({-3.5F, 0.F, -0.01F}, {3.F, 3.F}, rawrbox::Colors::White());
+		// Lights ----
+		rawrbox::LIGHTS::setAmbient({0.02F, 0.02F, 0.03F, 1.F});
 
-			mesh.setEulerAngle({rawrbox::MathUtils::toRad(90), 0, 0});
-			mesh.setTexture(tex);
-			mesh.setNormalTexture(texNorm);
-			mesh.setSpecularFactor(0.05F);
-			mesh.setRoughtMetalTexture(texRought);
+		this->addLight(rawrbox::LIGHTS::add<rawrbox::SpotLight>(scale(320.F, 250.F, 530.F), rawrbox::Vector3f{0.F, -0.15F, 1.F}.normalized(), rawrbox::Colorf{0.45F, 0.6F, 1.F, 1.F}, 90.F, 150.F, 6.F), light::Flicker::TV, 16.F);
+		this->addLight(rawrbox::LIGHTS::add<rawrbox::PointLight>(scale(320.F, 230.F, 500.F), rawrbox::Colorf{0.45F, 0.6F, 1.F, 1.F}, 0.6F), light::Flicker::TV, 4.F, false);
 
-			this->_model2->addMesh(mesh);
-		}
+		auto& hallway = this->addLight(rawrbox::LIGHTS::add<rawrbox::SpotLight>(scale(-590.F, 690.F, -850.F), rawrbox::Vector3f{0.F, -1.F, 0.F}, rawrbox::Colorf{1.F, 0.72F, 0.42F, 1.F}, 100.F, 160.F, 4.5F), light::Flicker::FAILING, 10.F);
+		hallway.glow = rawrbox::LIGHTS::add<rawrbox::PointLight>(scale(-590.F, 640.F, -850.F), rawrbox::Colorf{1.F, 0.72F, 0.42F, 1.F}, 0.8F);
+		hallway.glowIntensity = 3.F;
+		hallway.shade = hallwayShade;
+		hallway.shadeEmission = 1.5F;
 
-		{
-			auto mesh = rawrbox::MeshUtils::generatePlane<rawrbox::MaterialInstancedLit>({0, 0, 0}, {0.25F, 0.25F});
+		auto* kitchen = rawrbox::LIGHTS::add<rawrbox::SpotLight>(scale(-1400.F, 690.F, 100.F), rawrbox::Vector3f{0.F, -1.F, 0.F}, rawrbox::Colorf{0.75F, 0.9F, 0.55F, 1.F}, 100.F, 160.F, 5.F);
+		kitchen->setShadowLodBias(1.F);
 
-			mesh.setEulerAngle({rawrbox::MathUtils::toRad(90), 0, 0});
-			mesh.setTexture(tex);
-			mesh.setNormalTexture(texNorm);
-			mesh.setSpecularFactor(0.05F);
-			mesh.setRoughtMetalTexture(texRought);
+		auto& kitchenLamp = this->addLight(kitchen, light::Flicker::BUZZ, 5.F);
+		kitchenLamp.glow = rawrbox::LIGHTS::add<rawrbox::PointLight>(scale(-1400.F, 640.F, 100.F), rawrbox::Colorf{0.75F, 0.9F, 0.55F, 1.F}, 0.8F);
+		kitchenLamp.glowIntensity = 3.F;
+		kitchenLamp.shade = kitchenShade;
+		kitchenLamp.shadeEmission = 1.5F;
 
-			this->_model3->setTemplate(mesh);
-		}
+		auto* bathroom = rawrbox::LIGHTS::add<rawrbox::PointLight>(scale(-1500.F, 700.F, -830.F), rawrbox::Colorf{0.6F, 0.85F, 0.8F, 1.F}, 3.5F);
+		bathroom->setShadowLodBias(1.F);
 
-		for (size_t y = 0; y < 3; y++) {
-			for (size_t x = 0; x < 3; x++) {
-				rawrbox::Matrix4x4 m;
-				m.SRT({1.F, 1.F, 1.F}, rawrbox::Vector4f::toQuat({0, 0, 0}), {x * 0.5F - 0.5F, y * 0.5F - 0.5F, -0.01F});
-
-				this->_model3->addInstance({m, rawrbox::Colors::White(), 0});
-			}
-		}
-		// ----
-
-		// Text test ----
-		this->_text->addText(*rawrbox::DEBUG_FONT_REGULAR, "POINT LIGHT", {-3.5F, 0.5F, 0});
-		this->_text->addText(*rawrbox::DEBUG_FONT_REGULAR, "SPOT LIGHT", {3.5F, 0.5F, 0});
-		this->_text->addText(*rawrbox::DEBUG_FONT_REGULAR, "INSTANCES", {0.F, 0.5F, 0});
-		// ------
-
-		// Light test ----------
-		rawrbox::LIGHTS::add<rawrbox::PointLight>(rawrbox::Vector3f{-3.5F, 0.2F, 0}, rawrbox::Colors::Blue() * 200.F, 1.2F);
-		rawrbox::LIGHTS::add<rawrbox::SpotLight>(rawrbox::Vector3f{3.5F, 1.F, 0}, rawrbox::Vector3f{0.F, -1.F, 0.F}, rawrbox::Colors::Purple() * 200.F, 20.F, 40.F, 4.F);
-		rawrbox::LIGHTS::add<rawrbox::PointLight>(rawrbox::Vector3f{0.2F, 0.2F, 0}, rawrbox::Colors::Orange() * 200.F, 1.F);
-
-		rawrbox::LIGHTS::add<rawrbox::DirectionalLight>(rawrbox::Vector3f{0.F, 10.F, 0}, rawrbox::Vector3f{0.F, -1.F, 0.F}, rawrbox::Colors::White()); // SUN
-		// -------------------
-
-		this->_model->upload();
-		this->_model2->upload();
-		this->_model3->upload();
-
-		this->_text->upload();
+		this->addLight(bathroom, light::Flicker::FAILING, 4.F);
+		this->addLight(rawrbox::LIGHTS::add<rawrbox::PointLight>(scale(200.F, -400.F, 50.F), rawrbox::Colorf{1.F, 0.08F, 0.05F, 1.F}, 6.F), light::Flicker::TV, 14.F);
+		// ----------
 
 		this->_ready = true;
 	}
 
+	light::TestLight& Game::addLight(rawrbox::LightBase* light, light::Flicker flicker, float intensity, bool shadows) {
+		light->setCastShadows(shadows);
+		return this->_lights.emplace_back(light, flicker, intensity, static_cast<float>(this->_lights.size()) * 7.31F);
+	}
+
+	float Game::getFlicker(const light::TestLight& light) const {
+		const float time = this->_time + light.seed;
+
+		switch (light.flicker) {
+			case light::Flicker::TV:
+				return 0.7F + hash(std::floor(this->_time * 12.F)) * 0.3F;
+			case light::Flicker::FAILING:
+				if (hash(std::floor(time * 0.6F)) < 0.9F) return 1.F;
+				return hash(std::floor(time * 16.F)) > 0.35F ? 1.F : 0.35F;
+			case light::Flicker::BUZZ:
+				return 0.95F + std::sin(time * 120.F) * 0.03F - (hash(std::floor(time * 3.F)) > 0.96F ? 0.3F : 0.F);
+			case light::Flicker::PULSE:
+				{
+					const float pulse = 0.5F + std::sin(time * 1.4F) * 0.5F;
+					return 0.55F + pulse * pulse * 0.45F;
+				}
+			case light::Flicker::BLINK:
+				return std::fmod(time, 1.6F) < 0.12F ? 1.F : 0.F;
+		}
+
+		return 1.F;
+	}
+
+	void Game::setRoom(const size_t index) {
+		const auto& room = ROOMS[index];
+		this->_room = index;
+
+		this->_camera->setPos(room.pos);
+		this->_camera->setAngle({rawrbox::MathUtils::toRad(room.yaw), rawrbox::MathUtils::toRad(room.pitch), 0.F, 0.F});
+	}
+
 	void Game::onThreadShutdown(rawrbox::ENGINE_THREADS thread) {
 		if (thread == rawrbox::ENGINE_THREADS::THREAD_RENDER) {
-			this->_model.reset();
-			this->_model2.reset();
-			this->_model3.reset();
-			this->_text.reset();
+			this->_house.reset();
+			this->_props.reset();
+			this->_monster.reset();
 
 			rawrbox::RESOURCES::shutdown();
 		}
@@ -187,47 +250,41 @@ namespace light {
 
 	void Game::update() {
 		rawrbox::Window::update();
+		if (!this->_ready) return;
+		this->_time += rawrbox::FIXED_DELTA_TIME;
 
-		if (this->_ready) {
-			auto* light = rawrbox::LIGHTS::getLight(0);
-			if (light != nullptr) {
-				light->setOffsetPos({std::sin(rawrbox::FRAME * 0.01F) * 0.5F, 0, std::cos(rawrbox::FRAME * 0.01F) * 0.5F});
-			}
+		for (const auto& light : this->_lights) {
+			const float flicker = this->getFlicker(light);
+			light.light->setIntensity(light.intensity * flicker);
 
-			light = rawrbox::LIGHTS::getLight(1);
-			if (light != nullptr) {
-				light->setOffsetPos({0, std::cos(rawrbox::FRAME * 0.01F) * 1.F, 0});
-			}
-
-			light = rawrbox::LIGHTS::getLight(2);
-			if (light != nullptr) {
-				light->setOffsetPos({std::sin(rawrbox::FRAME * 0.01F) * 0.5F, 0, std::cos(rawrbox::FRAME * 0.01F) * 0.5F});
-			}
-
-			light = rawrbox::LIGHTS::getLight(3); // SUN
-			if (light != nullptr) {
-				const float angle = rawrbox::FRAME * 0.01F;
-				light->setDirection({std::cos(angle), -std::sin(angle), 0});
-			}
+			if (light.glow != nullptr) light.glow->setIntensity(light.glowIntensity * flicker);
+			if (light.shade != nullptr) light.shade->textures.emissionFactor = light.shadeEmission * flicker;
 		}
 	}
 
 	void Game::drawWorld() const {
-		if (!this->_ready || this->_model == nullptr || this->_model2 == nullptr || this->_text == nullptr) return;
+		if (!this->_ready) return;
 
-		this->_model->draw();
-		this->_model2->draw();
-		this->_model3->draw();
-
-		this->_text->draw();
+		this->_house->draw();
+		this->_props->draw();
+		this->_monster->draw();
 	}
 
 	void Game::drawOverlay() const {
-		if (!this->_ready) return;
+		if (!this->_ready || this->_shadows == nullptr) return;
+
 		auto* stencil = rawrbox::RENDERER->stencil();
 
-		stencil->drawText(fmt::format("[F1]   FULLBRIGHT: {}", !rawrbox::LIGHTS::isEnabled()), {15, 15});
-		stencil->drawText(fmt::format("[F2]   DEBUG BINS: {}", rawrbox::LIGHTS::isDebug()), {15, 30});
+		stencil->drawText(fmt::format("[F1]   SHADOWS: {}", this->_shadows->isEnabled()), {15, 15});
+		stencil->drawText(fmt::format("[F2]   LOD BIAS: {}", this->_shadows->getLodBias()), {15, 30});
+		stencil->drawText(fmt::format("[F3]   FULLBRIGHT: {}", !rawrbox::LIGHTS::isEnabled()), {15, 45});
+		stencil->drawText(fmt::format("[F4]   DITHER: {}", this->_shadows->getDither()), {15, 60});
+#ifdef _DEBUG
+		stencil->drawText(fmt::format("[F5]   SHADOW DEBUG: {}", magic_enum::enum_name(this->_shadows->getDebug())), {15, 90});
+#endif
+		stencil->drawText(fmt::format("[F6]   RENDER BUDGET: {}", this->_shadows->getBudget() == 0 ? "unlimited" : fmt::format("{} pages", this->_shadows->getBudget())), {15, 105});
+
+		stencil->drawText(fmt::format("[1-{}]  ROOM: {}", ROOMS.size(), ROOMS[this->_room].name), {15, 135});
 	}
 
 	void Game::draw() {

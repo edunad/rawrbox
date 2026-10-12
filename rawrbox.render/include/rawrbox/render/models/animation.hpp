@@ -1,5 +1,7 @@
 #pragma once
 
+#include <rawrbox/math/matrix4x4.hpp>
+
 #include <ozz/animation/runtime/animation.h>
 #include <ozz/base/memory/unique_ptr.h>
 
@@ -23,6 +25,11 @@ namespace rawrbox {
 
 		rawrbox::Skeleton* skeleton = nullptr;
 		std::vector<uint32_t> meshes = {};
+
+		// PARENTING ----
+		std::vector<rawrbox::Matrix4x4> parents = {};
+		std::vector<rawrbox::Matrix4x4> offsets = {};
+		// --------------
 	};
 
 	class Animation {
@@ -44,7 +51,7 @@ namespace rawrbox {
 		virtual void addPart(rawrbox::AnimationPart part);
 		[[nodiscard]] virtual const std::vector<rawrbox::AnimationPart>& getParts() const;
 		// ---------
-		
+
 		[[nodiscard]] virtual bool empty() const;
 	};
 } // namespace rawrbox

@@ -2,17 +2,13 @@
 
 #include <rawrbox/math/aabb.hpp>
 #include <rawrbox/math/color.hpp>
-#include <rawrbox/math/pi.hpp>
 #include <rawrbox/math/vector4.hpp>
 #include <rawrbox/render/text/font.hpp>
 #include <rawrbox/render/textures/flat.hpp>
-#include <rawrbox/render/utils/streaming.hpp>
 
-#include <RefCntAutoPtr.hpp>
+#include <StreamingBuffer.hpp>
 
 #include <PipelineState.h>
-#include <ShaderResourceBinding.h>
-#include <Texture.h>
 
 #include <memory>
 #include <vector>
@@ -159,9 +155,9 @@ namespace rawrbox {
 		Diligent::IPipelineState* _linePipeline = nullptr;
 		Diligent::IPipelineState* _textPipeline = nullptr;
 
-		static constexpr const int MaxVertsInStreamingBuffer = 65536;
-		std::unique_ptr<rawrbox::StreamingBuffer> _streamingVB = nullptr;
-		std::unique_ptr<rawrbox::StreamingBuffer> _streamingIB = nullptr;
+		static constexpr const int MAX_VERTS_STREAMING_BUFFER = 65536;
+		std::unique_ptr<Diligent::StreamingBuffer> _streamingVB = nullptr;
+		std::unique_ptr<Diligent::StreamingBuffer> _streamingIB = nullptr;
 		// ------------
 
 		// WINDOW ----

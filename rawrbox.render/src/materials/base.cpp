@@ -15,6 +15,7 @@ namespace rawrbox {
 
 		if (this->cullnone == nullptr) this->cullnone = rawrbox::PipelineUtils::getPipeline(id + "::CullNone");
 		if (this->cullnone_alpha == nullptr) this->cullnone_alpha = rawrbox::PipelineUtils::getPipeline(id + "::CullNone::Alpha");
+		if (this->shadow == nullptr) this->shadow = rawrbox::PipelineUtils::getPipeline(id + "::Shadow");
 	}
 
 	void MaterialBase::resetUniformBinds() {

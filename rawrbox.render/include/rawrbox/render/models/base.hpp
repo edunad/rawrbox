@@ -1,6 +1,7 @@
 #pragma once
 
 #include <rawrbox/render/materials/unlit.hpp>
+#include <rawrbox/render/shadows/caster.hpp>
 #include <rawrbox/utils/dirty_ranges.hpp>
 #include <rawrbox/utils/string.hpp>
 
@@ -36,7 +37,7 @@ namespace rawrbox {
 
 	template <typename M = rawrbox::MaterialUnlit>
 		requires(std::derived_from<M, rawrbox::MaterialBase>)
-	class ModelBase {
+	class ModelBase : public rawrbox::ShadowCaster { // Meh
 
 	protected:
 		Diligent::RefCntAutoPtr<Diligent::IBuffer> _vbh; // Vertices
@@ -55,6 +56,11 @@ namespace rawrbox {
 		rawrbox::DirtyRanges _dirtyIB = {};
 
 		bool _requiresUpdate = false;
+		// ----
+
+		// SHADOWS ---
+		rawrbox::BBOX _vertexBounds = {};
+		bool _vertexBoundsDirty = true;
 		// ----
 
 		// LOGGER ------
@@ -123,6 +129,8 @@ namespace rawrbox {
 				}
 				// -------------------
 			}
+
+			this->_vertexBoundsDirty = true;
 		}
 		// --------------
 
@@ -206,10 +214,38 @@ namespace rawrbox {
 			this->_requiresUpdate = false;
 		}
 
+		virtual void bindBuffers() {
+			auto* context = rawrbox::RENDERER->context();
+
+			// Pending updates --
+			this->internalUpdate();
+			// --------------------------
+
+			// Bind vertex and index buffers
+			const std::array<Diligent::IBuffer*, 1> pBuffs = {this->_vbh};
+
+			context->SetVertexBuffers(0, 1, pBuffs.data(), nullptr, Diligent::RESOURCE_STATE_TRANSITION_MODE_VERIFY, Diligent::SET_VERTEX_BUFFERS_FLAG_RESET);
+			context->SetIndexBuffer(this->_ibh, 0, Diligent::RESOURCE_STATE_TRANSITION_MODE_VERIFY);
+			// ----
+		}
+
+		[[nodiscard]] static rawrbox::BBOX getVertexBounds(const rawrbox::Mesh<typename M::vertexBufferType>& mesh) {
+			if (mesh.vertices.empty() || mesh.skeleton != nullptr) return rawrbox::BBOX::infinite();
+
+			const auto& first = mesh.vertices.front().position;
+			rawrbox::BBOX bounds = {first, first, {}};
+
+			for (const auto& vertex : mesh.vertices) {
+				bounds.expand(vertex.position);
+			}
+
+			return bounds;
+		}
+
 		virtual void createIndexBuffer() {
 			auto* device = rawrbox::RENDERER->device();
 
-			auto indcSize = static_cast<uint64_t>(std::max<size_t>(this->_mesh->indices.capacity(), this->isDynamic() ? 1U : 0U)); // RESIZABLE requires at least one vertice
+			const auto indcSize = static_cast<uint64_t>(std::max<size_t>(this->_mesh->indices.capacity(), this->isDynamic() ? 1U : 0U)); // RESIZABLE requires at least one vertice
 			if (indcSize == 0) RAWRBOX_CRITICAL("Indices data cannot be empty!");
 
 			Diligent::BufferDesc IndcBuffDesc;
@@ -325,6 +361,7 @@ namespace rawrbox {
 
 			this->_dirtyVB.push(firstVertex * stride, count * stride);
 			this->_requiresUpdate = true;
+			this->_vertexBoundsDirty = true;
 		}
 
 		virtual void updateIndexRange(size_t firstIndex, size_t count) {
@@ -336,6 +373,7 @@ namespace rawrbox {
 
 		virtual void updateBuffers() {
 			this->_requiresUpdate = this->isDynamic() && this->isUploaded();
+			this->_vertexBoundsDirty = true;
 
 			this->_dirtyVB.markFull();
 			this->_dirtyIB.markFull();
@@ -403,22 +441,70 @@ namespace rawrbox {
 			if (!this->isUploaded()) RAWRBOX_CRITICAL("Failed to render model, vertex / index buffer is not uploaded");
 			if (this->_material == nullptr) RAWRBOX_CRITICAL("Material not set");
 
-			auto* context = rawrbox::RENDERER->context();
-
-			// Execute pending buffer updates --
-			this->internalUpdate();
-			// --------------------------
-
-			// Bind vertex and index buffers
-			std::array<Diligent::IBuffer*, 1> pBuffs = {this->_vbh};
-
-			context->SetVertexBuffers(0, 1, pBuffs.data(), nullptr, Diligent::RESOURCE_STATE_TRANSITION_MODE_VERIFY, Diligent::SET_VERTEX_BUFFERS_FLAG_RESET);
-			context->SetIndexBuffer(this->_ibh, 0, Diligent::RESOURCE_STATE_TRANSITION_MODE_VERIFY);
-			// ----
+			this->bindBuffers();
 
 			// Reset material uniforms ----
 			this->_material->resetUniformBinds();
 			// ----------------------------
 		}
+
+		// SHADOWS ---
+		[[nodiscard]] bool canCastShadows() const override {
+			return this->isUploaded() && this->_material != nullptr && this->_material->shadow != nullptr;
+		}
+
+		[[nodiscard]] const rawrbox::BBOX& getCachedVertexBounds() {
+			if (this->_vertexBoundsDirty) {
+				this->_vertexBounds = getVertexBounds(*this->_mesh);
+				this->_vertexBoundsDirty = false;
+			}
+
+			return this->_vertexBounds;
+		}
+
+		[[nodiscard]] rawrbox::BBOX getShadowBounds() override {
+			return this->getCachedVertexBounds().transform(this->getMatrix());
+		}
+
+		[[nodiscard]] bool canCastShadows(const rawrbox::Mesh<typename M::vertexBufferType>& mesh) const {
+			return this->canCastShadows() && !mesh.isTransparent() && !mesh.getWireframe() && !mesh.getLineMode();
+		}
+
+		void bindShadowMesh(const rawrbox::Mesh<typename M::vertexBufferType>& mesh, const rawrbox::Matrix4x4& matrix) {
+			if (this->_material == nullptr) RAWRBOX_CRITICAL("Material not set");
+
+			if (this->_material->shadow == nullptr) RAWRBOX_CRITICAL("Shadow not initialized!");
+			rawrbox::RENDERER->context()->SetPipelineState(this->_material->shadow);
+
+			this->_material->bindVertexUniforms(mesh);
+			this->_material->bindVertexSkinnedUniforms(mesh);
+			this->_material->bindPixelUniforms(mesh);
+
+			rawrbox::MAIN_CAMERA->setModelTransform(matrix);
+		}
+
+		void drawShadow(const rawrbox::ShadowDraw& draw) override {
+			if (this->_material == nullptr) RAWRBOX_CRITICAL("Material not set");
+			if (!this->canCastShadows(*this->_mesh)) return;
+
+			if (draw.bind) {
+				this->bindBuffers();
+				this->_material->resetUniformBinds();
+				this->bindShadowMesh(*this->_mesh, this->getMatrix());
+			}
+
+			const rawrbox::ShadowSubmit shadowBind = {
+			    .bounds = this->getShadowBounds(),
+			    .indices = this->_mesh->totalIndex,
+
+			    .firstIndex = this->_mesh->baseIndex,
+			    .baseVertex = this->_mesh->baseVertex,
+
+			    .instances = 1U,
+			    .view = rawrbox::ShadowDraw::ALL_VIEWS};
+
+			draw.submit(shadowBind);
+		}
+		// -----------
 	};
 } // namespace rawrbox

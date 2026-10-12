@@ -282,11 +282,20 @@ namespace rawrbox {
 		rawrbox::PipelineUtils::registerGlobalMacro(Diligent::SHADER_TYPE_VERTEX, "MAX_BONES_PER_VERTEX", RB_MAX_BONES_PER_VERTEX);
 		rawrbox::PipelineUtils::registerGlobalMacro(Diligent::SHADER_TYPE_PIXEL, "MAX_POST_DATA", RB_RENDER_MAX_POST_DATA);
 
+#ifdef _DEBUG
+		rawrbox::PipelineUtils::registerGlobalMacro(Diligent::SHADER_TYPE_VERTEX, "_DEBUG", true);
+		rawrbox::PipelineUtils::registerGlobalMacro(Diligent::SHADER_TYPE_PIXEL, "_DEBUG", true);
+		rawrbox::PipelineUtils::registerGlobalMacro(Diligent::SHADER_TYPE_GEOMETRY, "_DEBUG", true);
+		rawrbox::PipelineUtils::registerGlobalMacro(Diligent::SHADER_TYPE_COMPUTE, "_DEBUG", true);
+#endif
+
 		// THESE ARE ALWAYS REGISTERED TO THOSE INDEXES, IF THAT CHANGES, THEN SOMETHING WENT REAALLYYY WRONG
 		rawrbox::PipelineUtils::registerGlobalMacro(Diligent::SHADER_TYPE_PIXEL, "MISSING_TEXTURE_ID", 0);
 		rawrbox::PipelineUtils::registerGlobalMacro(Diligent::SHADER_TYPE_VERTEX, "MISSING_TEXTURE_ID", 0);
+
 		rawrbox::PipelineUtils::registerGlobalMacro(Diligent::SHADER_TYPE_PIXEL, "WHITE_TEXTURE_ID", 1);
 		rawrbox::PipelineUtils::registerGlobalMacro(Diligent::SHADER_TYPE_VERTEX, "WHITE_TEXTURE_ID", 1);
+
 		rawrbox::PipelineUtils::registerGlobalMacro(Diligent::SHADER_TYPE_PIXEL, "BLACK_TEXTURE_ID", 2);
 		rawrbox::PipelineUtils::registerGlobalMacro(Diligent::SHADER_TYPE_VERTEX, "BLACK_TEXTURE_ID", 2);
 		// --------------

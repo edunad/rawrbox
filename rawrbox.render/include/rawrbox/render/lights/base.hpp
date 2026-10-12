@@ -5,6 +5,8 @@
 #include <rawrbox/math/vector3.hpp>
 #include <rawrbox/render/lights/types.hpp>
 
+#include <optional>
+
 namespace rawrbox {
 	class LightBase {
 	protected:
@@ -18,6 +20,13 @@ namespace rawrbox {
 		rawrbox::Colorf _color = rawrbox::Colors::White();
 		float _radius = 5.F;
 		float _intensity = 1.F;
+
+		// SHADOWS ---
+		bool _castShadows = false;
+
+		std::optional<uint32_t> _shadowSlot = std::nullopt;
+		float _shadowLodBias = 0.F;
+		// -----------
 
 	public:
 		LightBase(const rawrbox::Vector3f& pos, const rawrbox::Colorf& color, float radius);
@@ -55,5 +64,16 @@ namespace rawrbox {
 
 		[[nodiscard]] virtual const rawrbox::Vector3f& getDirection() const;
 		virtual void setDirection(const rawrbox::Vector3f& dir);
+
+		// SHADOWS ---
+		[[nodiscard]] virtual bool castShadows() const;
+		virtual void setCastShadows(bool cast);
+
+		[[nodiscard]] virtual std::optional<uint32_t> getShadowSlot() const;
+		virtual void setShadowSlot(std::optional<uint32_t> slot);
+
+		[[nodiscard]] virtual float getShadowLodBias() const;
+		virtual void setShadowLodBias(float bias);
+		// -----------
 	};
 } // namespace rawrbox

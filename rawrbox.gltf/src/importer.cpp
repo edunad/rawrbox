@@ -222,7 +222,24 @@ namespace rawrbox {
 			}
 		}
 
+		// World transforms ---
+		this->_nodeWorld.resize(scene.nodes.size());
+		for (size_t i = 0; i < scene.nodes.size(); i++) {
+			rawrbox::Matrix4x4 world = getLocalMatrix(scene.nodes[i]);
+			for (auto parent = this->_nodeParents[i]; parent.has_value(); parent = this->_nodeParents[parent.value()]) {
+				world = getLocalMatrix(scene.nodes[parent.value()]) * world;
+			}
+
+			this->_nodeWorld[i] = world;
+		}
+		// -----------
+
 		return true;
+	}
+
+	rawrbox::Matrix4x4 GLTFImporter::getLocalMatrix(const fastgltf::Node& node) {
+		const auto& [translation, rotation, scale] = std::get<fastgltf::TRS>(node.transform);
+		return rawrbox::Matrix4x4::mtxSRT({scale.x(), scale.y(), scale.z()}, {rotation.x(), rotation.y(), rotation.z(), rotation.w()}, {translation.x(), translation.y(), translation.z()});
 	}
 	//-----------
 
@@ -736,13 +753,26 @@ namespace rawrbox {
 			std::ranges::sort(targetNodes);
 
 			std::vector<rawrbox::Skeleton*> targetSkeletons = {};
-			std::vector<size_t> meshNodes = {};
+
+			std::vector<std::pair<size_t, rawrbox::GLTFMesh*>> vertexTargets = {};
+			for (const auto& [meshNode, mesh] : this->_nodeMeshes) {
+				if (mesh->skeleton != nullptr) continue;
+
+				for (std::optional<size_t> current = meshNode; current.has_value(); current = this->_nodeParents[current.value()]) {
+					if (!anim.tracks.contains(current.value())) continue;
+
+					vertexTargets.emplace_back(current.value(), mesh);
+					break;
+				}
+			}
+
+			std::ranges::sort(vertexTargets, {}, [](const auto& target) { return target.second->index; });
 
 			for (const auto& node : targetNodes) {
-				bool targeted = false;
+				bool found = false;
 
 				if (auto fndSkeletons = this->_nodeSkeletons.find(node); fndSkeletons != this->_nodeSkeletons.end()) {
-					targeted = true;
+					found = true;
 
 					for (auto* skeleton : fndSkeletons->second) {
 						if (std::ranges::find(targetSkeletons, skeleton) != targetSkeletons.end()) continue;
@@ -750,12 +780,13 @@ namespace rawrbox {
 					}
 				}
 
-				if (auto fndMesh = this->_nodeMeshes.find(node); fndMesh != this->_nodeMeshes.end()) {
-					targeted = true;
-					if (fndMesh->second->skeleton == nullptr) meshNodes.push_back(node);
-				}
+				if (this->_nodeMeshes.contains(node) ||
+				    std::ranges::any_of(vertexTargets, [node](const auto& target) {
+					    return target.first == node;
+				    }))
+					found = true;
 
-				if (!targeted) this->_logger->debug("Animation '{}' targets node '{}' a invalid mesh / joint! Skipping", anim.name, scene.nodes[node].name);
+				if (!found) this->_logger->debug("Animation '{}' targets node '{}' a invalid mesh / joint! Skipping", anim.name, scene.nodes[node].name);
 			}
 			// -----------------------------------------------------------------------
 
@@ -823,24 +854,35 @@ namespace rawrbox {
 			// -------------------
 
 			// VERTEX ANIMATION ----
-			if (!meshNodes.empty()) {
+			if (!vertexTargets.empty()) {
 				ozz::animation::offline::RawAnimation rawAnim = {};
 
 				rawAnim.name = anim.name.c_str();
 				rawAnim.duration = anim.duration;
-				rawAnim.tracks.reserve(meshNodes.size());
+				rawAnim.tracks.reserve(vertexTargets.size());
 
 				std::vector<uint32_t> meshIDs = {};
-				meshIDs.reserve(meshNodes.size());
 
-				for (const auto& node : meshNodes) {
+				std::vector<rawrbox::Matrix4x4> parents = {};
+				std::vector<rawrbox::Matrix4x4> offsets = {};
+
+				meshIDs.reserve(vertexTargets.size());
+				parents.reserve(vertexTargets.size());
+				offsets.reserve(vertexTargets.size());
+
+				for (const auto& [node, mesh] : vertexTargets) {
 					ozz::animation::offline::RawAnimation::JointTrack track = anim.tracks.at(node);
 
 					this->fillRestPose(track, this->getRestPose(scene.nodes[node]));
 					this->toLeftHand(track);
 
 					rawAnim.tracks.push_back(std::move(track));
-					meshIDs.push_back(static_cast<uint32_t>(this->_nodeMeshes.at(node)->index));
+					meshIDs.push_back(static_cast<uint32_t>(mesh->index));
+
+					const auto parent = this->_nodeParents[node];
+
+					parents.push_back(parent.has_value() ? rawrbox::Matrix4x4::mtxLeftHand(this->_nodeWorld[parent.value()], true) : rawrbox::Matrix4x4{});
+					offsets.push_back(mesh->node == node ? rawrbox::Matrix4x4{} : rawrbox::Matrix4x4::mtxInverse(this->_nodeWorld[node]) * this->_nodeWorld[mesh->node]);
 				}
 
 				auto built = builder(rawAnim);
@@ -851,6 +893,8 @@ namespace rawrbox {
 					part.type = rawrbox::AnimationType::VERTEX;
 					part.animation = std::move(built);
 					part.meshes = std::move(meshIDs);
+					part.parents = std::move(parents);
+					part.offsets = std::move(offsets);
 
 					animation->addPart(std::move(part));
 				}
@@ -863,7 +907,7 @@ namespace rawrbox {
 			}
 
 			if (printAnims) {
-				this->_logger->debug("Built animation '{}' -> {} skeleton(s){}, {} vertex track(s), {:.2f}s", fmt::styled(anim.name, fmt::fg(fmt::color::green_yellow)), targetSkeletons.size(), anim.additive ? " (additive)" : "", meshNodes.size(), animation->duration);
+				this->_logger->debug("Built animation '{}' -> {} skeleton(s){}, {} vertex track -> {:.2f}s", fmt::styled(anim.name, fmt::fg(fmt::color::green_yellow)), targetSkeletons.size(), anim.additive ? " (additive)" : "", vertexTargets.size(), animation->duration);
 			}
 
 			this->animations.push_back(std::move(animation));
@@ -924,7 +968,7 @@ namespace rawrbox {
 		const auto& node = scene.nodes[nodeIndex];
 
 		if (node.lightIndex) {
-			this->lights.push_back(std::make_unique<rawrbox::GLTFLight>(this->lights.size(), nodeIndex, node, scene.lights[node.lightIndex.value()]));
+			this->lights.push_back(std::make_unique<rawrbox::GLTFLight>(this->lights.size(), nodeIndex, node, this->_nodeWorld[nodeIndex], scene.lights[node.lightIndex.value()]));
 		}
 
 		if (node.meshIndex) {
@@ -947,12 +991,12 @@ namespace rawrbox {
 	}
 
 	std::unique_ptr<rawrbox::GLTFMesh> GLTFImporter::extractMesh(const fastgltf::Asset& scene, size_t nodeIndex, const fastgltf::Node& node) {
-		auto gltfMesh = std::make_unique<rawrbox::GLTFMesh>(this->meshes.size(), nodeIndex, node);
+		auto gltfMesh = std::make_unique<rawrbox::GLTFMesh>(this->meshes.size(), nodeIndex, node, this->_nodeWorld[nodeIndex]);
 
 		std::optional<size_t> skinJoints = std::nullopt;
 		if (node.skinIndex.has_value() && node.skinIndex.value() < scene.skins.size()) skinJoints = scene.skins[node.skinIndex.value()].joints.size();
 
-		size_t meshIndex = node.meshIndex.value();
+		const size_t meshIndex = node.meshIndex.value();
 		const auto& mesh = scene.meshes[meshIndex];
 
 		const bool importBlendShapes = (this->loadFlags & rawrbox::GLTFLoadFlags::IMPORT_BLEND_SHAPES) > 0;
@@ -1232,6 +1276,7 @@ namespace rawrbox {
 
 		this->_nodeParents.clear();
 		this->_nodeMeshes.clear();
+		this->_nodeWorld.clear();
 
 		this->_parsedAnimations.clear();
 		this->animations.clear();

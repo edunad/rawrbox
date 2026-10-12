@@ -52,5 +52,7 @@ uint GetLightShadow(Light light) {
 #define FULL_BRIGHT              LightConstants.lightSettings.x
 #define TOTAL_LIGHTS             LightConstants.lightSettings.y
 #define TOTAL_DIRECTIONAL_LIGHTS LightConstants.lightSettings.z
-#define LIGHT_DEBUG              LightConstants.lightSettings.w
+#ifdef _DEBUG
+	#define LIGHT_DEBUG LightConstants.lightSettings.w
+#endif
 #endif

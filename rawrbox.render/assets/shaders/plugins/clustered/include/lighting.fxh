@@ -180,11 +180,16 @@ LightResult DefaultLitBxDF(float3 specularColor, float specularRoughness, float3
 	}
 }
 
-void ApplyLight(uint index, inout LightResult lighting, float3 specular, float R, float3 diffuse, float3 N, float3 V, float3 worldPos, float dither) {
+void ApplyLight(uint index, inout LightResult lighting, float3 specular, float R, float3 diffuse, float3 N, float3 geoNormal, float3 V, float3 worldPos, float dither) {
+	if (TOTAL_LIGHTS == 0) return;
 	Light light = GetLight(index);
 
 	float3 L;
 	float attenuation = GetAttenuation(light, worldPos, L);
+
+#ifdef READ_SHADOWS
+	if (attenuation > 0.0F) attenuation *= GetShadow(light, worldPos, geoNormal, dither);
+#endif
 
 	if (attenuation > 0.0F) {
 		LightResult result = DefaultLitBxDF(specular, R, diffuse, N, V, L, attenuation);
@@ -195,7 +200,7 @@ void ApplyLight(uint index, inout LightResult lighting, float3 specular, float R
 	}
 }
 
-void ApplyLights(uint mask, uint bin, inout LightResult lighting, float3 specular, float R, float3 diffuse, float3 N, float3 V, float3 worldPos, float dither) {
+void ApplyLights(uint mask, uint bin, inout LightResult lighting, float3 specular, float R, float3 diffuse, float3 N, float3 geoNormal, float3 V, float3 worldPos, float dither) {
 	if (TOTAL_LIGHTS == 0) return;
 
 	while (mask) {
@@ -205,7 +210,7 @@ void ApplyLights(uint mask, uint bin, inout LightResult lighting, float3 specula
 		uint index = bitIndex + bin * BIN_BITS;
 		if (index >= TOTAL_LIGHTS) break;
 
-		ApplyLight(index, lighting, specular, R, diffuse, N, V, worldPos, dither);
+		ApplyLight(index, lighting, specular, R, diffuse, N, geoNormal, V, worldPos, dither);
 	}
 }
 

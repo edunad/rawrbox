@@ -109,13 +109,25 @@ namespace rawrbox {
 		return *this;
 	}
 
-	rawrbox::Matrix4x4& Matrix4x4::toLeftHand() {
+	rawrbox::Matrix4x4& Matrix4x4::toLeftHand(bool mirror) {
 		this->mtx[2] = -this->mtx[2];
 		this->mtx[6] = -this->mtx[6];
-		this->mtx[10] = -this->mtx[10];
 		this->mtx[14] = -this->mtx[14];
 
+		if (mirror) {
+			this->mtx[8] = -this->mtx[8];
+			this->mtx[9] = -this->mtx[9];
+			this->mtx[11] = -this->mtx[11];
+		} else {
+			this->mtx[10] = -this->mtx[10];
+		}
+
 		return *this;
+	}
+
+	rawrbox::Matrix4x4& Matrix4x4::toNormal() {
+		this->inverse();
+		return this->transpose();
 	}
 
 	rawrbox::Vector3f Matrix4x4::getPos() const {
@@ -340,6 +352,16 @@ namespace rawrbox {
 		return result;
 	}
 
+	rawrbox::Vector3f Matrix4x4::mulDir(const rawrbox::Vector3f& other) const {
+		rawrbox::Vector3f result = {};
+
+		result.x = other.x * this->mtx[0] + other.y * this->mtx[4] + other.z * this->mtx[8];
+		result.y = other.x * this->mtx[1] + other.y * this->mtx[5] + other.z * this->mtx[9];
+		result.z = other.x * this->mtx[2] + other.y * this->mtx[6] + other.z * this->mtx[10];
+
+		return result;
+	}
+
 	rawrbox::Matrix4x4& Matrix4x4::inverse() {
 		const float xx = mtx[0];
 		const float xy = mtx[1];
@@ -412,8 +434,12 @@ namespace rawrbox {
 	// ------
 
 	// STATIC UTILS ----
-	rawrbox::Matrix4x4 Matrix4x4::mtxLeftHand(rawrbox::Matrix4x4 mtx) {
-		return mtx.toLeftHand();
+	rawrbox::Matrix4x4 Matrix4x4::mtxLeftHand(rawrbox::Matrix4x4 mtx, bool mirror) {
+		return mtx.toLeftHand(mirror);
+	}
+
+	rawrbox::Matrix4x4 Matrix4x4::mtxNormal(rawrbox::Matrix4x4 mtx) {
+		return mtx.toNormal();
 	}
 
 	rawrbox::Matrix4x4 Matrix4x4::mtxTranspose(rawrbox::Matrix4x4 mtx) {

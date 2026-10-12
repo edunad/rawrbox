@@ -1,6 +1,7 @@
 
 #include <rawrbox/render/materials/lit.hpp>
 #include <rawrbox/render/plugins/clustered.hpp>
+#include <rawrbox/render/plugins/shadows.hpp>
 
 namespace rawrbox {
 	// STATIC DATA ----
@@ -31,6 +32,12 @@ namespace rawrbox {
 		settings.renderTargets = RB_RENDER_RENDER_TARGET_TARGETS; // COLOR + GPUPick
 		settings.cull = Diligent::CULL_MODE_FRONT;
 		settings.macros = cluster->getClusterMacros() + helper;
+
+		auto* shadows = rawrbox::RENDERER->getPlugin<rawrbox::ShadowPlugin>("Shadows");
+		if (shadows != nullptr) {
+			settings.macros += shadows->getShadowMacros();
+			shadows->createCasterPipeline(id, layout, helper, true);
+		}
 
 		settings.signatures = {rawrbox::BindlessManager::signature};
 		settings.layout = layout;

@@ -11,6 +11,7 @@
 #include <rawrbox/render/models/utils/optimization.hpp>
 #include <rawrbox/render/static.hpp>
 
+#include <limits>
 #include <unordered_set>
 
 namespace rawrbox {
@@ -28,10 +29,14 @@ namespace rawrbox {
 
 		std::unordered_map<rawrbox::Skeleton*, std::unique_ptr<rawrbox::AnimationBlender>> _blenders = {};
 		std::unordered_map<uint32_t, rawrbox::TransformBlend> _vertexBlends = {};
+		std::unordered_map<uint32_t, std::pair<rawrbox::Matrix4x4, rawrbox::Matrix4x4>> _vertexSpaces = {};
 		// ------------
 
 		std::vector<std::unique_ptr<rawrbox::Mesh<typename M::vertexBufferType>>> _meshes = {};
 		rawrbox::BBOX _bbox = {};
+		std::vector<rawrbox::BBOX> _meshBounds = {};
+
+		uint64_t _animationFrame = std::numeric_limits<uint64_t>::max();
 
 		// LIGHTS ---
 		std::vector<rawrbox::LightBase> _lights = {};
@@ -89,6 +94,7 @@ namespace rawrbox {
 
 							rawrbox::AnimationUtils::getTransform(locals[track / 4], track % 4, pos, rotation, scale);
 							this->_vertexBlends[part.meshes[track]].add(pos, rotation, scale, weight);
+							if (track < part.parents.size()) this->_vertexSpaces[part.meshes[track]] = {part.parents[track], part.offsets[track]};
 						}
 						break;
 					case rawrbox::AnimationType::SKELETON:
@@ -106,7 +112,8 @@ namespace rawrbox {
 				auto fnd = this->_animatedMeshes.find(vertex.first);
 				if (fnd == this->_animatedMeshes.end()) continue;
 
-				const rawrbox::Matrix4x4 mtx = vertex.second.toMatrix();
+				const auto space = this->_vertexSpaces.find(vertex.first);
+				const rawrbox::Matrix4x4 mtx = space == this->_vertexSpaces.end() ? vertex.second.toMatrix() : space->second.first * vertex.second.toMatrix() * space->second.second;
 				for (auto* mesh : fnd->second) {
 					mesh->matrix = mtx;
 				}
@@ -140,6 +147,9 @@ namespace rawrbox {
 		}
 
 		void tickAnimations() {
+			if (this->_animationFrame == rawrbox::FRAME) return;
+			this->_animationFrame = rawrbox::FRAME;
+
 			// Animation blending ----
 			for (auto& blender : this->_blenders) {
 				blender.second->reset();
@@ -251,6 +261,13 @@ namespace rawrbox {
 				});
 			}
 			// --------
+
+			// Shadow bounds ---
+			this->_meshBounds.clear();
+			for (auto& mesh : this->_meshes) {
+				this->_meshBounds.push_back(mesh == nullptr ? rawrbox::BBOX::infinite() : ModelBase<M>::getVertexBounds(*mesh));
+			}
+			// --------
 		}
 
 		virtual void setMergeable(bool status) { this->_canMerge = status; }
@@ -273,38 +290,22 @@ namespace rawrbox {
 		}
 
 		virtual void merge() {
-			size_t old = this->_meshes.size();
+			const size_t old = this->_meshes.size();
 
-			for (size_t i1 = 0; i1 < this->_meshes.size(); i1++) {
-				auto& mesh1 = this->_meshes[i1];
+			for (size_t i = 0; i < this->_meshes.size(); i++) {
+				auto& target = this->_meshes[i];
+				if (target == nullptr) continue;
 
-				// figure out how big our buffers will get
-				size_t reserveVertices = mesh1->vertices.size();
-				size_t reserveIndices = mesh1->indices.size();
+				for (size_t j = i + 1; j < this->_meshes.size(); j++) {
+					auto& other = this->_meshes[j];
+					if (other == nullptr || !target->canMerge(*other)) continue;
 
-				for (size_t i2 = this->_meshes.size() - 1; i2 > i1; i2--) {
-					auto& mesh2 = this->_meshes[i2];
-					if (!mesh1->canMerge(*mesh2)) continue;
-
-					reserveVertices += mesh2->vertices.size();
-					reserveIndices += mesh2->indices.size();
-				}
-
-				if (reserveVertices == mesh1->vertices.size()) continue;
-
-				mesh1->vertices.reserve(reserveVertices);
-				mesh1->indices.reserve(reserveIndices);
-
-				// merge what it can
-				for (size_t i2 = this->_meshes.size() - 1; i2 > i1; i2--) {
-					auto& mesh2 = this->_meshes[i2];
-					if (!mesh1->canMerge(*mesh2)) continue;
-
-					mesh1->merge(*mesh2);
-					this->_meshes.erase(this->_meshes.begin() + i2);
+					target->merge(*other);
+					other.reset();
 				}
 			}
 
+			std::erase(this->_meshes, nullptr);
 			if (old != this->_meshes.size() && !this->isUploaded()) this->_logger->debug("Merged mesh for rendering ({} -> {})", fmt::styled(old, fmt::fg(fmt::color::cyan)), fmt::styled(this->_meshes.size(), fmt::fg(fmt::color::cyan))); // Only do it once
 		}
 
@@ -364,7 +365,8 @@ namespace rawrbox {
 			return this->playAnimation(name, loop, onComplete);
 		}
 
-		template <typename T> requires(std::derived_from<T, rawrbox::AnimationIKBase>)
+		template <typename T>
+			requires(std::derived_from<T, rawrbox::AnimationIKBase>)
 		bool addIK(const std::string& joint, const T& ik) {
 			if constexpr (!supportsBones<typename M::vertexBufferType>) {
 				return false;
@@ -485,20 +487,42 @@ namespace rawrbox {
 			return this->_meshes.empty();
 		}
 
-		virtual void removeMeshByName(const std::string& id) {
-			for (auto it = this->_meshes.begin(); it != this->_meshes.end();) {
-				if ((*it)->getName() == id) {
-					it = this->_meshes.erase(it);
-					continue;
-				}
+		virtual void removeMeshIf(const std::function<bool(const rawrbox::Mesh<typename M::vertexBufferType>&)>& pred) {
+			std::unordered_set<const rawrbox::Mesh<typename M::vertexBufferType>*> removed = {};
 
-				++it;
+			std::erase_if(this->_meshes, [&pred, &removed](const auto& mesh) {
+				if (mesh == nullptr || !pred(*mesh)) return false;
+
+				removed.insert(mesh.get());
+				return true;
+			});
+
+			if (removed.empty()) return;
+			this->_meshBounds.clear();
+
+			for (auto it = this->_animatedMeshes.begin(); it != this->_animatedMeshes.end();) {
+				std::erase_if(it->second, [&removed](auto* mesh) { return removed.contains(mesh); });
+				it = it->second.empty() ? this->_animatedMeshes.erase(it) : std::next(it);
 			}
+
+			for (auto& shape : this->_blend_shapes) {
+				if (removed.contains(shape.second->mesh)) shape.second->mesh = nullptr;
+			}
+		}
+
+		virtual void removeMeshByName(const std::string& id) {
+			this->removeMeshIf([&id](const auto& mesh) {
+				return mesh.getName() == id;
+			});
 		}
 
 		virtual void removeMesh(size_t index) {
 			if (index >= this->_meshes.size()) return;
-			this->_meshes.erase(this->_meshes.begin() + index);
+
+			const auto* target = this->_meshes[index].get();
+			this->removeMeshIf([target](const auto& mesh) {
+				return &mesh == target;
+			});
 		}
 
 		virtual rawrbox::Mesh<typename M::vertexBufferType>* addMesh(rawrbox::Mesh<typename M::vertexBufferType> mesh) {
@@ -587,6 +611,55 @@ namespace rawrbox {
 			ModelBase<M>::upload(type);
 		}
 
+		// SHADOWS ---
+		[[nodiscard]] rawrbox::BBOX getShadowBounds() override {
+			if (this->_meshBounds.size() != this->_meshes.size()) return rawrbox::BBOX::infinite();
+
+			rawrbox::BBOX bounds = {};
+			bool empty = true;
+
+			for (size_t i = 0; i < this->_meshes.size(); i++) {
+				auto& mesh = this->_meshes[i];
+				if (mesh == nullptr || mesh->empty()) continue;
+
+				const auto meshBounds = this->_meshBounds[i].transform(this->getMatrix() * mesh->getMatrix());
+				if (empty) {
+					bounds = meshBounds;
+				} else {
+					bounds.combine(meshBounds);
+				}
+
+				empty = false;
+			}
+
+			return empty ? rawrbox::BBOX::infinite() : bounds;
+		}
+
+		void drawShadow(const rawrbox::ShadowDraw& draw) override {
+			if (!this->canCastShadows()) return;
+			this->tickAnimations();
+
+			if (draw.bind) {
+				this->bindBuffers();
+				this->_material->resetUniformBinds();
+			}
+
+			// CPU CULL ----
+			for (size_t i = 0; i < this->_meshes.size(); i++) {
+				auto& mesh = this->_meshes[i];
+				if (mesh == nullptr || mesh->empty() || !this->canCastShadows(*mesh)) continue;
+
+				const auto matrix = this->getMatrix() * mesh->getMatrix();
+				const auto bounds = i < this->_meshBounds.size() ? this->_meshBounds[i].transform(matrix) : rawrbox::BBOX::infinite();
+				if (draw.isVisible && !draw.isVisible(bounds)) continue;
+
+				if (draw.bind) this->bindShadowMesh(*mesh, matrix);
+				draw.submit({bounds, mesh->totalIndex, mesh->baseIndex, mesh->baseVertex, 1U, rawrbox::ShadowDraw::ALL_VIEWS});
+			}
+			// ------------
+		}
+		// -----------
+
 		void draw() override {
 			ModelBase<M>::draw();
 			this->tickAnimations();
@@ -599,14 +672,9 @@ namespace rawrbox {
 				// -------------------
 
 				// Update uniforms -----
-				// bool buffersUpdated = false;
-				// buffersUpdated = this->_material->bindVertexUniforms(*mesh);
-				// buffersUpdated = this->_material->bindVertexSkinnedUniforms(*mesh);
-				// buffersUpdated = this->_material->bindPixelUniforms(*mesh);
-
-				this->_material->bindVertexUniforms(*mesh);
-				this->_material->bindVertexSkinnedUniforms(*mesh);
-				this->_material->bindPixelUniforms(*mesh);
+				bool buffersUpdated = this->_material->bindVertexUniforms(*mesh);
+				buffersUpdated |= this->_material->bindVertexSkinnedUniforms(*mesh);
+				buffersUpdated |= this->_material->bindPixelUniforms(*mesh);
 
 				rawrbox::MAIN_CAMERA->setModelTransform(this->getMatrix() * mesh->getMatrix());
 				// -----------
@@ -618,7 +686,7 @@ namespace rawrbox {
 				DrawAttrs.BaseVertex = mesh->baseVertex;
 				DrawAttrs.NumIndices = mesh->totalIndex;
 				DrawAttrs.Flags = Diligent::DRAW_FLAG_VERIFY_ALL;
-				// if (!buffersUpdated) DrawAttrs.Flags |= Diligent::DRAW_FLAG_DYNAMIC_RESOURCE_BUFFERS_INTACT;
+				if (!buffersUpdated) DrawAttrs.Flags |= Diligent::DRAW_FLAG_DYNAMIC_RESOURCE_BUFFERS_INTACT;
 
 				rawrbox::RENDERER->context()->DrawIndexed(DrawAttrs);
 				// -----------
