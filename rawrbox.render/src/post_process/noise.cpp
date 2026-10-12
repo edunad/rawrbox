@@ -2,6 +2,8 @@
 #include <rawrbox/render/post_process/noise.hpp>
 #include <rawrbox/render/static.hpp>
 
+#include <bit>
+
 namespace rawrbox {
 	PostProcessNoise::PostProcessNoise(float intensity) {
 		this->setIntensity(intensity);
@@ -16,6 +18,9 @@ namespace rawrbox {
 
 		rawrbox::PipeSettings settings;
 		settings.depth = Diligent::COMPARISON_FUNC_UNKNOWN;
+		settings.depthWrite = false;
+		settings.depthFormat = false;
+		settings.blending = {.src = Diligent::BLEND_FACTOR_UNDEFINED, .dest = Diligent::BLEND_FACTOR_UNDEFINED};
 		settings.cull = Diligent::CULL_MODE_NONE;
 		settings.topology = Diligent::PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP;
 		settings.pVS = "quad.vsh";
@@ -25,9 +30,9 @@ namespace rawrbox {
 		this->_pipeline = rawrbox::PipelineUtils::createPipeline("PostProcess::Noise", settings);
 	}
 
-	void PostProcessNoise::applyEffect(const rawrbox::TextureBase& texture) {
-		this->_data[0].y = static_cast<float>(rawrbox::FRAME); // NoiseTimer
-		rawrbox::PostProcessBase::applyEffect(texture);
+	void PostProcessNoise::applyEffect(const rawrbox::TextureBase& source, const rawrbox::TextureRender& target, uint32_t depthID) {
+		this->_data[0].y = std::bit_cast<float>(static_cast<uint32_t>(rawrbox::FRAME));
+		rawrbox::PostProcessBase::applyEffect(source, target, depthID);
 	}
 
 } // namespace rawrbox

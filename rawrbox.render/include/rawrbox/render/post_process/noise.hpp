@@ -16,6 +16,6 @@ namespace rawrbox {
 		virtual void setIntensity(float in);
 
 		void init() override;
-		void applyEffect(const rawrbox::TextureBase& texture) override;
+		void applyEffect(const rawrbox::TextureBase& source, const rawrbox::TextureRender& target, uint32_t depthID) override;
 	};
 } // namespace rawrbox

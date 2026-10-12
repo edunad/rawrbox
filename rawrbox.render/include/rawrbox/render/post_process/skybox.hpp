@@ -1,6 +1,5 @@
 #pragma once
 
-#define UINT_DATA
 #include <rawrbox/render/post_process/base.hpp>
 
 namespace rawrbox {

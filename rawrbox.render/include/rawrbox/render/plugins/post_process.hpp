@@ -2,6 +2,7 @@
 
 #include <rawrbox/render/plugins/base.hpp>
 #include <rawrbox/render/post_process/base.hpp>
+#include <rawrbox/render/textures/render.hpp>
 
 namespace rawrbox {
 	class PostProcessPlugin : public rawrbox::RenderPlugin {
@@ -9,6 +10,8 @@ namespace rawrbox {
 		// BUFFERS ---
 		Diligent::RefCntAutoPtr<Diligent::IBuffer> _buffer;
 		// -------
+
+		std::unique_ptr<rawrbox::TextureRender> _swapTexture;
 
 		std::vector<std::unique_ptr<rawrbox::PostProcessBase>> _postProcesses = {};
 
@@ -30,7 +33,7 @@ namespace rawrbox {
 		// PLUGIN UTILS ----
 		template <class T = rawrbox::PostProcessBase, typename... CallbackArgs>
 			requires(std::derived_from<T, rawrbox::PostProcessBase>)
-		rawrbox::PostProcessBase* add(CallbackArgs&&... args) {
+		T* add(CallbackArgs&&... args) {
 			auto process = std::make_unique<T>(std::forward<CallbackArgs>(args)...);
 
 			auto* pro = process.get();
@@ -44,7 +47,7 @@ namespace rawrbox {
 		// UTILS ----=
 		[[nodiscard]] virtual rawrbox::PostProcessBase* get(size_t indx) const;
 		[[nodiscard]] virtual Diligent::IBuffer* getBuffer() const;
-		virtual size_t count();
+		[[nodiscard]] virtual size_t count() const;
 		// ---------
 
 		std::string getID() override;

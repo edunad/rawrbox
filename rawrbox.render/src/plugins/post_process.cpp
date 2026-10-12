@@ -1,10 +1,16 @@
+#include <rawrbox/render/bindless.hpp>
+#include <rawrbox/render/cameras/base.hpp>
 #include <rawrbox/render/plugins/post_process.hpp>
 #include <rawrbox/render/static.hpp>
-#include <rawrbox/render/utils/render.hpp>
+#include <rawrbox/render/utils/barrier.hpp>
+
+#include <algorithm>
 
 namespace rawrbox {
 	PostProcessPlugin::~PostProcessPlugin() {
 		this->_postProcesses.clear();
+		this->_swapTexture.reset();
+
 		RAWRBOX_DESTROY(this->_buffer);
 	}
 
@@ -26,6 +32,17 @@ namespace rawrbox {
 	}
 
 	void PostProcessPlugin::upload() {
+		if (rawrbox::MAIN_CAMERA == nullptr) RAWRBOX_CRITICAL("Post process plugin requires a main camera!");
+		if (this->_postProcesses.empty()) return;
+
+		// SWAP TEXTURE ----
+		const auto* cameraTarget = rawrbox::MAIN_CAMERA->getRenderTarget();
+
+		this->_swapTexture = std::make_unique<rawrbox::TextureRender>(cameraTarget->getSize(), false);
+		this->_swapTexture->setName("PostProcess::Swap");
+		this->_swapTexture->upload(cameraTarget->getTexture()->GetDesc().Format);
+		// ----------
+
 		for (const auto& postProcess : this->_postProcesses) {
 			postProcess->init();
 		}
@@ -41,17 +58,58 @@ namespace rawrbox {
 
 	void PostProcessPlugin::postRender(const rawrbox::CameraBase& camera) {
 		if (&camera != rawrbox::MAIN_CAMERA) return; // Only apply on the main camera
+		if (std::ranges::none_of(this->_postProcesses, [](const auto& process) { return process->isEnabled(); })) return;
 
+		auto* context = rawrbox::RENDERER->context();
 		auto* renderTarget = camera.getRenderTarget();
+		auto* depth = renderTarget->getDepthHandle();
+
+		if (renderTarget->getSize() != this->_swapTexture->getSize()) RAWRBOX_CRITICAL("Main camera render target size changed, post process swap texture no longer matches!");
+
+		// DEPTH ---
+		if (depth != nullptr) rawrbox::BarrierUtils::barrier({{depth, Diligent::RESOURCE_STATE_UNKNOWN, Diligent::RESOURCE_STATE_SHADER_RESOURCE, Diligent::STATE_TRANSITION_FLAG_UPDATE_STATE}});
+		context->CommitShaderResources(rawrbox::BindlessManager::signatureBind, Diligent::RESOURCE_STATE_TRANSITION_MODE_NONE);
+		// ----------
 
 		// Apply post-processing ---
-		for (auto& process : this->_postProcesses) {
+		std::array<rawrbox::TextureRender*, 2> targets = {
+		    renderTarget,
+		    this->_swapTexture.get()};
+
+		size_t read = 0;
+		for (const auto& process : this->_postProcesses) {
 			if (!process->isEnabled()) continue;
 
-			renderTarget->startRecord(false, 1);
-			process->applyEffect(*renderTarget);
-			renderTarget->stopRecord();
+			process->applyEffect(*targets[read], *targets[1 - read], renderTarget->getDepthTextureID());
+			read = 1 - read;
 		}
+		// ----------
+
+		// COPY BACK ---
+		if (read == 1) {
+			auto* swapTex = this->_swapTexture->getTexture();
+			auto* cameraTex = renderTarget->getTexture();
+
+			rawrbox::BarrierUtils::barrier({
+			    {swapTex, Diligent::RESOURCE_STATE_UNKNOWN, Diligent::RESOURCE_STATE_COPY_SOURCE, Diligent::STATE_TRANSITION_FLAG_UPDATE_STATE},
+			    {cameraTex, Diligent::RESOURCE_STATE_UNKNOWN, Diligent::RESOURCE_STATE_COPY_DEST, Diligent::STATE_TRANSITION_FLAG_UPDATE_STATE},
+			});
+
+			Diligent::CopyTextureAttribs copy(swapTex, Diligent::RESOURCE_STATE_TRANSITION_MODE_VERIFY, cameraTex, Diligent::RESOURCE_STATE_TRANSITION_MODE_VERIFY);
+			context->CopyTexture(copy);
+
+			rawrbox::BarrierUtils::barrier({
+			    {swapTex, Diligent::RESOURCE_STATE_UNKNOWN, Diligent::RESOURCE_STATE_SHADER_RESOURCE, Diligent::STATE_TRANSITION_FLAG_UPDATE_STATE},
+			    {cameraTex, Diligent::RESOURCE_STATE_UNKNOWN, Diligent::RESOURCE_STATE_SHADER_RESOURCE, Diligent::STATE_TRANSITION_FLAG_UPDATE_STATE},
+			});
+		}
+		// ----------
+
+		// RESTORE ---
+		auto* pRTV = rawrbox::RENDERER->swapChain()->GetCurrentBackBufferRTV();
+		context->SetRenderTargets(1, &pRTV, rawrbox::RENDERER->swapChain()->GetDepthBufferDSV(), Diligent::RESOURCE_STATE_TRANSITION_MODE_VERIFY);
+
+		if (depth != nullptr) rawrbox::BarrierUtils::barrier({{depth, Diligent::RESOURCE_STATE_UNKNOWN, Diligent::RESOURCE_STATE_DEPTH_READ, Diligent::STATE_TRANSITION_FLAG_UPDATE_STATE}});
 		// ----------
 	}
 
@@ -67,7 +125,7 @@ namespace rawrbox {
 	}
 
 	Diligent::IBuffer* PostProcessPlugin::getBuffer() const { return this->_buffer; }
-	size_t PostProcessPlugin::count() { return this->_postProcesses.size(); }
+	size_t PostProcessPlugin::count() const { return this->_postProcesses.size(); }
 
 	std::string PostProcessPlugin::getID() { return "PostProcess"; }
 	// ----

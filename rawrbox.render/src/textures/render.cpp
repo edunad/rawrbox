@@ -30,12 +30,12 @@ namespace rawrbox {
 	Diligent::ITextureView* TextureRender::getRT() const { return this->getViewRT(0); }
 
 	Diligent::ITextureView* TextureRender::getView(size_t index) const {
-		if (index > this->_views.size()) return nullptr;
+		if (index >= this->_views.size()) return nullptr;
 		return this->_views[index];
 	}
 
 	Diligent::ITextureView* TextureRender::getViewRT(size_t index) const {
-		if (index > this->_viewsRT.size()) return nullptr;
+		if (index >= this->_viewsRT.size()) return nullptr;
 		return this->_viewsRT[index];
 	}
 
@@ -44,7 +44,7 @@ namespace rawrbox {
 
 	Diligent::ITextureView* TextureRender::getHandle() const { return this->getView(0); }
 	Diligent::ITexture* TextureRender::getTexture(size_t index) const {
-		if (index > this->_views.size()) return nullptr;
+		if (index >= this->_textures.size()) return nullptr;
 		return this->_textures[index];
 	}
 	// ------------

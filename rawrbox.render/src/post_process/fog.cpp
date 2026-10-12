@@ -29,6 +29,9 @@ namespace rawrbox {
 
 		rawrbox::PipeSettings settings;
 		settings.depth = Diligent::COMPARISON_FUNC_UNKNOWN;
+		settings.depthWrite = false;
+		settings.depthFormat = false;
+		settings.blending = {.src = Diligent::BLEND_FACTOR_UNDEFINED, .dest = Diligent::BLEND_FACTOR_UNDEFINED};
 		settings.cull = Diligent::CULL_MODE_NONE;
 		settings.topology = Diligent::PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP;
 		settings.pVS = "quad.vsh";

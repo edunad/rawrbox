@@ -1,8 +1,9 @@
-#include "camera.fxh"
 #include "pixel_post_process_uniforms.fxh"
 
 // ## MAPPING ----------------
 #define BloomIntensity PostProcessConstants.data[0].x
+#define BloomStep      PostProcessConstants.data[1].xy
+#define BloomTexel     PostProcessConstants.data[1].zw
 // ========================
 
 Texture2DArray g_Textures[];
@@ -17,37 +18,60 @@ struct PSOutput {
 	float4 Color : SV_TARGET;
 };
 
-// Adapted from https://www.shadertoy.com/view/4tlBWH
-float4 GetBloom(in float2 uv, in float4 inColor) {
-	float numSamples = 1.0;
-	float4 color = inColor;
-
-	for (float x = -8.0; x <= 8.0; x += 1.0) {
-		for (float y = -8.0; y <= 8.0; y += 1.0) {
-			float4 addColor = g_Textures[PostProcessConstants.textureID].Sample(g_Sampler, float3(uv + (float2(x, y) * px), 0));
-
-			if (max(addColor.r, max(addColor.g, addColor.b)) > 0.3) {
-				float dist = length(float2(x, y)) + 1.0;
-				float4 glowColor = max((addColor * 128.0) / pow(dist, 2.0), float4(0, 0, 0, 0));
-
-				if (max(glowColor.r, max(glowColor.g, glowColor.b)) > 0.0) {
-					color += glowColor;
-					numSamples += 1.0;
-				}
-			}
-		}
-	}
-
-	return color / numSamples;
+float4 SampleClamped(uint id, float2 uv, float2 texel) {
+	return g_Textures[id].Sample(g_Sampler, float3(clamp(uv, texel * 0.5, 1.0 - texel * 0.5), 0));
 }
+
+#if defined(BLOOM_PREFILTER)
+float4 Bright(float4 color) {
+	return max(color.r, max(color.g, color.b)) > 0.3 ? color : float4(0, 0, 0, 0);
+}
+#elif !defined(BLOOM_BLUR)
+float4 SampleBilinear(uint id, float2 uv, float2 texel) {
+	float2 pos = uv / texel - 0.5;
+	float2 f = frac(pos);
+	float2 base = (floor(pos) + 0.5) * texel;
+
+	float4 a = SampleClamped(id, base, texel);
+	float4 b = SampleClamped(id, base + float2(texel.x, 0), texel);
+	float4 c = SampleClamped(id, base + float2(0, texel.y), texel);
+	float4 d = SampleClamped(id, base + texel, texel);
+
+	return lerp(lerp(a, b, f.x), lerp(c, d, f.x), f.y);
+}
+#endif
 
 void main(in PSInput PSIn, out PSOutput PSOut) {
 #if defined(DESKTOP_GL) || defined(GL_ES)
-	float3 UV = float3(PSIn.UV.x, 1.0 - PSIn.UV.y, 0);
+	float2 UV = float2(PSIn.UV.x, 1.0 - PSIn.UV.y);
 #else
-	float3 UV = float3(PSIn.UV.xy, 0);
+	float2 UV = PSIn.UV.xy;
 #endif
 
-	float4 Color = g_Textures[PostProcessConstants.textureID].Sample(g_Sampler, UV);
-	PSOut.Color = lerp(Color, GetBloom(UV.xy, Color), BloomIntensity);
+#if defined(BLOOM_PREFILTER)
+	float2 o = BloomTexel * 0.5;
+	float4 color = Bright(SampleClamped(PostProcessConstants.textureID, UV + float2(-o.x, -o.y), BloomTexel));
+	color += Bright(SampleClamped(PostProcessConstants.textureID, UV + float2(o.x, -o.y), BloomTexel));
+	color += Bright(SampleClamped(PostProcessConstants.textureID, UV + float2(-o.x, o.y), BloomTexel));
+	color += Bright(SampleClamped(PostProcessConstants.textureID, UV + float2(o.x, o.y), BloomTexel));
+
+	PSOut.Color = color * 0.25;
+#elif defined(BLOOM_BLUR)
+	float4 color = float4(0, 0, 0, 0);
+	float total = 0.0;
+
+	[unroll] for (int i = -6; i <= 6; i++) {
+		float weight = exp(-float(i * i) / 12.5);
+
+		color += SampleClamped(PostProcessConstants.textureID, UV + BloomStep * float(i), BloomTexel) * weight;
+		total += weight;
+	}
+
+	PSOut.Color = color / total;
+#else
+	float4 color = g_Textures[PostProcessConstants.textureID].Sample(g_Sampler, float3(UV, 0));
+	float4 bloom = SampleBilinear(PostProcessConstants.textureExtraID, UV, BloomTexel);
+
+	PSOut.Color = float4(color.rgb + bloom.rgb * BloomIntensity, color.a);
+#endif
 }

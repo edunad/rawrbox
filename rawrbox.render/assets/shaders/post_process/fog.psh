@@ -32,16 +32,17 @@ void main(in PSInput PSIn, out PSOutput PSOut) {
 	Depth = 1.0 - (2.0 * NearFar.x) / (NearFar.y + NearFar.x - Depth * (NearFar.y - NearFar.x));
 
 	// Calculate fog factor based on depth and fog parameters
+	float fogDist = max(Depth - FOG_END, 0.0);
 	float fogFactor = 0.0;
 	if (FOG_TYPE == 0) {
 		// Linear fog
-		fogFactor = saturate((Depth - FOG_END) * FOG_DENSITY);
+		fogFactor = 1.0 - fogDist * FOG_DENSITY;
 	} else if (FOG_TYPE == 1) {
 		// Exponential fog
-		fogFactor = exp(-FOG_DENSITY * (Depth - FOG_END));
+		fogFactor = exp(-FOG_DENSITY * fogDist);
 	} else if (FOG_TYPE == 2) {
 		// Exponential squared fog
-		fogFactor = exp(-pow(FOG_DENSITY * (Depth - FOG_END), 2.0));
+		fogFactor = exp(-pow(FOG_DENSITY * fogDist, 2.0));
 	}
 
 	// Blend the original color with the fog color

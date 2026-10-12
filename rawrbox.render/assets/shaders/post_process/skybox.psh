@@ -1,13 +1,11 @@
 #include "camera.fxh"
-
-#define UINT_DATA
 #include "math.fxh"
 #include "pixel_post_process_uniforms.fxh"
 #include "unpack.fxh"
 
 // ## MAPPING ----------------
-#define START_COLOR PostProcessConstants.data[0].x
-#define END_COLOR   PostProcessConstants.data[0].y
+#define START_COLOR asuint(PostProcessConstants.data[0].x)
+#define END_COLOR   asuint(PostProcessConstants.data[0].y)
 #define PSX_BANDING PostProcessConstants.data[0].z
 // ========================
 

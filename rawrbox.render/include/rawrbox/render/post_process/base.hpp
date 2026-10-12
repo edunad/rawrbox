@@ -3,6 +3,7 @@
 #include <rawrbox/math/vector4.hpp>
 #include <rawrbox/render/bindless.hpp>
 #include <rawrbox/render/textures/base.hpp>
+#include <rawrbox/render/textures/render.hpp>
 
 namespace rawrbox {
 	class PostProcessBase {
@@ -11,15 +12,13 @@ namespace rawrbox {
 		Diligent::IPipelineState* _pipeline = nullptr;
 		bool _enabled = true;
 
-#ifdef UINT_DATA
-		std::array<rawrbox::Vector4u, RB_RENDER_MAX_POST_DATA> _data = {};
-#else
 		std::array<rawrbox::Vector4f, RB_RENDER_MAX_POST_DATA> _data = {};
-#endif
 
 		// LOGGER ------
 		std::unique_ptr<rawrbox::Logger> _logger = std::make_unique<rawrbox::Logger>("RawrBox-PostProcess");
 		// -------------
+
+		virtual void draw(Diligent::IPipelineState* pipeline, const rawrbox::TextureRender& target, const rawrbox::Vector4u& textureIDs);
 
 	public:
 		PostProcessBase() = default;
@@ -30,7 +29,7 @@ namespace rawrbox {
 		virtual ~PostProcessBase() = default;
 
 		virtual void init();
-		virtual void applyEffect(const rawrbox::TextureBase& texture);
+		virtual void applyEffect(const rawrbox::TextureBase& source, const rawrbox::TextureRender& target, uint32_t depthID);
 
 		virtual void setEnabled(bool enabled);
 		[[nodiscard]] virtual bool isEnabled() const;
