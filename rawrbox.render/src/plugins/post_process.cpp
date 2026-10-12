@@ -73,9 +73,8 @@ namespace rawrbox {
 
 		// Apply post-processing ---
 		std::array<rawrbox::TextureRender*, 2> targets = {
-			renderTarget,
-			this->_swapTexture.get()
-		};
+		    renderTarget,
+		    this->_swapTexture.get()};
 
 		size_t read = 0;
 		for (const auto& process : this->_postProcesses) {
