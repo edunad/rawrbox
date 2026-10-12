@@ -44,7 +44,7 @@ namespace post_process {
 		this->_fog->setEnabled(false);
 
 		this->_dither = postProcess->add<rawrbox::PostProcessDither>(rawrbox::DITHER_MODE::SLOW_MODE);
-		this->_bloom = postProcess->add<rawrbox::PostProcessQuickBloom>(0.015F);
+		this->_bloom = postProcess->add<rawrbox::PostProcessQuickBloom>(0.05F);
 		this->_noise = postProcess->add<rawrbox::PostProcessNoise>(0.1F);
 		//   -----------------------
 

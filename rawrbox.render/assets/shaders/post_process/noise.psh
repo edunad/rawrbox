@@ -3,7 +3,7 @@
 
 // ## MAPPING ----------------
 #define NoiseIntensity PostProcessConstants.data[0].x
-#define NoiseTimer     PostProcessConstants.data[0].y
+#define NoiseFrame     asuint(PostProcessConstants.data[0].y)
 // ========================
 
 Texture2DArray g_Textures[];
@@ -18,11 +18,6 @@ struct PSOutput {
 	float4 Color : SV_TARGET;
 };
 
-uint3 hash(float2 s) {
-	uint4 u = uint4(s, uint(s.x) ^ uint(s.y), uint(s.x) + uint(s.y));
-	return pcg3d(u.xyz);
-}
-
 void main(in PSInput PSIn, out PSOutput PSOut) {
 #if defined(DESKTOP_GL) || defined(GL_ES)
 	float3 UV = float3(PSIn.UV.x, 1.0 - PSIn.UV.y, 0);
@@ -31,7 +26,7 @@ void main(in PSInput PSIn, out PSOutput PSOut) {
 #endif
 
 	float4 Color = g_Textures[PostProcessConstants.textureID].Sample(g_Sampler, UV);
-	float3 h = hash(UV.xy * 3000.0 * NoiseTimer);
+	uint3 h = pcg3d(uint3(uint2(PSIn.Pos.xy), NoiseFrame));
 	float a = float(h.x) * (1.0 / float(0xffffffffu));
 	float3 noise = float3(a, a, a) * NoiseIntensity;
 
