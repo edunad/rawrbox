@@ -53,14 +53,12 @@ namespace rawrbox {
 			return {std::max(this->min.x, bounds.min.x), std::max(this->min.y, bounds.min.y), std::min(this->max.x, bounds.max.x), std::min(this->max.y, bounds.max.y)};
 		}
 
-		// 8 bits per edge (0 - 255), empty packs as min 255 / max 0 ---
 		[[nodiscard]] uint32_t pack() const
 			requires std::is_integral_v<NumberType>
 		{
 			if (this->isEmpty()) return 0x0000FFFFU;
 			return static_cast<uint32_t>(this->min.x) | (static_cast<uint32_t>(this->min.y) << 8U) | (static_cast<uint32_t>(this->max.x) << 16U) | (static_cast<uint32_t>(this->max.y) << 24U);
 		}
-		// -----------
 
 		[[nodiscard]] RectType expand(NumberType amount) const {
 			if (this->isEmpty()) return *this;

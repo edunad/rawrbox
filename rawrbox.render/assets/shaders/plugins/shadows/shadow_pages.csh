@@ -34,7 +34,7 @@ RWTexture2DArray<uint> ShadowPoolRW;
 #define DRAW_ARGS_STRIDE 20u
 
 groupshared uint EvictCutoff;
-groupshared uint EvictRemainder;
+groupshared uint EvictRemain;
 
 // https://ktstephano.github.io/rendering/stratusgfx/svsm
 
@@ -199,7 +199,7 @@ void Evict(uint3 id : SV_DispatchThreadID, uint3 groupThreadId : SV_GroupThreadI
 		uint demand = ShadowAllocator[1];
 
 		EvictCutoff = 0xFFFFFFFFu;
-		EvictRemainder = 0u;
+		EvictRemain = 0u;
 
 		if (demand > free) {
 			uint deficit = demand - free;
@@ -210,7 +210,7 @@ void Evict(uint3 id : SV_DispatchThreadID, uint3 groupThreadId : SV_GroupThreadI
 				uint count = ShadowAges[age];
 				if (total + count >= deficit) {
 					EvictCutoff = age;
-					EvictRemainder = deficit - total;
+					EvictRemain = deficit - total;
 					break;
 				}
 
@@ -233,7 +233,7 @@ void Evict(uint3 id : SV_DispatchThreadID, uint3 groupThreadId : SV_GroupThreadI
 	if (age == EvictCutoff) {
 		uint evicted;
 		InterlockedAdd(ShadowAges[0], 1u, evicted);
-		if (evicted >= EvictRemainder) return;
+		if (evicted >= EvictRemain) return;
 	}
 
 	uint stack;
