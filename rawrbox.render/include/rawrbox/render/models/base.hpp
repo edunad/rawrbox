@@ -7,8 +7,6 @@
 #include <rawrbox/utils/dirty_ranges.hpp>
 #include <rawrbox/utils/string.hpp>
 
-#include <MapHelper.hpp>
-
 #include <Buffer.h>
 
 namespace rawrbox {
@@ -360,19 +358,18 @@ namespace rawrbox {
 			// CONSTANTS ----
 			const auto clip = rawrbox::RENDERER->getPassCamera()->getViewProjMtx() * this->getMatrix();
 
-			{
-				Diligent::MapHelper<rawrbox::CullConstants> constants(context, occlusion->getCullConstants(), Diligent::MAP_WRITE, Diligent::MAP_FLAG_DISCARD);
-				if (constants == nullptr) RAWRBOX_CRITICAL("Failed to map the culling constants");
-
-				for (uint32_t i = 0; i < 4; i++) {
-					constants->clip[i] = {clip[i], clip[4 + i], clip[8 + i], clip[12 + i]};
-				}
-
-				constants->center = {(bounds.min + bounds.max) * 0.5F, 0.F};
-				constants->extents = {bounds.size * 0.5F, 0.F};
-				constants->settings = {total, mode == rawrbox::CullPass::LATE ? 1U : 0U, this->_resetVIS || mode == rawrbox::CullPass::FRUSTUM ? 1U : 0U, occlusion->getMips()};
-				constants->hiz = {occlusion->getSize().x, occlusion->getSize().y, this->_cullCompact ? 0U : 1U, 0U};
+			rawrbox::CullConstants constants = {};
+			for (uint32_t i = 0; i < 4; i++) {
+				constants.clip[i] = {clip[i], clip[4 + i], clip[8 + i], clip[12 + i]};
 			}
+
+			constants.center = {(bounds.min + bounds.max) * 0.5F, 0.F};
+			constants.extents = {bounds.size * 0.5F, 0.F};
+			constants.settings = {total, mode == rawrbox::CullPass::LATE ? 1U : 0U, this->_resetVIS || mode == rawrbox::CullPass::FRUSTUM ? 1U : 0U, occlusion->getMips()};
+			constants.hiz = {occlusion->getSize().x, occlusion->getSize().y, this->_cullCompact ? 0U : 1U, 0U};
+
+			// Re-use the buffer, so AMD stops whining
+			bind->GetVariableByName(Diligent::SHADER_TYPE_COMPUTE, "CullConstants")->SetInlineConstants(&constants, 0, sizeof(rawrbox::CullConstants) / sizeof(uint32_t));
 
 			if (mode == rawrbox::CullPass::LATE) this->_resetVIS = false;
 			if (mode != rawrbox::CullPass::LATE && this->_cullCompact) context->UpdateBuffer(this->_argsBuffer, 0, this->_cullArgs.size() * sizeof(uint32_t), this->_cullArgs.data(), Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);

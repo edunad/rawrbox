@@ -38,7 +38,7 @@ namespace rawrbox {
 		rawrbox::Vector4u settings = {};
 		rawrbox::Vector4u hiz = {};
 	};
-
+	
 	class Occlusion {
 	protected:
 		Diligent::IPipelineState* _depthReduceProgram = nullptr;
@@ -62,7 +62,6 @@ namespace rawrbox {
 		// CULLING (shared by every model, per dispatch resources are dynamic) ---
 		Diligent::IPipelineState* _cullProgram = nullptr;
 		Diligent::RefCntAutoPtr<Diligent::IShaderResourceBinding> _cullBind;
-		Diligent::RefCntAutoPtr<Diligent::IBuffer> _cullConstants;
 		// -----------
 
 		std::vector<rawrbox::OcclusionDraw*> _lateDraw = {};
@@ -103,7 +102,6 @@ namespace rawrbox {
 
 		[[nodiscard]] virtual Diligent::IPipelineState* getCullProgram() const;
 		[[nodiscard]] virtual Diligent::IShaderResourceBinding* getCullBind() const;
-		[[nodiscard]] virtual Diligent::IBuffer* getCullConstants() const;
 
 		virtual void setEnabled(bool enabled);
 		[[nodiscard]] virtual bool isEnabled() const;

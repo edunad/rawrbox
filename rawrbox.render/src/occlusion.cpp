@@ -16,7 +16,6 @@ namespace rawrbox {
 		RAWRBOX_DESTROY(this->_depthBind);
 		RAWRBOX_DESTROY(this->_reduceBind);
 		RAWRBOX_DESTROY(this->_cullBind);
-		RAWRBOX_DESTROY(this->_cullConstants);
 
 		this->_depthReduceProgram = nullptr;
 		this->_reduceProgram = nullptr;
@@ -46,10 +45,11 @@ namespace rawrbox {
 		cull.pCS = "instance_cull.csh";
 		cull.resourceType = Diligent::SHADER_RESOURCE_VARIABLE_TYPE_MUTABLE;
 		cull.resources = {
-		    {Diligent::SHADER_TYPE_COMPUTE, "Instances", Diligent::SHADER_RESOURCE_VARIABLE_TYPE_DYNAMIC},
-		    {Diligent::SHADER_TYPE_COMPUTE, "VisibleInstances", Diligent::SHADER_RESOURCE_VARIABLE_TYPE_DYNAMIC},
-		    {Diligent::SHADER_TYPE_COMPUTE, "Visibility", Diligent::SHADER_RESOURCE_VARIABLE_TYPE_DYNAMIC},
-		    {Diligent::SHADER_TYPE_COMPUTE, "DrawArgs", Diligent::SHADER_RESOURCE_VARIABLE_TYPE_DYNAMIC},
+		    {Diligent::SHADER_TYPE_COMPUTE, "CullConstants", Diligent::SHADER_RESOURCE_VARIABLE_TYPE_DYNAMIC, Diligent::SHADER_VARIABLE_FLAG_INLINE_CONSTANTS},
+		    {Diligent::SHADER_TYPE_COMPUTE, "Instances", Diligent::SHADER_RESOURCE_VARIABLE_TYPE_DYNAMIC, Diligent::SHADER_VARIABLE_FLAG_NO_DYNAMIC_BUFFERS},
+		    {Diligent::SHADER_TYPE_COMPUTE, "VisibleInstances", Diligent::SHADER_RESOURCE_VARIABLE_TYPE_DYNAMIC, Diligent::SHADER_VARIABLE_FLAG_NO_DYNAMIC_BUFFERS},
+		    {Diligent::SHADER_TYPE_COMPUTE, "Visibility", Diligent::SHADER_RESOURCE_VARIABLE_TYPE_DYNAMIC, Diligent::SHADER_VARIABLE_FLAG_NO_DYNAMIC_BUFFERS},
+		    {Diligent::SHADER_TYPE_COMPUTE, "DrawArgs", Diligent::SHADER_RESOURCE_VARIABLE_TYPE_DYNAMIC, Diligent::SHADER_VARIABLE_FLAG_NO_DYNAMIC_BUFFERS},
 		    {Diligent::SHADER_TYPE_COMPUTE, "HiZ", Diligent::SHADER_RESOURCE_VARIABLE_TYPE_DYNAMIC}};
 
 		cull.macros.AddShaderMacro("CULL_THREADS", CULL_THREADS);
@@ -58,17 +58,6 @@ namespace rawrbox {
 		this->_cullProgram->CreateShaderResourceBinding(&this->_cullBind, true);
 		if (this->_cullBind == nullptr) RAWRBOX_CRITICAL("Failed to create culling binding");
 
-		Diligent::BufferDesc constantsDesc;
-		constantsDesc.Name = "RawrBox::Buffer::Cull::Constants";
-		constantsDesc.Usage = Diligent::USAGE_DYNAMIC;
-		constantsDesc.CPUAccessFlags = Diligent::CPU_ACCESS_WRITE;
-		constantsDesc.BindFlags = Diligent::BIND_UNIFORM_BUFFER;
-		constantsDesc.Size = sizeof(rawrbox::CullConstants);
-
-		rawrbox::RENDERER->device()->CreateBuffer(constantsDesc, nullptr, &this->_cullConstants);
-		if (this->_cullConstants == nullptr) RAWRBOX_CRITICAL("Failed to create culling constants");
-
-		this->_cullBind->GetVariableByName(Diligent::SHADER_TYPE_COMPUTE, "CullConstants")->Set(this->_cullConstants);
 		// -----------
 
 		this->resize(camera.getRenderTarget()->getSize());
@@ -188,7 +177,6 @@ namespace rawrbox {
 
 	Diligent::IPipelineState* Occlusion::getCullProgram() const { return this->_cullProgram; }
 	Diligent::IShaderResourceBinding* Occlusion::getCullBind() const { return this->_cullBind; }
-	Diligent::IBuffer* Occlusion::getCullConstants() const { return this->_cullConstants; }
 
 	uint32_t Occlusion::getMips() const { return this->_built ? static_cast<uint32_t>(this->_mips.size()) : 0U; }
 

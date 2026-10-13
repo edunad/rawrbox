@@ -143,7 +143,7 @@ namespace rawrbox {
 		template <typename T = rawrbox::RenderPlugin>
 			requires(std::derived_from<T, rawrbox::RenderPlugin>)
 		[[nodiscard]] T* getPlugin(const std::string& id) const {
-			auto fnd = this->_renderPlugins.find(id);
+			const auto fnd = this->_renderPlugins.find(id);
 			if (fnd == this->_renderPlugins.end()) return nullptr;
 
 			return dynamic_cast<T*>(fnd->second.get());

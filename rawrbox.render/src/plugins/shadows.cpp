@@ -64,7 +64,6 @@ namespace rawrbox {
 
 		// Cleanup ----
 		RAWRBOX_DESTROY(this->_constants);
-		RAWRBOX_DESTROY(this->_drawConstants);
 
 		RAWRBOX_DESTROY(this->_pageTable);
 		RAWRBOX_DESTROY(this->_requests);
@@ -196,7 +195,6 @@ namespace rawrbox {
 		this->_signature->GetStaticVariableByName(Diligent::SHADER_TYPE_COMPUTE, "ShadowFeedback")->Set(this->_feedbackBuffer->GetDefaultView(Diligent::BUFFER_VIEW_UNORDERED_ACCESS));
 		this->_signature->GetStaticVariableByName(Diligent::SHADER_TYPE_COMPUTE, "ShadowDrawArgs")->Set(this->_drawArgsBuffer->GetDefaultView(Diligent::BUFFER_VIEW_UNORDERED_ACCESS));
 		this->_signature->GetStaticVariableByName(Diligent::SHADER_TYPE_COMPUTE, "ShadowCull")->Set(this->_cullBuffer->GetDefaultView(Diligent::BUFFER_VIEW_UNORDERED_ACCESS));
-		this->_signature->GetStaticVariableByName(Diligent::SHADER_TYPE_COMPUTE, "ShadowDraw")->Set(this->_drawConstants);
 		this->_signature->GetStaticVariableByName(Diligent::SHADER_TYPE_COMPUTE, "ShadowInvalidations")->Set(this->_invalidationBuffer->GetDefaultView(Diligent::BUFFER_VIEW_SHADER_RESOURCE));
 		this->_signature->GetStaticVariableByName(Diligent::SHADER_TYPE_COMPUTE, "ShadowBatchRects")->Set(this->_batchRectBuffer->GetDefaultView(Diligent::BUFFER_VIEW_SHADER_RESOURCE));
 		this->_signature->GetStaticVariableByName(Diligent::SHADER_TYPE_COMPUTE, "ShadowFaceRects")->Set(this->_faceRectBuffer->GetDefaultView(Diligent::BUFFER_VIEW_UNORDERED_ACCESS));
@@ -226,7 +224,6 @@ namespace rawrbox {
 		// ---------------
 
 		this->_casterSignature->GetStaticVariableByName(Diligent::SHADER_TYPE_VERTEX, "ShadowViews")->Set(this->_viewBuffer->GetDefaultView(Diligent::BUFFER_VIEW_SHADER_RESOURCE));
-		this->_casterSignature->GetStaticVariableByName(Diligent::SHADER_TYPE_VERTEX, "ShadowDraw")->Set(this->_drawConstants);
 		this->_casterSignature->GetStaticVariableByName(Diligent::SHADER_TYPE_VERTEX, "ShadowSlots")->Set(this->_slotBuffer->GetDefaultView(Diligent::BUFFER_VIEW_SHADER_RESOURCE));
 		this->_casterSignature->GetStaticVariableByName(Diligent::SHADER_TYPE_GEOMETRY, "ShadowPages")->Set(this->_pageTable->GetDefaultView(Diligent::BUFFER_VIEW_SHADER_RESOURCE));
 		this->_casterSignature->GetStaticVariableByName(Diligent::SHADER_TYPE_GEOMETRY, "ShadowRects")->Set(this->_rectBuffer->GetDefaultView(Diligent::BUFFER_VIEW_SHADER_RESOURCE));
@@ -670,7 +667,6 @@ namespace rawrbox {
 		if (this->_cullCasters.empty()) return;
 		rawrbox::RENDERER->context()->UpdateBuffer(this->_cullBuffer, 0, this->_cullData.size() * sizeof(rawrbox::Vector4u), this->_cullData.data(), Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
 
-		this->_drawView = {std::numeric_limits<uint32_t>::max(), std::numeric_limits<uint32_t>::max()};
 		for (const auto& cull : this->_cullCasters) {
 			this->_signatureBind->GetVariableByName(Diligent::SHADER_TYPE_COMPUTE, "Instances")->Set(cull.instances.instances->GetDefaultView(Diligent::BUFFER_VIEW_SHADER_RESOURCE));
 			this->_signatureBind->GetVariableByName(Diligent::SHADER_TYPE_COMPUTE, "ShadowIndices")->Set(cull.instances.indices->GetDefaultView(Diligent::BUFFER_VIEW_UNORDERED_ACCESS));
@@ -989,10 +985,12 @@ namespace rawrbox {
 		if (this->_drawView.x == first && this->_drawView.y == offset) return;
 		this->_drawView = {first, offset};
 
-		Diligent::MapHelper<rawrbox::Vector4u> data(rawrbox::RENDERER->context(), this->_drawConstants, Diligent::MAP_WRITE, Diligent::MAP_FLAG_DISCARD);
-		if (data == nullptr) RAWRBOX_CRITICAL("Failed to map the shadow draw constants buffer!");
+		const rawrbox::Vector4u data = {first, offset, 0U, 0U};
 
-		*data = {first, offset, 0U, 0U};
+		// Re-use the buffer, so AMD stops whining
+		this->_casterBind->GetVariableByName(Diligent::SHADER_TYPE_VERTEX, "ShadowDraw")->SetInlineConstants(&data, 0, 4);
+		this->_signatureBind->GetVariableByName(Diligent::SHADER_TYPE_COMPUTE, "ShadowDraw")->SetInlineConstants(&data, 0, 4);
+		// -----------------------------------------
 	}
 	// ---------
 
@@ -1255,17 +1253,6 @@ namespace rawrbox {
 			if (this->_constants == nullptr) RAWRBOX_CRITICAL("Failed to create buffer '{}'", desc.Name);
 		}
 
-		{
-			Diligent::BufferDesc desc;
-			desc.Name = "RawrBox::Shadows::Draw";
-			desc.Usage = Diligent::USAGE_DYNAMIC;
-			desc.CPUAccessFlags = Diligent::CPU_ACCESS_WRITE;
-			desc.BindFlags = Diligent::BIND_UNIFORM_BUFFER;
-			desc.Size = sizeof(rawrbox::Vector4u);
-
-			device->CreateBuffer(desc, nullptr, &this->_drawConstants);
-			if (this->_drawConstants == nullptr) RAWRBOX_CRITICAL("Failed to create buffer '{}'", desc.Name);
-		}
 		// -------------
 
 		// Page table, the coarse mip of every face is always backed by a reserved page ---
@@ -1325,7 +1312,6 @@ namespace rawrbox {
 		// BARRIER -----
 		const std::vector<Diligent::StateTransitionDesc> barriers = {
 		    {this->_constants, Diligent::RESOURCE_STATE_UNKNOWN, Diligent::RESOURCE_STATE_CONSTANT_BUFFER, Diligent::STATE_TRANSITION_FLAG_UPDATE_STATE},
-		    {this->_drawConstants, Diligent::RESOURCE_STATE_UNKNOWN, Diligent::RESOURCE_STATE_CONSTANT_BUFFER, Diligent::STATE_TRANSITION_FLAG_UPDATE_STATE},
 		    {this->_pageTable, Diligent::RESOURCE_STATE_UNKNOWN, Diligent::RESOURCE_STATE_SHADER_RESOURCE, Diligent::STATE_TRANSITION_FLAG_UPDATE_STATE},
 		    {this->_requests, Diligent::RESOURCE_STATE_UNKNOWN, Diligent::RESOURCE_STATE_UNORDERED_ACCESS, Diligent::STATE_TRANSITION_FLAG_UPDATE_STATE},
 		    {this->_physOwner, Diligent::RESOURCE_STATE_UNKNOWN, Diligent::RESOURCE_STATE_UNORDERED_ACCESS, Diligent::STATE_TRANSITION_FLAG_UPDATE_STATE},
@@ -1436,7 +1422,7 @@ namespace rawrbox {
 			{Diligent::SHADER_TYPE_COMPUTE, "ShadowDrawArgs", 1, Diligent::SHADER_RESOURCE_TYPE_BUFFER_UAV, stat, buffer},
 
 			{Diligent::SHADER_TYPE_COMPUTE, "ShadowCull", 1, Diligent::SHADER_RESOURCE_TYPE_BUFFER_UAV, stat, buffer},
-			{Diligent::SHADER_TYPE_COMPUTE, "ShadowDraw", 1, Diligent::SHADER_RESOURCE_TYPE_CONSTANT_BUFFER, stat},
+			{Diligent::SHADER_TYPE_COMPUTE, "ShadowDraw", 4, Diligent::SHADER_RESOURCE_TYPE_CONSTANT_BUFFER, Diligent::SHADER_RESOURCE_VARIABLE_TYPE_DYNAMIC, Diligent::PIPELINE_RESOURCE_FLAG_INLINE_CONSTANTS},
 
 			{Diligent::SHADER_TYPE_COMPUTE, "Instances", 1, Diligent::SHADER_RESOURCE_TYPE_BUFFER_SRV, Diligent::SHADER_RESOURCE_VARIABLE_TYPE_DYNAMIC, buffer},
 			{Diligent::SHADER_TYPE_COMPUTE, "ShadowIndices", 1, Diligent::SHADER_RESOURCE_TYPE_BUFFER_UAV, Diligent::SHADER_RESOURCE_VARIABLE_TYPE_DYNAMIC, buffer},
@@ -1475,7 +1461,7 @@ namespace rawrbox {
 		createSignature("RawrBox::SIGNATURE::Shadows::Caster", 1,
 		    {
 			{Diligent::SHADER_TYPE_VERTEX, "ShadowViews", 1, Diligent::SHADER_RESOURCE_TYPE_BUFFER_SRV, stat, buffer},
-			{Diligent::SHADER_TYPE_VERTEX, "ShadowDraw", 1, Diligent::SHADER_RESOURCE_TYPE_CONSTANT_BUFFER, stat},
+			{Diligent::SHADER_TYPE_VERTEX, "ShadowDraw", 4, Diligent::SHADER_RESOURCE_TYPE_CONSTANT_BUFFER, Diligent::SHADER_RESOURCE_VARIABLE_TYPE_DYNAMIC, Diligent::PIPELINE_RESOURCE_FLAG_INLINE_CONSTANTS},
 			{Diligent::SHADER_TYPE_VERTEX | Diligent::SHADER_TYPE_GEOMETRY, "ShadowSlots", 1, Diligent::SHADER_RESOURCE_TYPE_BUFFER_SRV, stat, buffer},
 
 			{Diligent::SHADER_TYPE_GEOMETRY, "ShadowPages", 1, Diligent::SHADER_RESOURCE_TYPE_BUFFER_SRV, stat, buffer},

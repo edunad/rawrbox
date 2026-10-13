@@ -157,7 +157,7 @@ namespace rawrbox {
 
 		// Instanced ---
 		constexpr Diligent::PipelineResourceDesc instances = {
-		    Diligent::SHADER_TYPE_VERTEX, "Instances", 1, Diligent::SHADER_RESOURCE_TYPE_BUFFER_SRV, Diligent::SHADER_RESOURCE_VARIABLE_TYPE_DYNAMIC};
+		    Diligent::SHADER_TYPE_VERTEX, "Instances", 1, Diligent::SHADER_RESOURCE_TYPE_BUFFER_SRV, Diligent::SHADER_RESOURCE_VARIABLE_TYPE_DYNAMIC, Diligent::PIPELINE_RESOURCE_FLAG_NO_DYNAMIC_BUFFERS};
 
 		Diligent::PipelineResourceSignatureDesc instanceDesc;
 		instanceDesc.Name = "RawrBox::SIGNATURE::INSTANCES";

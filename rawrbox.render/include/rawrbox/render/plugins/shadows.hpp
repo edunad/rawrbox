@@ -206,8 +206,7 @@ namespace rawrbox {
 
 		// BUFFERS ---
 		Diligent::RefCntAutoPtr<Diligent::IBuffer> _constants;
-		Diligent::RefCntAutoPtr<Diligent::IBuffer> _drawConstants;
-
+		
 		Diligent::RefCntAutoPtr<Diligent::IBuffer> _pageTable;
 		Diligent::RefCntAutoPtr<Diligent::IBuffer> _requests;
 
