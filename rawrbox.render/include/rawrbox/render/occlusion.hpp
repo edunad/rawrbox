@@ -38,7 +38,7 @@ namespace rawrbox {
 		rawrbox::Vector4u settings = {};
 		rawrbox::Vector4u hiz = {};
 	};
-	
+
 	class Occlusion {
 	protected:
 		Diligent::IPipelineState* _depthReduceProgram = nullptr;
@@ -59,7 +59,7 @@ namespace rawrbox {
 #endif
 		// -----------
 
-		// CULLING (shared by every model, per dispatch resources are dynamic) ---
+		// CULLING ---
 		Diligent::IPipelineState* _cullProgram = nullptr;
 		Diligent::RefCntAutoPtr<Diligent::IShaderResourceBinding> _cullBind;
 		// -----------

@@ -132,7 +132,8 @@ namespace rawrbox {
 
 	struct ShadowCullCaster {
 		rawrbox::ShadowCaster* caster = nullptr;
-		uint32_t entry = 0; // Params, then one counter per active slot
+		uint32_t entry = 0;
+
 		rawrbox::ShadowInstances instances = {};
 	};
 
@@ -206,7 +207,7 @@ namespace rawrbox {
 
 		// BUFFERS ---
 		Diligent::RefCntAutoPtr<Diligent::IBuffer> _constants;
-		
+
 		Diligent::RefCntAutoPtr<Diligent::IBuffer> _pageTable;
 		Diligent::RefCntAutoPtr<Diligent::IBuffer> _requests;
 
@@ -352,9 +353,10 @@ namespace rawrbox {
 		static constexpr uint32_t DRAW_ARGS = 5U;
 
 		static constexpr uint32_t MAX_CULL_ENTRIES = 4096U;
-		static constexpr uint32_t CULL_PARAMS = 5U; // Must match shadow_cull.csh
+		static constexpr uint32_t CULL_PARAMS = 5U;
+		
 		static constexpr uint32_t NO_COUNTER = 0xFFFFFFFFU;
-		static constexpr uint32_t COUNTED = 0x80000000U; // Must match SHADOW_COUNTED
+		static constexpr uint32_t COUNTED = 0x80000000U;
 
 		static constexpr int MOTION_MARGIN = 4;
 

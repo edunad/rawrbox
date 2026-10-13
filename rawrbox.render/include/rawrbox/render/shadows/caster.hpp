@@ -31,8 +31,8 @@ namespace rawrbox {
 	};
 
 	struct ShadowInstances {
-		Diligent::IBuffer* instances = nullptr; // StructuredBuffer<Instance>
-		Diligent::IBuffer* indices = nullptr;   // Per light lists, filled by the shadow plugin
+		Diligent::IBuffer* instances = nullptr;
+		Diligent::IBuffer* indices = nullptr;
 
 		rawrbox::Matrix4x4 matrix = {};
 		rawrbox::BBOX bounds = {}; // Instance template bounds
@@ -43,10 +43,10 @@ namespace rawrbox {
 
 	struct ShadowDraw {
 		static constexpr uint32_t ALL_VIEWS = 0xFFFFFFFFU;
-
 		uint32_t views = 0;
+
 		bool bind = true;
-		bool culled = false; // Draw the ShadowInstances::indices lists
+		bool culled = false;
 
 		std::function<void(uint32_t view)> setView = {};
 		std::function<bool(const rawrbox::BBOX& bounds)> isVisible = {};
@@ -71,7 +71,7 @@ namespace rawrbox {
 		[[nodiscard]] virtual bool canCastShadows() const = 0;
 		[[nodiscard]] virtual rawrbox::BBOX getShadowBounds() = 0;
 		[[nodiscard]] virtual bool getShadowInstances(rawrbox::ShadowInstances& /*instances*/) { return false; }
-		
+
 		virtual void drawShadow(const rawrbox::ShadowDraw& draw) = 0;
 	};
 } // namespace rawrbox

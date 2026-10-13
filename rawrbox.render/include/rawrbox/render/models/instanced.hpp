@@ -24,8 +24,6 @@ namespace rawrbox {
 		rawrbox::BBOX _instanceBounds = {};
 		uint32_t _capacity = 0;
 
-		static constexpr uint32_t SHADOW_LISTS = 2U; // Index lists per instance, enough for every instance to be in reach of two shadow lights
-
 		void updateBuffers() override {
 			rawrbox::ModelBase<M>::updateBuffers();
 			this->updateInstances();
@@ -54,14 +52,14 @@ namespace rawrbox {
 			if (this->_directIndices == nullptr) RAWRBOX_CRITICAL("Failed to create direct instance indices");
 			// -----------
 
-			// SHADOW INDICES (per light lists, filled by the shadow plugin) ---
+			// SHADOW INDICES ---
 			Diligent::BufferDesc shadowDesc;
 			shadowDesc.Name = "RawrBox::Buffer::Instance::Shadow";
 			shadowDesc.Usage = Diligent::USAGE_DEFAULT;
 			shadowDesc.Mode = Diligent::BUFFER_MODE_STRUCTURED;
 			shadowDesc.BindFlags = Diligent::BIND_VERTEX_BUFFER | Diligent::BIND_UNORDERED_ACCESS;
 			shadowDesc.ElementByteStride = sizeof(uint32_t);
-			shadowDesc.Size = indices.size() * SHADOW_LISTS * sizeof(uint32_t);
+			shadowDesc.Size = indices.size() * 2U * sizeof(uint32_t);
 
 			device->CreateBuffer(shadowDesc, nullptr, &this->_shadowIndices);
 			if (this->_shadowIndices == nullptr) RAWRBOX_CRITICAL("Failed to create shadow instance indices");

@@ -34,9 +34,10 @@ namespace rawrbox {
 
 	enum class CullPass {
 		FRUSTUM = 0,
+		EARLY,
+		LATE,
 
-		EARLY = 1,
-		LATE = 2
+		COUNT
 	};
 
 	struct ModelOriginalData {
@@ -324,7 +325,8 @@ namespace rawrbox {
 			device->CreateBuffer(visibleDesc, nullptr, &this->_visibleBuffer);
 			device->CreateBuffer(visibilityDesc, nullptr, &this->_visibility);
 			device->CreateBuffer(argsDesc, nullptr, &this->_argsBuffer);
-			if (this->_visibleBuffer == nullptr || this->_visibility == nullptr || this->_argsBuffer == nullptr) RAWRBOX_CRITICAL("Failed to create culling buffers");
+			if (this->_visibleBuffer == nullptr || this->_visibility == nullptr || this->_argsBuffer == nullptr)
+				RAWRBOX_CRITICAL("Failed to create culling buffers");
 
 			this->_cullArgs.assign(static_cast<size_t>(std::max(draws, 1U)) * DRAW_ARGS, 0U);
 			this->_resetVIS = true;
@@ -341,12 +343,14 @@ namespace rawrbox {
 			if (occlusion == nullptr) RAWRBOX_CRITICAL("occlusion is not initialized!");
 
 			const uint32_t groups = rawrbox::MathUtils::divideRound(total, rawrbox::Occlusion::CULL_THREADS);
-			if (groups > rawrbox::Occlusion::CULL_MAX_GROUPS) RAWRBOX_CRITICAL("Too many items to cull ({}), max is {}", total, rawrbox::Occlusion::CULL_MAX_GROUPS * rawrbox::Occlusion::CULL_THREADS);
+			if (groups > rawrbox::Occlusion::CULL_MAX_GROUPS)
+				RAWRBOX_CRITICAL("Too many items to cull ({}), max is {}", total, rawrbox::Occlusion::CULL_MAX_GROUPS * rawrbox::Occlusion::CULL_THREADS);
 
 			auto* bind = occlusion->getCullBind();
 
 			// BUFFERS ----
-			if (this->_visibility->GetDesc().Size < static_cast<uint64_t>(total) * sizeof(uint32_t)) RAWRBOX_CRITICAL("Culling buffers are smaller than the items, call createCullBuffers on resize");
+			if (this->_visibility->GetDesc().Size < static_cast<uint64_t>(total) * sizeof(uint32_t))
+				RAWRBOX_CRITICAL("Culling buffers are smaller than the items! Recreate buffers first");
 
 			bind->GetVariableByName(Diligent::SHADER_TYPE_COMPUTE, "Instances")->Set(objects->GetDefaultView(Diligent::BUFFER_VIEW_SHADER_RESOURCE));
 			bind->GetVariableByName(Diligent::SHADER_TYPE_COMPUTE, "VisibleInstances")->Set(this->_visibleBuffer->GetDefaultView(Diligent::BUFFER_VIEW_UNORDERED_ACCESS));
