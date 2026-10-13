@@ -220,7 +220,10 @@ namespace rawrbox {
 			if (this->_dataBuffer == nullptr) RAWRBOX_CRITICAL("Data buffer not valid! Did you call upload()?");
 
 			auto* context = rawrbox::RENDERER->context();
+			if (context == nullptr) RAWRBOX_CRITICAL("Invalid renderer context");
+
 			auto* device = rawrbox::RENDERER->device();
+			if (device == nullptr) RAWRBOX_CRITICAL("Invalid renderer device");
 
 			size_t start = first.value_or(0);
 			if (start > this->_instances.size()) RAWRBOX_CRITICAL("Instance range out of bounds");
@@ -244,8 +247,9 @@ namespace rawrbox {
 			const bool full = total == this->_instances.size();
 			if (full) this->_resetVIS = true;
 
-			// SHADOW BOUNDS (partial updates only grow them) ---
+			// SHADOW BOUNDS ---
 			const auto& local = this->getCachedVertexBounds();
+
 			if (!local.isInfinite()) {
 				for (size_t i = start; i < start + total; i++) {
 					const auto bounds = local.transform(this->_instances[i].getMatrix());
@@ -265,6 +269,7 @@ namespace rawrbox {
 
 		void bindBuffers() override {
 			auto* context = rawrbox::RENDERER->context();
+			if (context == nullptr) RAWRBOX_CRITICAL("Invalid renderer context");
 
 			// Bind vertex and index buffers
 			constexpr std::array<uint64_t, 2> offset = {0, 0};

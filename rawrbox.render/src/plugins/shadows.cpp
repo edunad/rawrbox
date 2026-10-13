@@ -264,6 +264,7 @@ namespace rawrbox {
 	}
 
 	void ShadowPlugin::update() {
+		if (!rawrbox::LIGHTS::isEnabled()) return; // Full bright, no shadows needed
 		if (rawrbox::MAIN_CAMERA == nullptr || this->_slots.empty()) return;
 
 		// Sort shadows based on camera distance ---
@@ -339,7 +340,9 @@ namespace rawrbox {
 	}
 
 	void ShadowPlugin::preRender(const rawrbox::CameraBase& camera) {
-		if (&camera != rawrbox::MAIN_CAMERA) return;
+		if (!rawrbox::LIGHTS::isEnabled()) return;   // Full bright, no shadows needed
+		if (&camera != rawrbox::MAIN_CAMERA) return; // Skip non-main cameras
+
 		if (this->_freeProgram == nullptr) RAWRBOX_CRITICAL("Compute pipelines not initialized, did you call 'upload'");
 		this->_frame++;
 
@@ -357,7 +360,8 @@ namespace rawrbox {
 	}
 
 	void ShadowPlugin::postRender(const rawrbox::CameraBase& camera) {
-		if (&camera != rawrbox::MAIN_CAMERA || this->_activeSlots == 0) return;
+		if (!rawrbox::LIGHTS::isEnabled()) return;                              // Full bright, no shadows needed
+		if (&camera != rawrbox::MAIN_CAMERA || this->_activeSlots == 0) return; // Skip non-main cameras
 
 		auto* context = rawrbox::RENDERER->context();
 		const auto& size = camera.getRenderTarget()->getSize();
