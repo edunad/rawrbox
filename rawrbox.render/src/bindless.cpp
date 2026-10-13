@@ -22,6 +22,8 @@ namespace rawrbox {
 	Diligent::RefCntAutoPtr<Diligent::IPipelineResourceSignature> BindlessManager::signature;
 	Diligent::RefCntAutoPtr<Diligent::IShaderResourceBinding> BindlessManager::signatureBind;
 
+	Diligent::RefCntAutoPtr<Diligent::IPipelineResourceSignature> BindlessManager::instanceSignature;
+	Diligent::RefCntAutoPtr<Diligent::IShaderResourceBinding> BindlessManager::instanceBind;
 	Diligent::RefCntAutoPtr<Diligent::IBuffer> BindlessManager::signatureBufferPixel;
 	Diligent::RefCntAutoPtr<Diligent::IBuffer> BindlessManager::signatureBufferVertex;
 	Diligent::RefCntAutoPtr<Diligent::IBuffer> BindlessManager::signatureBufferVertexSkinned;
@@ -98,6 +100,8 @@ namespace rawrbox {
 
 		RAWRBOX_DESTROY(signature);
 		RAWRBOX_DESTROY(signatureBind);
+		RAWRBOX_DESTROY(instanceBind);
+		RAWRBOX_DESTROY(instanceSignature);
 
 		RAWRBOX_DESTROY(signatureBufferPixel);
 		RAWRBOX_DESTROY(signatureBufferVertex);
@@ -149,6 +153,23 @@ namespace rawrbox {
 		// --------------
 
 		device->CreatePipelineResourceSignature(PRSDesc, &signature);
+		// ----------------------
+
+		// Instanced ---
+		constexpr Diligent::PipelineResourceDesc instances = {
+		    Diligent::SHADER_TYPE_VERTEX, "Instances", 1, Diligent::SHADER_RESOURCE_TYPE_BUFFER_SRV, Diligent::SHADER_RESOURCE_VARIABLE_TYPE_DYNAMIC, Diligent::PIPELINE_RESOURCE_FLAG_NO_DYNAMIC_BUFFERS};
+
+		Diligent::PipelineResourceSignatureDesc instanceDesc;
+		instanceDesc.Name = "RawrBox::SIGNATURE::INSTANCES";
+		instanceDesc.BindingIndex = 2;
+		instanceDesc.Resources = &instances;
+		instanceDesc.NumResources = 1;
+
+		device->CreatePipelineResourceSignature(instanceDesc, &instanceSignature);
+		if (instanceSignature == nullptr) RAWRBOX_CRITICAL("Failed to create instance signature");
+
+		instanceSignature->CreateShaderResourceBinding(&instanceBind, true);
+		if (instanceBind == nullptr) RAWRBOX_CRITICAL("Failed to create instance binding");
 		// ----------------------
 	}
 

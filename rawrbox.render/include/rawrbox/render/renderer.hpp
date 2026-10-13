@@ -4,9 +4,9 @@
 #include <rawrbox/math/vector2.hpp>
 #include <rawrbox/render/cameras/base.hpp>
 #include <rawrbox/render/enums/draw.hpp>
+#include <rawrbox/render/occlusion.hpp>
 #include <rawrbox/render/plugins/base.hpp>
 #include <rawrbox/render/stencil.hpp>
-#include <rawrbox/render/textures/render.hpp>
 #include <rawrbox/render/textures/utils/blit.hpp>
 #include <rawrbox/utils/logger.hpp>
 #include <rawrbox/utils/string.hpp>
@@ -86,11 +86,13 @@ namespace rawrbox {
 		// OTHER HANDLES
 		std::unique_ptr<rawrbox::Logger> _logger = std::make_unique<rawrbox::Logger>("RawrBox-Renderer");
 		std::unique_ptr<rawrbox::Stencil> _stencil = nullptr;
+		std::unique_ptr<rawrbox::Occlusion> _occlusion = nullptr;
 		std::unique_ptr<rawrbox::TextureBLIT> _GPUBlit = nullptr;
 		// -------------
 
 		// CAMERAS ---
 		std::vector<std::unique_ptr<rawrbox::CameraBase>> _cameras = {};
+		rawrbox::CameraBase* _passCamera = nullptr; // Current camera in the render pass
 		// ----------
 
 		// INTRO ------
@@ -141,7 +143,7 @@ namespace rawrbox {
 		template <typename T = rawrbox::RenderPlugin>
 			requires(std::derived_from<T, rawrbox::RenderPlugin>)
 		[[nodiscard]] T* getPlugin(const std::string& id) const {
-			auto fnd = this->_renderPlugins.find(id);
+			const auto fnd = this->_renderPlugins.find(id);
 			if (fnd == this->_renderPlugins.end()) return nullptr;
 
 			return dynamic_cast<T*>(fnd->second.get());
@@ -174,6 +176,7 @@ namespace rawrbox {
 
 		virtual void setActiveCamera(rawrbox::CameraBase* camera) const;
 		[[nodiscard]] virtual rawrbox::CameraBase* getActiveCamera() const;
+		[[nodiscard]] virtual rawrbox::CameraBase* getPassCamera() const;
 
 		[[nodiscard]] virtual rawrbox::CameraBase* getCamera(size_t indx) const;
 		[[nodiscard]] virtual size_t totalCameras() const;
@@ -181,6 +184,7 @@ namespace rawrbox {
 
 		// Utils ----
 		[[nodiscard]] virtual rawrbox::Stencil* stencil() const;
+		[[nodiscard]] virtual rawrbox::Occlusion* occlusion() const;
 
 		// WARNING: NOT THREAD SAFE!!
 		[[nodiscard]] virtual Diligent::IDeviceContext* context() const;

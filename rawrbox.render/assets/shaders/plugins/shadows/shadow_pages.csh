@@ -23,6 +23,7 @@ RWStructuredBuffer<uint> ShadowFeedback;
 RWStructuredBuffer<uint> ShadowFaceRects;
 
 RWByteAddressBuffer ShadowDrawArgs;
+RWStructuredBuffer<uint4> ShadowCull;
 
 RWTexture2DArray<uint> ShadowPoolRW;
 
@@ -333,8 +334,23 @@ void Patch(uint3 id : SV_DispatchThreadID) {
 	}
 	// -----------
 
-	uint instances = !canReach ? 0u : (record.y == SHADOW_ALL_VIEWS ? views * record.z : record.z);
+	// INSTANCED CASTERS ---
+	uint instances = record.z;
+	uint first = 0u;
+
+	if ((record.z & SHADOW_COUNTED) != 0u) {
+		uint4 counter = ShadowCull[record.z & ~SHADOW_COUNTED];
+
+		instances = counter.w;
+		first = counter.z;
+	}
+	// -----------
+
+	if (!canReach) instances = 0u;
+	else if (record.y == SHADOW_ALL_VIEWS) instances *= views;
+
 	ShadowDrawArgs.Store(id.x * DRAW_ARGS_STRIDE + 4u, instances);
+	ShadowDrawArgs.Store(id.x * DRAW_ARGS_STRIDE + 16u, first);
 }
 
 [numthreads(64, 1, 1)]

@@ -1,7 +1,9 @@
 #pragma once
 
 #include <rawrbox/render/materials/unlit.hpp>
+#include <rawrbox/render/occlusion.hpp>
 #include <rawrbox/render/shadows/caster.hpp>
+#include <rawrbox/render/utils/pipeline.hpp>
 #include <rawrbox/utils/dirty_ranges.hpp>
 #include <rawrbox/utils/string.hpp>
 
@@ -30,6 +32,14 @@ namespace rawrbox {
 		RESIZABLE_DYNAMIC = 2
 	};
 
+	enum class CullPass {
+		FRUSTUM = 0,
+		EARLY,
+		LATE,
+
+		COUNT
+	};
+
 	struct ModelOriginalData {
 		rawrbox::Vector3f pos = {};
 		uint32_t normal = {};
@@ -37,7 +47,7 @@ namespace rawrbox {
 
 	template <typename M = rawrbox::MaterialUnlit>
 		requires(std::derived_from<M, rawrbox::MaterialBase>)
-	class ModelBase : public rawrbox::ShadowCaster { // Meh
+	class ModelBase : public rawrbox::ShadowCaster, public rawrbox::OcclusionDraw { // Meh
 
 	protected:
 		Diligent::RefCntAutoPtr<Diligent::IBuffer> _vbh; // Vertices
@@ -63,19 +73,32 @@ namespace rawrbox {
 		bool _vertexBoundsDirty = true;
 		// ----
 
+		// GPU CULLING ---
+		static constexpr uint32_t DRAW_ARGS = 5U;
+
+		Diligent::RefCntAutoPtr<Diligent::IBuffer> _visibleBuffer;
+		Diligent::RefCntAutoPtr<Diligent::IBuffer> _visibility;
+		Diligent::RefCntAutoPtr<Diligent::IBuffer> _argsBuffer;
+
+		std::vector<uint32_t> _cullArgs = {};
+
+		bool _cullCompact = false;
+		bool _resetVIS = true;
+		// ----
+
 		// LOGGER ------
 		std::unique_ptr<rawrbox::Logger> _logger = std::make_unique<rawrbox::Logger>("RawrBox-Model");
 		// -------------
 
 		// BLEND SHAPES ---
-		virtual void calculateOriginalShape() {
-			auto vertSize = static_cast<uint32_t>(this->_mesh->vertices.size());
-			auto indcSize = static_cast<uint32_t>(this->_mesh->indices.size());
+		virtual void calculateBlendShapes() {
+			const auto vertSize = static_cast<uint32_t>(this->_mesh->vertices.size());
+			const auto indcSize = static_cast<uint32_t>(this->_mesh->indices.size());
 
 			auto empty = vertSize == 0 || indcSize == 0;
 			if (empty) RAWRBOX_CRITICAL("Invalid mesh! Missing vertices / indices!");
 
-			// Store original positions for blendstates
+			// Store original positions for blend states
 			this->_original_data.clear();
 			this->_original_data.reserve(vertSize);
 
@@ -93,7 +116,7 @@ namespace rawrbox {
 			if (!this->isUploaded()) RAWRBOX_CRITICAL("Blendshapes require the model to be uploaded!");
 			if (!this->isDynamic()) RAWRBOX_CRITICAL("Blendshapes require the model to be dynamic!");
 
-			if (this->_original_data.empty()) this->calculateOriginalShape(); // Initial setup
+			if (this->_original_data.empty()) this->calculateBlendShapes(); // Initial setup
 
 			for (auto& shape : this->_blend_shapes) {
 				if (!shape.second->isActive() || shape.second->mesh == nullptr) continue;
@@ -137,9 +160,10 @@ namespace rawrbox {
 		virtual void internalUpdate() {
 			if (!this->isUploaded() || !this->isDynamic() || !this->_requiresUpdate) return;
 			auto* context = rawrbox::RENDERER->context();
+			if (context == nullptr) RAWRBOX_CRITICAL("Context is not set!");
 
-			auto vertSize = static_cast<uint64_t>(this->_mesh->vertices.size());
-			auto indcSize = static_cast<uint64_t>(this->_mesh->indices.size());
+			const auto vertSize = static_cast<uint64_t>(this->_mesh->vertices.size());
+			const auto indcSize = static_cast<uint64_t>(this->_mesh->indices.size());
 
 			const bool empty = vertSize == 0 || indcSize == 0;
 
@@ -148,8 +172,8 @@ namespace rawrbox {
 
 			bool resizable = this->_uploadType == rawrbox::UploadType::RESIZABLE_DYNAMIC;
 
-			bool resizeVertex = resizable && sizeVB > this->_vbh->GetDesc().Size;
-			bool resizeIndex = resizable && sizeIB > this->_ibh->GetDesc().Size;
+			const bool resizeVertex = resizable && sizeVB > this->_vbh->GetDesc().Size;
+			const bool resizeIndex = resizable && sizeIB > this->_ibh->GetDesc().Size;
 
 			if (resizeVertex) {
 				RAWRBOX_DESTROY(this->_vbh);
@@ -265,10 +289,109 @@ namespace rawrbox {
 			rawrbox::BarrierUtils::barrier({{this->_ibh, Diligent::RESOURCE_STATE_UNKNOWN, Diligent::RESOURCE_STATE_INDEX_BUFFER, Diligent::STATE_TRANSITION_FLAG_UPDATE_STATE}});
 		}
 
+		// GPU CULLING ---
+		virtual void createCullBuffers(const uint32_t items, const uint32_t draws) {
+			auto* device = rawrbox::RENDERER->device();
+			if (device == nullptr) RAWRBOX_CRITICAL("Device is not set!");
+
+			RAWRBOX_DESTROY(this->_visibleBuffer);
+			RAWRBOX_DESTROY(this->_visibility);
+			RAWRBOX_DESTROY(this->_argsBuffer);
+
+			Diligent::BufferDesc visibleDesc;
+			visibleDesc.Name = "RawrBox::Buffer::Cull::Visible";
+			visibleDesc.Usage = Diligent::USAGE_DEFAULT;
+			visibleDesc.Mode = Diligent::BUFFER_MODE_STRUCTURED;
+			visibleDesc.BindFlags = Diligent::BIND_VERTEX_BUFFER | Diligent::BIND_UNORDERED_ACCESS;
+			visibleDesc.ElementByteStride = sizeof(uint32_t);
+			visibleDesc.Size = static_cast<uint64_t>(this->_cullCompact ? std::max(items, 1U) : 1U) * sizeof(uint32_t);
+
+			Diligent::BufferDesc visibilityDesc;
+			visibilityDesc.Name = "RawrBox::Buffer::Cull::Visibility";
+			visibilityDesc.Usage = Diligent::USAGE_DEFAULT;
+			visibilityDesc.Mode = Diligent::BUFFER_MODE_STRUCTURED;
+			visibilityDesc.BindFlags = Diligent::BIND_UNORDERED_ACCESS;
+			visibilityDesc.ElementByteStride = sizeof(uint32_t);
+			visibilityDesc.Size = static_cast<uint64_t>(std::max(items, 1U)) * sizeof(uint32_t);
+
+			Diligent::BufferDesc argsDesc;
+			argsDesc.Name = "RawrBox::Buffer::Cull::Args";
+			argsDesc.Usage = Diligent::USAGE_DEFAULT;
+			argsDesc.Mode = Diligent::BUFFER_MODE_RAW;
+			argsDesc.BindFlags = Diligent::BIND_UNORDERED_ACCESS | Diligent::BIND_INDIRECT_DRAW_ARGS;
+			argsDesc.ElementByteStride = sizeof(uint32_t);
+			argsDesc.Size = static_cast<uint64_t>(std::max(draws, 1U)) * DRAW_ARGS * sizeof(uint32_t);
+
+			device->CreateBuffer(visibleDesc, nullptr, &this->_visibleBuffer);
+			device->CreateBuffer(visibilityDesc, nullptr, &this->_visibility);
+			device->CreateBuffer(argsDesc, nullptr, &this->_argsBuffer);
+			if (this->_visibleBuffer == nullptr || this->_visibility == nullptr || this->_argsBuffer == nullptr)
+				RAWRBOX_CRITICAL("Failed to create culling buffers");
+
+			this->_cullArgs.assign(static_cast<size_t>(std::max(draws, 1U)) * DRAW_ARGS, 0U);
+			this->_resetVIS = true;
+		}
+
+		virtual void cullObjects(Diligent::IBuffer* objects, uint32_t total, const rawrbox::BBOX& bounds, const rawrbox::CullPass mode) {
+			if (this->_visibility == nullptr) RAWRBOX_CRITICAL("Culling buffers not created!");
+			if (total == 0) return;
+
+			auto* context = rawrbox::RENDERER->context();
+			if (context == nullptr) RAWRBOX_CRITICAL("Context is not initialized!");
+
+			const auto* occlusion = rawrbox::RENDERER->occlusion();
+			if (occlusion == nullptr) RAWRBOX_CRITICAL("occlusion is not initialized!");
+
+			const uint32_t groups = rawrbox::MathUtils::divideRound(total, rawrbox::Occlusion::CULL_THREADS);
+			if (groups > rawrbox::Occlusion::CULL_MAX_GROUPS)
+				RAWRBOX_CRITICAL("Too many items to cull ({}), max is {}", total, rawrbox::Occlusion::CULL_MAX_GROUPS * rawrbox::Occlusion::CULL_THREADS);
+
+			auto* bind = occlusion->getCullBind();
+
+			// BUFFERS ----
+			if (this->_visibility->GetDesc().Size < static_cast<uint64_t>(total) * sizeof(uint32_t))
+				RAWRBOX_CRITICAL("Culling buffers are smaller than the items! Recreate buffers first");
+
+			bind->GetVariableByName(Diligent::SHADER_TYPE_COMPUTE, "Instances")->Set(objects->GetDefaultView(Diligent::BUFFER_VIEW_SHADER_RESOURCE));
+			bind->GetVariableByName(Diligent::SHADER_TYPE_COMPUTE, "VisibleInstances")->Set(this->_visibleBuffer->GetDefaultView(Diligent::BUFFER_VIEW_UNORDERED_ACCESS));
+			bind->GetVariableByName(Diligent::SHADER_TYPE_COMPUTE, "Visibility")->Set(this->_visibility->GetDefaultView(Diligent::BUFFER_VIEW_UNORDERED_ACCESS));
+			bind->GetVariableByName(Diligent::SHADER_TYPE_COMPUTE, "DrawArgs")->Set(this->_argsBuffer->GetDefaultView(Diligent::BUFFER_VIEW_UNORDERED_ACCESS));
+			bind->GetVariableByName(Diligent::SHADER_TYPE_COMPUTE, "HiZ")->Set(occlusion->getHiZ());
+			// -----------
+
+			// CONSTANTS ----
+			const auto clip = rawrbox::RENDERER->getPassCamera()->getViewProjMtx() * this->getMatrix();
+
+			rawrbox::CullConstants constants = {};
+			for (uint32_t i = 0; i < 4; i++) {
+				constants.clip[i] = {clip[i], clip[4 + i], clip[8 + i], clip[12 + i]};
+			}
+
+			constants.center = {(bounds.min + bounds.max) * 0.5F, 0.F};
+			constants.extents = {bounds.size * 0.5F, 0.F};
+			constants.settings = {total, mode == rawrbox::CullPass::LATE ? 1U : 0U, this->_resetVIS || mode == rawrbox::CullPass::FRUSTUM ? 1U : 0U, occlusion->getMips()};
+			constants.hiz = {occlusion->getSize().x, occlusion->getSize().y, this->_cullCompact ? 0U : 1U, 0U};
+
+			// Re-use the buffer, so AMD stops whining
+			bind->GetVariableByName(Diligent::SHADER_TYPE_COMPUTE, "CullConstants")->SetInlineConstants(&constants, 0, sizeof(rawrbox::CullConstants) / sizeof(uint32_t));
+
+			if (mode == rawrbox::CullPass::LATE) this->_resetVIS = false;
+			if (mode != rawrbox::CullPass::LATE && this->_cullCompact) context->UpdateBuffer(this->_argsBuffer, 0, this->_cullArgs.size() * sizeof(uint32_t), this->_cullArgs.data(), Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
+			// -----------
+
+			context->SetPipelineState(occlusion->getCullProgram());
+			context->CommitShaderResources(bind, Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
+
+			Diligent::DispatchComputeAttribs attribs;
+			attribs.ThreadGroupCountX = groups;
+			context->DispatchCompute(attribs);
+		}
+		// -----------
+
 		virtual void createVertexBuffer() {
 			auto* device = rawrbox::RENDERER->device();
 
-			auto vertSize = static_cast<uint64_t>(std::max<size_t>(this->_mesh->vertices.capacity(), this->isDynamic() ? 1U : 0U)); // RESIZABLE requires at least one vertice
+			const auto vertSize = static_cast<uint64_t>(std::max<size_t>(this->_mesh->vertices.capacity(), this->isDynamic() ? 1U : 0U)); // RESIZABLE requires at least one vertice
 			if (vertSize == 0) RAWRBOX_CRITICAL("Vertices data cannot be empty!");
 
 			Diligent::BufferDesc VertBuffDesc;
@@ -298,6 +421,11 @@ namespace rawrbox {
 		ModelBase(const ModelBase&) = delete;
 		ModelBase& operator=(const ModelBase&) = delete;
 		virtual ~ModelBase() {
+			RAWRBOX_DESTROY(this->_visibleBuffer);
+			RAWRBOX_DESTROY(this->_visibility);
+
+			RAWRBOX_DESTROY(this->_argsBuffer);
+
 			RAWRBOX_DESTROY(this->_vbh);
 			RAWRBOX_DESTROY(this->_ibh);
 
@@ -448,6 +576,8 @@ namespace rawrbox {
 			// ----------------------------
 		}
 
+		void drawLate() override {}
+
 		// SHADOWS ---
 		[[nodiscard]] bool canCastShadows() const override {
 			return this->isUploaded() && this->_material != nullptr && this->_material->shadow != nullptr;
@@ -480,7 +610,7 @@ namespace rawrbox {
 			this->_material->bindVertexSkinnedUniforms(mesh);
 			this->_material->bindPixelUniforms(mesh);
 
-			rawrbox::MAIN_CAMERA->setModelTransform(matrix);
+			rawrbox::RENDERER->getPassCamera()->setModelTransform(matrix);
 		}
 
 		void drawShadow(const rawrbox::ShadowDraw& draw) override {

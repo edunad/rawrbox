@@ -93,6 +93,25 @@ TEST_CASE("BBOX should behave as expected", "[rawrbox::BBOX]") {
 		REQUIRE(scaled.size == rawrbox::Vector3f(4, 6, 8));
 	}
 
+	SECTION("rawrbox::BBOX::inFrustum") {
+		rawrbox::Matrix4x4 identity;
+
+		REQUIRE(rawrbox::BBOX({-0.5F, -0.5F, -0.5F}, {0.5F, 0.5F, 0.5F}, {1, 1, 1}).inFrustum(identity));
+		REQUIRE(rawrbox::BBOX({0.5F, 0.5F, 0.5F}, {3, 3, 3}, {2.5F, 2.5F, 2.5F}).inFrustum(identity));
+		REQUIRE(rawrbox::BBOX({-3, -3, -3}, {3, 3, 3}, {6, 6, 6}).inFrustum(identity));
+		REQUIRE_FALSE(rawrbox::BBOX({2, -0.5F, -0.5F}, {3, 0.5F, 0.5F}, {1, 1, 1}).inFrustum(identity));
+		REQUIRE_FALSE(rawrbox::BBOX({-0.5F, -0.5F, 1.5F}, {0.5F, 0.5F, 2}, {1, 1, 0.5F}).inFrustum(identity));
+		REQUIRE(rawrbox::BBOX::infinite().inFrustum(identity));
+
+		const auto proj = rawrbox::Matrix4x4::mtxProj(90.F, 1.F, 0.1F, 100.F);
+		const float front = rawrbox::Matrix4x4::MTX_RIGHT_HANDED ? -1.F : 1.F;
+
+		REQUIRE(rawrbox::BBOX({-1, -1, front * 10.F - 1.F}, {1, 1, front * 10.F + 1.F}, {2, 2, 2}).inFrustum(proj));
+		REQUIRE_FALSE(rawrbox::BBOX({-1, -1, -front * 10.F - 1.F}, {1, 1, -front * 10.F + 1.F}, {2, 2, 2}).inFrustum(proj));
+		REQUIRE_FALSE(rawrbox::BBOX({30, -1, front * 10.F - 1.F}, {32, 1, front * 10.F + 1.F}, {2, 2, 2}).inFrustum(proj));
+		REQUIRE_FALSE(rawrbox::BBOX({-1, -1, front * 200.F - 1.F}, {1, 1, front * 200.F + 1.F}, {2, 2, 2}).inFrustum(proj));
+	}
+
 	SECTION("rawrbox::BBOX::operator==") {
 		rawrbox::BBOX bbox1(rawrbox::Vector3f(0, 0, 0), rawrbox::Vector3f(1, 1, 1), rawrbox::Vector3f(1, 1, 1));
 		rawrbox::BBOX bbox2(rawrbox::Vector3f(0, 0, 0), rawrbox::Vector3f(1, 1, 1), rawrbox::Vector3f(1, 1, 1));

@@ -6,6 +6,7 @@
 #include <rawrbox/render/models/animations/blender.hpp>
 #include <rawrbox/render/models/animations/sampler.hpp>
 #include <rawrbox/render/models/base.hpp>
+#include <rawrbox/render/models/instance.hpp>
 #include <rawrbox/render/models/skeleton.hpp>
 #include <rawrbox/render/models/utils/animation.hpp>
 #include <rawrbox/render/models/utils/optimization.hpp>
@@ -35,6 +36,15 @@ namespace rawrbox {
 		std::vector<std::unique_ptr<rawrbox::Mesh<typename M::vertexBufferType>>> _meshes = {};
 		rawrbox::BBOX _bbox = {};
 		std::vector<rawrbox::BBOX> _meshBounds = {};
+		std::vector<std::vector<std::pair<uint32_t, rawrbox::BBOX>>> _boneBounds = {};
+
+		// OCCLUSION ---
+		Diligent::RefCntAutoPtr<Diligent::IBuffer> _cullMeshes;
+		std::vector<rawrbox::Instance> _cullData = {};
+
+		std::vector<rawrbox::BBOX> _frameBounds = {};
+		std::vector<uint8_t> _inFrustum = {};
+		// -----
 
 		uint64_t _animationFrame = std::numeric_limits<uint64_t>::max();
 
@@ -227,6 +237,14 @@ namespace rawrbox {
 			this->_animations.clear();
 			this->_meshes.clear();
 			this->_lights.clear();
+
+			this->_boneBounds.clear();
+
+			this->_inFrustum.clear();
+			this->_frameBounds.clear();
+			this->_cullData.clear();
+
+			RAWRBOX_DESTROY(this->_cullMeshes);
 		}
 
 		virtual void flattenMeshes(bool merge = true, bool sort = true) {
@@ -266,6 +284,38 @@ namespace rawrbox {
 			this->_meshBounds.clear();
 			for (auto& mesh : this->_meshes) {
 				this->_meshBounds.push_back(mesh == nullptr ? rawrbox::BBOX::infinite() : ModelBase<M>::getVertexBounds(*mesh));
+			}
+			// --------
+
+			// CALCULATE SKINNED BOUNDS ----
+			this->_boneBounds.clear();
+			this->_boneBounds.resize(this->_meshes.size());
+
+			if constexpr (supportsBones<typename M::vertexBufferType>) {
+				for (size_t i = 0; i < this->_meshes.size(); i++) {
+					auto& mesh = this->_meshes[i];
+					if (mesh == nullptr || mesh->skeleton == nullptr) continue;
+
+					constexpr float high = std::numeric_limits<float>::max();
+					std::vector<rawrbox::BBOX> boxes(RB_RENDER_MAX_BONES_PER_MODEL + 1, {{high, high, high}, {-high, -high, -high}, {}});
+
+					for (const auto& vertex : mesh->vertices) {
+						bool weighted = false;
+
+						for (size_t k = 0; k < RB_MAX_BONES_PER_VERTEX; k++) {
+							if (vertex.bone_weights[k] == 0) continue;
+
+							boxes[vertex.bone_indices[k]].expand(vertex.position);
+							weighted = true;
+						}
+
+						if (!weighted) boxes.back().expand(vertex.position);
+					}
+
+					for (size_t bone = 0; bone < boxes.size(); bone++) {
+						if (boxes[bone].min.x <= boxes[bone].max.x) this->_boneBounds[i].emplace_back(static_cast<uint32_t>(bone), boxes[bone]);
+					}
+				}
 			}
 			// --------
 		}
@@ -315,6 +365,9 @@ namespace rawrbox {
 
 			this->flattenMeshes();
 			rawrbox::ModelBase<M>::updateBuffers();
+
+			const auto meshes = static_cast<uint32_t>(this->_meshes.size());
+			this->createCullBuffers(meshes, meshes * 2U);
 		}
 
 		// ANIMATIONS ----
@@ -609,6 +662,9 @@ namespace rawrbox {
 		void upload(rawrbox::UploadType type = rawrbox::UploadType::STATIC) override {
 			this->flattenMeshes(); // Merge and optimize meshes for drawing
 			ModelBase<M>::upload(type);
+
+			const auto meshes = static_cast<uint32_t>(this->_meshes.size());
+			this->createCullBuffers(meshes, meshes * 2U);
 		}
 
 		// SHADOWS ---
@@ -660,12 +716,91 @@ namespace rawrbox {
 		}
 		// -----------
 
-		void draw() override {
-			ModelBase<M>::draw();
-			this->tickAnimations();
+	protected:
+		[[nodiscard]] virtual bool isCullable(size_t index) const {
+			return index < this->_meshBounds.size() && this->_meshes[index]->isCullable();
+		}
 
-			for (auto& mesh : this->_meshes) {
-				if (mesh == nullptr || mesh->empty()) continue; // Bone, skip it.
+		// CULL  ---
+		void createCullBuffers(const uint32_t items, const uint32_t draws) override {
+			rawrbox::ModelBase<M>::createCullBuffers(items, draws);
+			RAWRBOX_DESTROY(this->_cullMeshes);
+
+			this->_cullData.assign(items, {});
+			this->_frameBounds.assign(items, {});
+			this->_inFrustum.assign(items, 1U);
+
+			for (uint32_t i = 0; i < items; i++) {
+				auto& mesh = this->_meshes[i];
+				if (mesh == nullptr) continue;
+
+				for (uint32_t pass = 0; pass < 2; pass++) {
+					const size_t record = (static_cast<size_t>(pass) * items + i) * this->DRAW_ARGS;
+
+					this->_cullArgs[record] = mesh->totalIndex;
+					this->_cullArgs[record + 2] = mesh->baseIndex;
+					this->_cullArgs[record + 3] = mesh->baseVertex;
+				}
+			}
+
+			Diligent::BufferDesc itemsDesc;
+			itemsDesc.Name = "RawrBox::Buffer::Cull::Meshes";
+			itemsDesc.Usage = Diligent::USAGE_DEFAULT;
+			itemsDesc.Mode = Diligent::BUFFER_MODE_STRUCTURED;
+			itemsDesc.BindFlags = Diligent::BIND_SHADER_RESOURCE;
+			itemsDesc.ElementByteStride = sizeof(rawrbox::Instance);
+			itemsDesc.Size = static_cast<uint64_t>(std::max(items, 1U)) * sizeof(rawrbox::Instance); // Needs at least 1
+
+			rawrbox::RENDERER->device()->CreateBuffer(itemsDesc, nullptr, &this->_cullMeshes);
+			if (this->_cullMeshes == nullptr) RAWRBOX_CRITICAL("Failed to create culling items buffer");
+
+			rawrbox::RENDERER->context()->UpdateBuffer(this->_argsBuffer, 0, this->_cullArgs.size() * sizeof(uint32_t), this->_cullArgs.data(), Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
+		}
+
+		virtual void cullMeshes(rawrbox::CullPass mode) {
+			const auto total = static_cast<uint32_t>(this->_cullData.size());
+			if (total == 0) return;
+
+			// CPU FRUSTUM CULL ----
+			if (mode != rawrbox::CullPass::LATE) {
+				for (uint32_t i = 0; i < total; i++) {
+					auto* mesh = i < this->_meshes.size() ? this->_meshes[i].get() : nullptr;
+
+					auto& item = this->_cullData[i];
+					item = {};
+					item.data.w = 1U;
+
+					if (mesh == nullptr || mesh->empty() || !this->isCullable(i)) continue;
+
+					const auto& bounds = this->_frameBounds[i];
+					if (bounds.isInfinite() || this->_inFrustum[i] == 0U || mesh->isTransparent()) continue;
+
+					item.setMatrix(mesh->getMatrix() * rawrbox::Matrix4x4::mtxSRT(bounds.size * 0.5F, {0.F, 0.F, 0.F, 1.F}, (bounds.min + bounds.max) * 0.5F));
+					item.data.w = 0U;
+				}
+
+				rawrbox::RENDERER->context()->UpdateBuffer(this->_cullMeshes, 0, static_cast<uint64_t>(total) * sizeof(rawrbox::Instance), this->_cullData.data(), Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
+			}
+			// ----------------
+
+			this->cullObjects(this->_cullMeshes, total, {{-1.F, -1.F, -1.F}, {1.F, 1.F, 1.F}, {2.F, 2.F, 2.F}}, mode);
+		}
+		// -----------
+
+		// DRAW (NO TRANSPARENT) ---
+		virtual void drawMeshes(rawrbox::CullPass pass) {
+			const auto total = this->_cullData.size();
+
+			for (size_t i = 0; i < std::min(total, this->_meshes.size()); i++) {
+				auto& mesh = this->_meshes[i];
+				if (mesh == nullptr || mesh->empty() || this->_inFrustum[i] == 0U) continue; // Bone, skip it.
+
+				const bool occluded = pass != rawrbox::CullPass::FRUSTUM && this->isCullable(i) && !mesh->isTransparent() && !this->_frameBounds[i].isInfinite();
+
+				if (pass == rawrbox::CullPass::EARLY && mesh->isTransparent()) continue;
+				if (pass == rawrbox::CullPass::LATE && !occluded && !mesh->isTransparent()) continue;
+
+				const auto matrix = this->getMatrix() * mesh->getMatrix();
 
 				// Bind pipelines ----
 				this->_material->bindPipeline(*mesh);
@@ -676,21 +811,91 @@ namespace rawrbox {
 				buffersUpdated |= this->_material->bindVertexSkinnedUniforms(*mesh);
 				buffersUpdated |= this->_material->bindPixelUniforms(*mesh);
 
-				rawrbox::MAIN_CAMERA->setModelTransform(this->getMatrix() * mesh->getMatrix());
+				rawrbox::RENDERER->getPassCamera()->setModelTransform(matrix);
 				// -----------
 
 				// DRAW -------
+				auto flags = Diligent::DRAW_FLAG_VERIFY_ALL;
+				if (!buffersUpdated) flags |= Diligent::DRAW_FLAG_DYNAMIC_RESOURCE_BUFFERS_INTACT;
+
+				if (occluded) {
+					Diligent::DrawIndexedIndirectAttribs attribs;
+					attribs.pAttribsBuffer = this->_argsBuffer;
+					attribs.DrawArgsOffset = ((pass == rawrbox::CullPass::LATE ? total : 0U) + i) * this->DRAW_ARGS * sizeof(uint32_t);
+					attribs.IndexType = Diligent::VT_UINT32;
+					attribs.Flags = flags;
+					attribs.AttribsBufferStateTransitionMode = Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION;
+
+					rawrbox::RENDERER->context()->DrawIndexedIndirect(attribs);
+					continue;
+				}
+
 				Diligent::DrawIndexedAttribs DrawAttrs;
 				DrawAttrs.IndexType = Diligent::VT_UINT32;
 				DrawAttrs.FirstIndexLocation = mesh->baseIndex;
 				DrawAttrs.BaseVertex = mesh->baseVertex;
 				DrawAttrs.NumIndices = mesh->totalIndex;
-				DrawAttrs.Flags = Diligent::DRAW_FLAG_VERIFY_ALL;
-				if (!buffersUpdated) DrawAttrs.Flags |= Diligent::DRAW_FLAG_DYNAMIC_RESOURCE_BUFFERS_INTACT;
+				DrawAttrs.Flags = flags;
 
 				rawrbox::RENDERER->context()->DrawIndexed(DrawAttrs);
 				// -----------
 			}
+		}
+		// -----------
+
+	public:
+		void draw() override {
+			ModelBase<M>::draw();
+			this->tickAnimations();
+
+			// FRUSTUM ---
+			const auto viewProj = rawrbox::RENDERER->getPassCamera()->getViewProjMtx();
+			const auto total = std::min(this->_meshes.size(), this->_inFrustum.size());
+
+			std::ranges::fill(this->_inFrustum, 1U);
+
+			for (size_t i = 0; i < total; i++) {
+				auto& mesh = this->_meshes[i];
+				if (mesh == nullptr || mesh->empty() || !this->isCullable(i)) continue;
+
+				auto& bounds = this->_frameBounds[i];
+				bounds = this->_meshBounds[i];
+
+				const auto& bones = this->_boneBounds[i];
+				for (size_t bone = 0; bone < bones.size(); bone++) {
+					const auto& [joint, box] = bones[bone];
+					const auto posed = joint < RB_RENDER_MAX_BONES_PER_MODEL ? box.transform(mesh->boneTransforms[joint]) : box;
+
+					if (bone == 0) {
+						bounds = posed;
+					} else {
+						bounds.combine(posed);
+					}
+				}
+
+				this->_inFrustum[i] = bounds.inFrustum(viewProj * this->getMatrix() * mesh->getMatrix()) ? 1U : 0U;
+			}
+			// -----------
+
+			// OCCLUSION ---
+			auto* occlusion = rawrbox::RENDERER->occlusion();
+			if (!occlusion->isRecording()) {
+				this->drawMeshes(rawrbox::CullPass::FRUSTUM);
+				return;
+			}
+
+			this->cullMeshes(rawrbox::CullPass::EARLY);
+			this->drawMeshes(rawrbox::CullPass::EARLY);
+
+			occlusion->queue(*this);
+			// -----------
+		}
+
+		void drawLate() override {
+			ModelBase<M>::draw();
+
+			this->cullMeshes(rawrbox::CullPass::LATE);
+			this->drawMeshes(rawrbox::CullPass::LATE);
 		}
 	};
 } // namespace rawrbox

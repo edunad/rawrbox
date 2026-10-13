@@ -102,6 +102,7 @@ namespace rawrbox {
 		// Check if the window should close
 		for (const auto& window : __WINDOWS) {
 			if (glfwWindowShouldClose(window->_handle) != 0) {
+				glfwPollEvents();
 				return;
 			}
 		}

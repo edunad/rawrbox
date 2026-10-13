@@ -322,10 +322,7 @@ namespace rawrbox {
 
 		for (const auto& material : scene.materials) {
 			auto mat = std::make_unique<rawrbox::GLTFMaterial>(material.name.c_str());
-
-			// CULLING ----
 			mat->doubleSided = material.doubleSided;
-			// -----------
 
 			// TRANSPARENCY ----
 			switch (material.alphaMode) {

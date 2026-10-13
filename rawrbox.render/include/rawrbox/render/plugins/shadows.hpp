@@ -127,6 +127,14 @@ namespace rawrbox {
 	struct ShadowBatchCaster {
 		rawrbox::ShadowCaster* caster = nullptr;
 		uint32_t draws = 0;
+		bool culled = false;
+	};
+
+	struct ShadowCullCaster {
+		rawrbox::ShadowCaster* caster = nullptr;
+		uint32_t entry = 0;
+
+		rawrbox::ShadowInstances instances = {};
 	};
 
 	struct ShadowSlotCaster {
@@ -187,7 +195,11 @@ namespace rawrbox {
 
 		uint32_t _drawCursor = 0;
 		uint32_t _drawLimit = 0;
+		uint32_t _drawCounter = NO_COUNTER;
 		bool _drawOverflow = false;
+
+		std::vector<rawrbox::ShadowCullCaster> _cullCasters = {};
+		std::vector<rawrbox::Vector4u> _cullData = {};
 
 		uint32_t _revision = 0;
 		rawrbox::Vector2u _drawView = {};
@@ -195,7 +207,6 @@ namespace rawrbox {
 
 		// BUFFERS ---
 		Diligent::RefCntAutoPtr<Diligent::IBuffer> _constants;
-		Diligent::RefCntAutoPtr<Diligent::IBuffer> _drawConstants;
 
 		Diligent::RefCntAutoPtr<Diligent::IBuffer> _pageTable;
 		Diligent::RefCntAutoPtr<Diligent::IBuffer> _requests;
@@ -227,6 +238,8 @@ namespace rawrbox {
 		Diligent::RefCntAutoPtr<Diligent::IBuffer> _drawArgsBuffer;
 
 		Diligent::RefCntAutoPtr<Diligent::IBuffer> _slotBuffer;
+
+		Diligent::RefCntAutoPtr<Diligent::IBuffer> _cullBuffer;
 		// -----------
 
 		// TEXTURES ---
@@ -257,6 +270,7 @@ namespace rawrbox {
 		Diligent::IPipelineState* _allocateProgram = nullptr;
 		Diligent::IPipelineState* _selectProgram = nullptr;
 		Diligent::IPipelineState* _patchProgram = nullptr;
+		Diligent::IPipelineState* _cullProgram = nullptr;
 		Diligent::IPipelineState* _prepareProgram = nullptr;
 		Diligent::IPipelineState* _clearProgram = nullptr;
 		Diligent::IPipelineState* _resolveProgram = nullptr;
@@ -337,6 +351,12 @@ namespace rawrbox {
 		static constexpr uint32_t MOTION_FRAMES = READBACK_FRAMES + 2U;
 		static constexpr uint32_t MAX_DRAWS = 32768U;
 		static constexpr uint32_t DRAW_ARGS = 5U;
+
+		static constexpr uint32_t MAX_CULL_ENTRIES = 4096U;
+		static constexpr uint32_t CULL_PARAMS = 5U;
+		
+		static constexpr uint32_t NO_COUNTER = 0xFFFFFFFFU;
+		static constexpr uint32_t COUNTED = 0x80000000U;
 
 		static constexpr int MOTION_MARGIN = 4;
 

@@ -32,6 +32,8 @@ namespace rawrbox {
 		settings.layout = layout;
 		settings.renderTargets = RB_RENDER_RENDER_TARGET_TARGETS;    // COLOR + GPUPick
 		settings.signatures = {rawrbox::BindlessManager::signature}; // Use bindless
+		if (helper.Find("INSTANCED") != nullptr)
+			settings.signatures.push_back(rawrbox::BindlessManager::instanceSignature);
 
 		auto* cluster = rawrbox::RENDERER->getPlugin<rawrbox::ClusteredPlugin>("Clustered");
 		if (cluster != nullptr) {

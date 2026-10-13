@@ -64,7 +64,6 @@ namespace rawrbox {
 
 		// Cleanup ----
 		RAWRBOX_DESTROY(this->_constants);
-		RAWRBOX_DESTROY(this->_drawConstants);
 
 		RAWRBOX_DESTROY(this->_pageTable);
 		RAWRBOX_DESTROY(this->_requests);
@@ -93,6 +92,8 @@ namespace rawrbox {
 		RAWRBOX_DESTROY(this->_drawArgsBuffer);
 		RAWRBOX_DESTROY(this->_slotBuffer);
 
+		RAWRBOX_DESTROY(this->_cullBuffer);
+
 		RAWRBOX_DESTROY(this->_pool);
 		RAWRBOX_DESTROY(this->_canvas);
 
@@ -117,6 +118,9 @@ namespace rawrbox {
 		// VALIDATE -----
 		if (!std::has_single_bit(settings.virtualSize) || !std::has_single_bit(settings.pageSize) || !std::has_single_bit(settings.poolSize))
 			RAWRBOX_CRITICAL("Invalid ShadowSettings virtualSize! pageSize & poolSize must be power of two");
+
+		if ((rawrbox::RENDERER->device()->GetAdapterInfo().DrawCommand.CapFlags & Diligent::DRAW_COMMAND_CAP_FLAG_DRAW_INDIRECT_FIRST_INSTANCE) == 0)
+			RAWRBOX_CRITICAL("Indirect draws with a first instance are not supported, required by the instanced shadow casters");
 
 		if (settings.pageSize > settings.virtualSize || settings.pageSize > settings.poolSize)
 			RAWRBOX_CRITICAL("Invalid ShadowSettings pageSize! Cannot be bigger than the virtual & pool size");
@@ -190,6 +194,7 @@ namespace rawrbox {
 		this->_signature->GetStaticVariableByName(Diligent::SHADER_TYPE_COMPUTE, "ShadowBatches")->Set(this->_batchBuffer->GetDefaultView(Diligent::BUFFER_VIEW_UNORDERED_ACCESS));
 		this->_signature->GetStaticVariableByName(Diligent::SHADER_TYPE_COMPUTE, "ShadowFeedback")->Set(this->_feedbackBuffer->GetDefaultView(Diligent::BUFFER_VIEW_UNORDERED_ACCESS));
 		this->_signature->GetStaticVariableByName(Diligent::SHADER_TYPE_COMPUTE, "ShadowDrawArgs")->Set(this->_drawArgsBuffer->GetDefaultView(Diligent::BUFFER_VIEW_UNORDERED_ACCESS));
+		this->_signature->GetStaticVariableByName(Diligent::SHADER_TYPE_COMPUTE, "ShadowCull")->Set(this->_cullBuffer->GetDefaultView(Diligent::BUFFER_VIEW_UNORDERED_ACCESS));
 		this->_signature->GetStaticVariableByName(Diligent::SHADER_TYPE_COMPUTE, "ShadowInvalidations")->Set(this->_invalidationBuffer->GetDefaultView(Diligent::BUFFER_VIEW_SHADER_RESOURCE));
 		this->_signature->GetStaticVariableByName(Diligent::SHADER_TYPE_COMPUTE, "ShadowBatchRects")->Set(this->_batchRectBuffer->GetDefaultView(Diligent::BUFFER_VIEW_SHADER_RESOURCE));
 		this->_signature->GetStaticVariableByName(Diligent::SHADER_TYPE_COMPUTE, "ShadowFaceRects")->Set(this->_faceRectBuffer->GetDefaultView(Diligent::BUFFER_VIEW_UNORDERED_ACCESS));
@@ -219,7 +224,6 @@ namespace rawrbox {
 		// ---------------
 
 		this->_casterSignature->GetStaticVariableByName(Diligent::SHADER_TYPE_VERTEX, "ShadowViews")->Set(this->_viewBuffer->GetDefaultView(Diligent::BUFFER_VIEW_SHADER_RESOURCE));
-		this->_casterSignature->GetStaticVariableByName(Diligent::SHADER_TYPE_VERTEX, "ShadowDraw")->Set(this->_drawConstants);
 		this->_casterSignature->GetStaticVariableByName(Diligent::SHADER_TYPE_VERTEX, "ShadowSlots")->Set(this->_slotBuffer->GetDefaultView(Diligent::BUFFER_VIEW_SHADER_RESOURCE));
 		this->_casterSignature->GetStaticVariableByName(Diligent::SHADER_TYPE_GEOMETRY, "ShadowPages")->Set(this->_pageTable->GetDefaultView(Diligent::BUFFER_VIEW_SHADER_RESOURCE));
 		this->_casterSignature->GetStaticVariableByName(Diligent::SHADER_TYPE_GEOMETRY, "ShadowRects")->Set(this->_rectBuffer->GetDefaultView(Diligent::BUFFER_VIEW_SHADER_RESOURCE));
@@ -260,6 +264,7 @@ namespace rawrbox {
 	}
 
 	void ShadowPlugin::update() {
+		if (!rawrbox::LIGHTS::isEnabled()) return; // Full bright, no shadows needed
 		if (rawrbox::MAIN_CAMERA == nullptr || this->_slots.empty()) return;
 
 		// Sort shadows based on camera distance ---
@@ -335,7 +340,9 @@ namespace rawrbox {
 	}
 
 	void ShadowPlugin::preRender(const rawrbox::CameraBase& camera) {
-		if (&camera != rawrbox::MAIN_CAMERA) return;
+		if (!rawrbox::LIGHTS::isEnabled()) return;   // Full bright, no shadows needed
+		if (&camera != rawrbox::MAIN_CAMERA) return; // Skip non-main cameras
+
 		if (this->_freeProgram == nullptr) RAWRBOX_CRITICAL("Compute pipelines not initialized, did you call 'upload'");
 		this->_frame++;
 
@@ -353,7 +360,8 @@ namespace rawrbox {
 	}
 
 	void ShadowPlugin::postRender(const rawrbox::CameraBase& camera) {
-		if (&camera != rawrbox::MAIN_CAMERA || this->_activeSlots == 0) return;
+		if (!rawrbox::LIGHTS::isEnabled()) return;                              // Full bright, no shadows needed
+		if (&camera != rawrbox::MAIN_CAMERA || this->_activeSlots == 0) return; // Skip non-main cameras
 
 		auto* context = rawrbox::RENDERER->context();
 		const auto& size = camera.getRenderTarget()->getSize();
@@ -596,6 +604,8 @@ namespace rawrbox {
 		for (uint32_t attempt = 0; attempt < 2; attempt++) {
 			this->_batches.clear();
 			this->_batchCasters.clear();
+			this->_cullCasters.clear();
+			this->_cullData.clear();
 			this->_drawRecords.clear();
 			this->_drawArgs.clear();
 			this->_drawOverflow = false;
@@ -654,8 +664,23 @@ namespace rawrbox {
 				}
 			}
 
-			if (this->_revision == rawrbox::SHADOWS::revision()) return;
+			if (this->_revision == rawrbox::SHADOWS::revision()) break;
 		}
+
+		// INSTANCED CASTERS (count per slot, then scatter into per slot lists) ---
+		if (this->_cullCasters.empty()) return;
+		rawrbox::RENDERER->context()->UpdateBuffer(this->_cullBuffer, 0, this->_cullData.size() * sizeof(rawrbox::Vector4u), this->_cullData.data(), Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
+
+		for (const auto& cull : this->_cullCasters) {
+			this->_signatureBind->GetVariableByName(Diligent::SHADER_TYPE_COMPUTE, "Instances")->Set(cull.instances.instances->GetDefaultView(Diligent::BUFFER_VIEW_SHADER_RESOURCE));
+			this->_signatureBind->GetVariableByName(Diligent::SHADER_TYPE_COMPUTE, "ShadowIndices")->Set(cull.instances.indices->GetDefaultView(Diligent::BUFFER_VIEW_UNORDERED_ACCESS));
+
+			for (uint32_t pass = 0; pass < 2; pass++) {
+				this->bindDrawView(cull.entry, pass);
+				this->dispatch(this->_cullProgram, rawrbox::MathUtils::divideRound<uint32_t>(cull.instances.total, THREADS));
+			}
+		}
+		// -----------
 	}
 	// -----------
 
@@ -672,11 +697,38 @@ namespace rawrbox {
 			if (!this->getFaceRect(caster.bounds, this->_slots[slot], face).overlaps(rect)) continue;
 			if (mode == rawrbox::ShadowMode::DYNAMIC && this->isBehindReceivers(caster.bounds, slot, face)) continue;
 
+			// INSTANCED CASTERS (directional lights keep every instance) ---
+			this->_drawCounter = NO_COUNTER;
+
+			if (!this->_slots[slot].directional) {
+				auto cull = std::ranges::find(this->_cullCasters, caster.caster, &rawrbox::ShadowCullCaster::caster);
+				rawrbox::ShadowInstances instances = {};
+
+				if (cull == this->_cullCasters.end() && this->_cullData.size() + CULL_PARAMS + this->_activeSlots <= MAX_CULL_ENTRIES && caster.caster->getShadowInstances(instances)) {
+					const auto& mtx = instances.matrix;
+					const auto center = (instances.bounds.min + instances.bounds.max) * 0.5F;
+
+					this->_cullCasters.push_back({caster.caster, static_cast<uint32_t>(this->_cullData.size()), instances});
+					cull = std::prev(this->_cullCasters.end());
+
+					for (uint32_t i = 0; i < 3; i++) {
+						this->_cullData.push_back({std::bit_cast<uint32_t>(mtx[i]), std::bit_cast<uint32_t>(mtx[4 + i]), std::bit_cast<uint32_t>(mtx[8 + i]), std::bit_cast<uint32_t>(mtx[12 + i])});
+					}
+
+					this->_cullData.push_back({std::bit_cast<uint32_t>(center.x), std::bit_cast<uint32_t>(center.y), std::bit_cast<uint32_t>(center.z), std::bit_cast<uint32_t>(instances.bounds.size.length() * 0.5F)});
+					this->_cullData.push_back({instances.total, this->_activeSlots, instances.capacity, 0U});
+					this->_cullData.resize(this->_cullData.size() + this->_activeSlots);
+				}
+
+				if (cull != this->_cullCasters.end()) this->_drawCounter = cull->entry + CULL_PARAMS + slot;
+			}
+			// -----------
+
 			const size_t before = this->_drawRecords.size();
 			caster.caster->drawShadow(draw);
 
 			if (this->_drawRecords.size() == before) continue;
-			this->_batchCasters.push_back({.caster = caster.caster, .draws = static_cast<uint32_t>(this->_drawRecords.size() - before)});
+			this->_batchCasters.push_back({.caster = caster.caster, .draws = static_cast<uint32_t>(this->_drawRecords.size() - before), .culled = this->_drawCounter != NO_COUNTER});
 		}
 
 		if (mode == rawrbox::ShadowMode::STATIC && this->_drawOverflow) this->_batchRects[batch.batch] = EMPTY_PACKED_RECT;
@@ -728,7 +780,7 @@ namespace rawrbox {
 
 				const auto rect = this->getFaceRect(submit.bounds, this->_slots[batch.slot], batch.face);
 
-				this->_drawRecords.push_back({batch.batch, submit.view, submit.instances, rect.pack()});
+				this->_drawRecords.push_back({batch.batch, submit.view, this->_drawCounter == NO_COUNTER ? submit.instances : COUNTED | this->_drawCounter, rect.pack()});
 				this->_drawArgs.insert(this->_drawArgs.end(), {submit.indices, 0U, submit.firstIndex, submit.baseVertex, 0U});
 			};
 		}
@@ -812,11 +864,13 @@ namespace rawrbox {
 
 		size_t caster = 0;
 		for (const auto& batch : this->_batches) {
-			const auto draw = this->getDraw(batch, true);
+			auto draw = this->getDraw(batch, true);
 			this->bindDrawView(batch.batch * this->_mips, 0);
 
 			for (const size_t end = caster + batch.casters; caster < end; caster++) {
 				if (this->_revision != rawrbox::SHADOWS::revision()) return;
+
+				draw.culled = this->_batchCasters[caster].culled;
 
 				this->_drawLimit = this->_drawCursor + this->_batchCasters[caster].draws;
 				this->_batchCasters[caster].caster->drawShadow(draw);
@@ -935,10 +989,12 @@ namespace rawrbox {
 		if (this->_drawView.x == first && this->_drawView.y == offset) return;
 		this->_drawView = {first, offset};
 
-		Diligent::MapHelper<rawrbox::Vector4u> data(rawrbox::RENDERER->context(), this->_drawConstants, Diligent::MAP_WRITE, Diligent::MAP_FLAG_DISCARD);
-		if (data == nullptr) RAWRBOX_CRITICAL("Failed to map the shadow draw constants buffer!");
+		const rawrbox::Vector4u data = {first, offset, 0U, 0U};
 
-		*data = {first, offset, 0U, 0U};
+		// Re-use the buffer, so AMD stops whining
+		this->_casterBind->GetVariableByName(Diligent::SHADER_TYPE_VERTEX, "ShadowDraw")->SetInlineConstants(&data, 0, 4);
+		this->_signatureBind->GetVariableByName(Diligent::SHADER_TYPE_COMPUTE, "ShadowDraw")->SetInlineConstants(&data, 0, 4);
+		// -----------------------------------------
 	}
 	// ---------
 
@@ -1115,10 +1171,7 @@ namespace rawrbox {
 		macro.AddShaderMacro("SHADOW_PAGES", this->_pages);
 		macro.AddShaderMacro("SHADOW_MIPS", this->_mips);
 		macro.AddShaderMacro("SHADOW_FACE_ENTRIES", this->_faceEntries);
-		macro.AddShaderMacro("SHADOW_LIGHT_ENTRIES", this->total());
-
 		macro.AddShaderMacro("SHADOW_POOL_PAGES", this->_poolPages);
-		macro.AddShaderMacro("SHADOW_TOTAL_PAGES", this->_totalPages);
 
 		macro.AddShaderMacro("SHADOW_PLUGIN", true);
 		return macro;
@@ -1148,6 +1201,8 @@ namespace rawrbox {
 
 		settings.scissors = true;
 		settings.signatures = {rawrbox::BindlessManager::signature, this->_casterSignature};
+		if (helper.Find("INSTANCED") != nullptr)
+			settings.signatures.push_back(rawrbox::BindlessManager::instanceSignature);
 
 		// Drop the normal / tangent attributes, casters only need the position ---
 		settings.layout = layout;
@@ -1202,17 +1257,6 @@ namespace rawrbox {
 			if (this->_constants == nullptr) RAWRBOX_CRITICAL("Failed to create buffer '{}'", desc.Name);
 		}
 
-		{
-			Diligent::BufferDesc desc;
-			desc.Name = "RawrBox::Shadows::Draw";
-			desc.Usage = Diligent::USAGE_DYNAMIC;
-			desc.CPUAccessFlags = Diligent::CPU_ACCESS_WRITE;
-			desc.BindFlags = Diligent::BIND_UNIFORM_BUFFER;
-			desc.Size = sizeof(rawrbox::Vector4u);
-
-			device->CreateBuffer(desc, nullptr, &this->_drawConstants);
-			if (this->_drawConstants == nullptr) RAWRBOX_CRITICAL("Failed to create buffer '{}'", desc.Name);
-		}
 		// -------------
 
 		// Page table, the coarse mip of every face is always backed by a reserved page ---
@@ -1264,10 +1308,14 @@ namespace rawrbox {
 		this->_drawArgsBuffer = createBuffer("RawrBox::Shadows::DrawArgs", sizeof(uint32_t), MAX_DRAWS * DRAW_ARGS, Diligent::BIND_UNORDERED_ACCESS | Diligent::BIND_INDIRECT_DRAW_ARGS, nullptr, Diligent::BUFFER_MODE_RAW);
 		this->_slotBuffer = createBuffer("RawrBox::Shadows::Slots", sizeof(rawrbox::ShadowSlotData), this->_settings.maxLights, Diligent::BIND_SHADER_RESOURCE, this->_slotData.data());
 
+		// Instanced casters (params + one counter per active slot) ---
+		this->_cullData.reserve(MAX_CULL_ENTRIES);
+		this->_cullBuffer = createBuffer("RawrBox::Shadows::Cull", sizeof(rawrbox::Vector4u), MAX_CULL_ENTRIES, rw);
+		// -------------
+
 		// BARRIER -----
 		const std::vector<Diligent::StateTransitionDesc> barriers = {
 		    {this->_constants, Diligent::RESOURCE_STATE_UNKNOWN, Diligent::RESOURCE_STATE_CONSTANT_BUFFER, Diligent::STATE_TRANSITION_FLAG_UPDATE_STATE},
-		    {this->_drawConstants, Diligent::RESOURCE_STATE_UNKNOWN, Diligent::RESOURCE_STATE_CONSTANT_BUFFER, Diligent::STATE_TRANSITION_FLAG_UPDATE_STATE},
 		    {this->_pageTable, Diligent::RESOURCE_STATE_UNKNOWN, Diligent::RESOURCE_STATE_SHADER_RESOURCE, Diligent::STATE_TRANSITION_FLAG_UPDATE_STATE},
 		    {this->_requests, Diligent::RESOURCE_STATE_UNKNOWN, Diligent::RESOURCE_STATE_UNORDERED_ACCESS, Diligent::STATE_TRANSITION_FLAG_UPDATE_STATE},
 		    {this->_physOwner, Diligent::RESOURCE_STATE_UNKNOWN, Diligent::RESOURCE_STATE_UNORDERED_ACCESS, Diligent::STATE_TRANSITION_FLAG_UPDATE_STATE},
@@ -1289,6 +1337,7 @@ namespace rawrbox {
 		    {this->_drawRecordBuffer, Diligent::RESOURCE_STATE_UNKNOWN, Diligent::RESOURCE_STATE_SHADER_RESOURCE, Diligent::STATE_TRANSITION_FLAG_UPDATE_STATE},
 		    {this->_drawArgsBuffer, Diligent::RESOURCE_STATE_UNKNOWN, Diligent::RESOURCE_STATE_UNORDERED_ACCESS, Diligent::STATE_TRANSITION_FLAG_UPDATE_STATE},
 		    {this->_slotBuffer, Diligent::RESOURCE_STATE_UNKNOWN, Diligent::RESOURCE_STATE_SHADER_RESOURCE, Diligent::STATE_TRANSITION_FLAG_UPDATE_STATE},
+		    {this->_cullBuffer, Diligent::RESOURCE_STATE_UNKNOWN, Diligent::RESOURCE_STATE_UNORDERED_ACCESS, Diligent::STATE_TRANSITION_FLAG_UPDATE_STATE},
 		};
 
 		rawrbox::RENDERER->context()->TransitionResourceStates(static_cast<uint32_t>(barriers.size()), barriers.data());
@@ -1376,6 +1425,12 @@ namespace rawrbox {
 			{Diligent::SHADER_TYPE_COMPUTE, "ShadowFaceRects", 1, Diligent::SHADER_RESOURCE_TYPE_BUFFER_UAV, stat, buffer},
 			{Diligent::SHADER_TYPE_COMPUTE, "ShadowDrawArgs", 1, Diligent::SHADER_RESOURCE_TYPE_BUFFER_UAV, stat, buffer},
 
+			{Diligent::SHADER_TYPE_COMPUTE, "ShadowCull", 1, Diligent::SHADER_RESOURCE_TYPE_BUFFER_UAV, stat, buffer},
+			{Diligent::SHADER_TYPE_COMPUTE, "ShadowDraw", 4, Diligent::SHADER_RESOURCE_TYPE_CONSTANT_BUFFER, Diligent::SHADER_RESOURCE_VARIABLE_TYPE_DYNAMIC, Diligent::PIPELINE_RESOURCE_FLAG_INLINE_CONSTANTS},
+
+			{Diligent::SHADER_TYPE_COMPUTE, "Instances", 1, Diligent::SHADER_RESOURCE_TYPE_BUFFER_SRV, Diligent::SHADER_RESOURCE_VARIABLE_TYPE_DYNAMIC, buffer},
+			{Diligent::SHADER_TYPE_COMPUTE, "ShadowIndices", 1, Diligent::SHADER_RESOURCE_TYPE_BUFFER_UAV, Diligent::SHADER_RESOURCE_VARIABLE_TYPE_DYNAMIC, buffer},
+
 			{Diligent::SHADER_TYPE_COMPUTE, "ShadowInvalidations", 1, Diligent::SHADER_RESOURCE_TYPE_BUFFER_SRV, stat, buffer},
 			{Diligent::SHADER_TYPE_COMPUTE, "ShadowBatchRects", 1, Diligent::SHADER_RESOURCE_TYPE_BUFFER_SRV, stat, buffer},
 			{Diligent::SHADER_TYPE_COMPUTE, "ShadowDrawRecords", 1, Diligent::SHADER_RESOURCE_TYPE_BUFFER_SRV, stat, buffer},
@@ -1410,7 +1465,7 @@ namespace rawrbox {
 		createSignature("RawrBox::SIGNATURE::Shadows::Caster", 1,
 		    {
 			{Diligent::SHADER_TYPE_VERTEX, "ShadowViews", 1, Diligent::SHADER_RESOURCE_TYPE_BUFFER_SRV, stat, buffer},
-			{Diligent::SHADER_TYPE_VERTEX, "ShadowDraw", 1, Diligent::SHADER_RESOURCE_TYPE_CONSTANT_BUFFER, stat},
+			{Diligent::SHADER_TYPE_VERTEX, "ShadowDraw", 4, Diligent::SHADER_RESOURCE_TYPE_CONSTANT_BUFFER, Diligent::SHADER_RESOURCE_VARIABLE_TYPE_DYNAMIC, Diligent::PIPELINE_RESOURCE_FLAG_INLINE_CONSTANTS},
 			{Diligent::SHADER_TYPE_VERTEX | Diligent::SHADER_TYPE_GEOMETRY, "ShadowSlots", 1, Diligent::SHADER_RESOURCE_TYPE_BUFFER_SRV, stat, buffer},
 
 			{Diligent::SHADER_TYPE_GEOMETRY, "ShadowPages", 1, Diligent::SHADER_RESOURCE_TYPE_BUFFER_SRV, stat, buffer},
@@ -1463,8 +1518,11 @@ namespace rawrbox {
 		settings.entry = "Discard";
 		this->_discardProgram = rawrbox::PipelineUtils::createComputePipeline("Shadows::Discard", settings);
 
-		settings.pCS = "shadow_mark.csh";
+		settings.pCS = "shadow_cull.csh";
 		settings.entry = "main";
+		this->_cullProgram = rawrbox::PipelineUtils::createComputePipeline("Shadows::Cull", settings);
+
+		settings.pCS = "shadow_mark.csh";
 		settings.signatures = {this->_markSignature};
 		this->_markProgram = rawrbox::PipelineUtils::createComputePipeline("Shadows::Mark", settings);
 	}

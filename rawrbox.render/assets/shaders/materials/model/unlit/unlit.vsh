@@ -9,6 +9,10 @@
 	#define TRANSFORM_BONES
 #endif
 
+#ifdef INSTANCED
+	#include "instance.fxh"
+#endif
+
 Texture2DArray g_Textures[];
 SamplerState g_Sampler;
 
@@ -23,23 +27,11 @@ struct VSInput {
 	float4 BoneWeight : ATTRIB3;
 
 	#ifdef INSTANCED
-	// Instance attributes
-	float4 MtrxRow0 : ATTRIB4;
-	float4 MtrxRow1 : ATTRIB5;
-	float4 MtrxRow2 : ATTRIB6;
-	float4 MtrxRow3 : ATTRIB7;
-
-	uint4 InstData : ATTRIB8; // Color, slice, gpu id, ??
+	uint InstanceIndex : ATTRIB4;
 	#endif
 #else
 	#ifdef INSTANCED
-	// Instance attributes
-	float4 MtrxRow0 : ATTRIB2;
-	float4 MtrxRow1 : ATTRIB3;
-	float4 MtrxRow2 : ATTRIB4;
-	float4 MtrxRow3 : ATTRIB5;
-
-	uint4 InstData : ATTRIB6; // Color, slice, gpu id, ??
+	uint InstanceIndex : ATTRIB2;
 	#endif
 #endif
 };
@@ -63,8 +55,8 @@ void main(in VSInput VSIn, out PSInput PSIn) {
 #endif
 
 #ifdef INSTANCED
-	float4x4 InstanceMatr = MatrixFromRows(VSIn.MtrxRow0, VSIn.MtrxRow1, VSIn.MtrxRow2, VSIn.MtrxRow3);
-	TransformedData transform = applyPosTransforms(mul(pos, InstanceMatr), VSIn.UV);
+	Instance instance = Instances[VSIn.InstanceIndex];
+	TransformedData transform = applyPosTransforms(float4(mul(GetInstanceMatrix(instance), pos), pos.w), VSIn.UV);
 #else
 	TransformedData transform = applyPosTransforms(pos, VSIn.UV);
 #endif
@@ -74,9 +66,9 @@ void main(in VSInput VSIn, out PSInput PSIn) {
 	PSIn.UV = VSIn.UV;
 
 #ifdef INSTANCED
-	PSIn.Color = Unpack_RGBA8_UNORM(VSIn.InstData.x) * Unpack_RGBA8_UNORM(ColorOverride);
-	PSIn.TexIndex = VSIn.Pos.w + VSIn.InstData.y + SliceOverride;
-	PSIn.GPUId = Unpack_ABGR8_UNORM(VSIn.InstData.z);
+	PSIn.Color = Unpack_RGBA8_UNORM(instance.data.x) * Unpack_RGBA8_UNORM(ColorOverride);
+	PSIn.TexIndex = VSIn.Pos.w + instance.data.y + SliceOverride;
+	PSIn.GPUId = Unpack_ABGR8_UNORM(instance.data.z);
 #else
 
 // DEBUG ----

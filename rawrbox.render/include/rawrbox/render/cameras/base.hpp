@@ -84,6 +84,13 @@ namespace rawrbox {
 		float _z_near = 0.01F;
 		float _z_far = 100.F;
 
+		// CULLING ----
+#ifdef _DEBUG
+		bool _cullFrozen = false;
+		rawrbox::Matrix4x4 _cullMtx = {};
+#endif
+		// -----------
+
 		// LOGGER ------
 		std::unique_ptr<rawrbox::Logger> _logger = std::make_unique<rawrbox::Logger>("RawrBox-Camera");
 		// -------------
@@ -124,6 +131,10 @@ namespace rawrbox {
 		[[nodiscard]] virtual const rawrbox::Matrix4x4& getViewMtx() const;
 		[[nodiscard]] virtual const rawrbox::Matrix4x4& getProjMtx() const;
 		[[nodiscard]] virtual rawrbox::Matrix4x4 getViewProjMtx() const;
+#ifdef _DEBUG
+		virtual void setCullFrozen(bool frozen);
+		[[nodiscard]] virtual bool isCullFrozen() const;
+#endif
 
 		[[nodiscard]] virtual const rawrbox::Matrix4x4& getModelTransform() const;
 		virtual void setModelTransform(const rawrbox::Matrix4x4& transform);

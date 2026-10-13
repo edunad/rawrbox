@@ -444,7 +444,7 @@ namespace ui_test {
 
 	void Game::onThreadShutdown(rawrbox::ENGINE_THREADS thread) {
 		if (thread == rawrbox::ENGINE_THREADS::THREAD_RENDER) {
-			this->_anim->reset();
+			if (this->_anim != nullptr) this->_anim->reset();
 			this->_graph = nullptr;
 			this->_consoleUI = nullptr;
 
