@@ -260,10 +260,7 @@ namespace rawrbox {
 			//  ---------
 
 			if (total == 0) return;
-
-			// The culling also reads this buffer, so let diligent track its state ---
 			context->UpdateBuffer(this->_dataBuffer->GetBuffer(), sizeof(rawrbox::Instance) * start, sizeof(rawrbox::Instance) * total, &this->_instances[start], Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
-			//  ---------
 		}
 
 		void bindBuffers() override {
