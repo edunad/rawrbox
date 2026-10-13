@@ -80,8 +80,8 @@ namespace rawrbox {
 	// -----
 
 	void Engine::shutdown() {
+		rawrbox::ASYNC::shutdown();                      // Finish all jobs
 		this->_shutdown = ENGINE_THREADS::THREAD_RENDER; // Stop render first
-		rawrbox::ASYNC::shutdown();
 	}
 
 	void Engine::run() {

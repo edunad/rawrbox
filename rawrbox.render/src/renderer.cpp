@@ -55,6 +55,7 @@ namespace rawrbox {
 	RendererBase::RendererBase(Diligent::RENDER_DEVICE_TYPE type, Diligent::NativeWindow window, const rawrbox::Vector2u& size, const rawrbox::Vector2u& monitorSize, const rawrbox::Colorf& clearColor) : _clearColor(clearColor), _size(size), _monitorSize(monitorSize), _window(window), _type(type) {}
 	RendererBase::~RendererBase() {
 		this->_stencil.reset();
+		this->_occlusion.reset();
 		this->_logger.reset();
 		this->_GPUBlit.reset();
 
@@ -403,6 +404,11 @@ namespace rawrbox {
 		this->_stencil->upload();
 		// ------------------
 
+		// Setup occlusion ----
+		this->_occlusion = std::make_unique<rawrbox::Occlusion>();
+		this->_occlusion->upload(*rawrbox::MAIN_CAMERA);
+		// ------------------
+
 		this->playIntro();
 		this->_initialized = true;
 	}
@@ -479,6 +485,7 @@ namespace rawrbox {
 
 		for (auto& camera : this->_cameras) {
 			if (!camera->isEnabled()) continue;
+			this->_passCamera = camera.get();
 
 			// Update camera buffer --
 			camera->updateBuffer();
@@ -496,9 +503,14 @@ namespace rawrbox {
 			// -----------------------
 
 			// Perform world --
+			const bool occlusion = camera.get() == rawrbox::MAIN_CAMERA;
+			if (occlusion) this->_occlusion->begin();
+
 			camera->begin();
 			this->_drawCall(*camera, rawrbox::DrawPass::PASS_WORLD);
 			camera->end();
+
+			if (occlusion) this->_occlusion->end(*camera);
 			//  -----------------
 
 			// Perform post-render --
@@ -508,6 +520,8 @@ namespace rawrbox {
 			}
 			// -----------------------
 		}
+
+		this->_passCamera = nullptr;
 
 		// Render main camera ----
 		rawrbox::RenderUtils::renderQUAD(*rawrbox::MAIN_CAMERA->getRenderTarget());
@@ -709,8 +723,17 @@ namespace rawrbox {
 	// ----------------
 
 	// Utils ----
-	void RendererBase::setActiveCamera(rawrbox::CameraBase* camera) const { rawrbox::MAIN_CAMERA = camera; }
+	void RendererBase::setActiveCamera(rawrbox::CameraBase* camera) const {
+		rawrbox::MAIN_CAMERA = camera;
+
+		// OCCLUSION ---
+		if (this->_occlusion != nullptr && camera != nullptr && this->_occlusion->getSize() != camera->getRenderTarget()->getSize())
+			this->_occlusion->resize(camera->getRenderTarget()->getSize());
+		// --------------------
+	}
+
 	rawrbox::CameraBase* RendererBase::getActiveCamera() const { return rawrbox::MAIN_CAMERA; }
+	rawrbox::CameraBase* RendererBase::getPassCamera() const { return this->_passCamera != nullptr ? this->_passCamera : rawrbox::MAIN_CAMERA; }
 
 	rawrbox::CameraBase* RendererBase::getCamera(size_t indx) const {
 		if (indx >= this->_cameras.size()) return nullptr;
@@ -720,6 +743,7 @@ namespace rawrbox {
 	size_t RendererBase::totalCameras() const { return this->_cameras.size(); }
 
 	rawrbox::Stencil* RendererBase::stencil() const { return this->_stencil.get(); }
+	rawrbox::Occlusion* RendererBase::occlusion() const { return this->_occlusion.get(); }
 
 	Diligent::IDeviceContext* RendererBase::context() const { return this->_context; }
 	Diligent::ISwapChain* RendererBase::swapChain() const { return this->_swapChain; }

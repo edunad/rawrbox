@@ -11,6 +11,10 @@ StructuredBuffer<uint> ShadowViews;
 
 #include "shadow_uniforms.fxh"
 
+#ifdef INSTANCED
+	#include "instance.fxh"
+#endif
+
 Texture2DArray g_Textures[];
 SamplerState g_Sampler;
 
@@ -32,20 +36,10 @@ struct VSInput {
 	    float4 BoneWeight : ATTRIB5;
 
         #ifdef INSTANCED
-            float4 MtrxRow0 : ATTRIB6;
-            float4 MtrxRow1 : ATTRIB7;
-            float4 MtrxRow2 : ATTRIB8;
-            float4 MtrxRow3 : ATTRIB9;
-
-            uint4 InstData : ATTRIB10;
+            uint InstanceIndex : ATTRIB6;
         #endif
 	#elif defined(INSTANCED)
-	    float4 MtrxRow0 : ATTRIB4;
-	    float4 MtrxRow1 : ATTRIB5;
-	    float4 MtrxRow2 : ATTRIB6;
-	    float4 MtrxRow3 : ATTRIB7;
-
-	    uint4 InstData : ATTRIB8;
+	    uint InstanceIndex : ATTRIB4;
 	#endif
 #else
 	#ifdef SKINNED
@@ -53,20 +47,10 @@ struct VSInput {
 	    float4 BoneWeight : ATTRIB3;
 
 		#ifdef INSTANCED
-	        float4 MtrxRow0 : ATTRIB4;
-	        float4 MtrxRow1 : ATTRIB5;
-	        float4 MtrxRow2 : ATTRIB6;
-	        float4 MtrxRow3 : ATTRIB7;
-
-	        uint4 InstData : ATTRIB8;
+	        uint InstanceIndex : ATTRIB4;
 		#endif
 	#elif defined(INSTANCED)
-	    float4 MtrxRow0 : ATTRIB2;
-	    float4 MtrxRow1 : ATTRIB3;
-	    float4 MtrxRow2 : ATTRIB4;
-	    float4 MtrxRow3 : ATTRIB5;
-
-	    uint4 InstData : ATTRIB6;
+	    uint InstanceIndex : ATTRIB2;
 	#endif
 #endif
 };
@@ -96,7 +80,8 @@ void main(in VSInput VSIn, in uint instance : SV_InstanceID, out GSInput GSIn) {
 #endif
 
 #ifdef INSTANCED
-	pos = mul(pos, MatrixFromRows(VSIn.MtrxRow0, VSIn.MtrxRow1, VSIn.MtrxRow2, VSIn.MtrxRow3));
+	Instance instanceData = Instances[VSIn.InstanceIndex];
+	pos = float4(mul(GetInstanceMatrix(instanceData), pos), pos.w);
 #endif
 
 	TransformedData transform = applyPosTransforms(pos, VSIn.UV);
@@ -119,7 +104,7 @@ void main(in VSInput VSIn, in uint instance : SV_InstanceID, out GSInput GSIn) {
 	GSIn.UV = VSIn.UV;
 
 #ifdef INSTANCED
-	GSIn.View = view | (((uint)VSIn.Pos.w + VSIn.InstData.y + SliceOverride) << SHADOW_SLICE_SHIFT);
+	GSIn.View = view | (((uint)VSIn.Pos.w + instanceData.data.y + SliceOverride) << SHADOW_SLICE_SHIFT);
 #else
 	GSIn.View = view | (((uint)VSIn.Pos.w + SliceOverride) << SHADOW_SLICE_SHIFT);
 #endif

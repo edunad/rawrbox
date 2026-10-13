@@ -6,6 +6,9 @@ namespace rawrbox {
 	// PRIVATE -------------
 	std::unique_ptr<BS::thread_pool<>> ASYNC::_pool = nullptr;
 
+	std::mutex ASYNC::_lock;
+	bool ASYNC::_closed = false;
+
 	// LOGGER ------
 	std::unique_ptr<rawrbox::Logger> ASYNC::_logger = std::make_unique<rawrbox::Logger>("RawrBox-ASYNC");
 	// -------------
@@ -19,12 +22,22 @@ namespace rawrbox {
 	void ASYNC::shutdown() {
 		if (_pool == nullptr) return;
 
+		// Stop queued jobs ---
+		{
+			const std::scoped_lock lock(_lock);
+			_closed = true;
+		}
+		// -----------
+
 		_pool->purge();
-		_pool->reset();
+		_pool->wait();
 	}
 
 	void ASYNC::run(const std::function<void()>& job) {
 		if (_pool == nullptr) RAWRBOX_CRITICAL("ASYNC not initialized!");
+
+		const std::scoped_lock lock(_lock);
+		if (_closed) return;
 
 		try {
 			_pool->detach_task(job);

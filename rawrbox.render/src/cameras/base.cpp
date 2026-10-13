@@ -162,8 +162,20 @@ namespace rawrbox {
 	}
 
 	rawrbox::Matrix4x4 CameraBase::getViewProjMtx() const {
+#ifdef _DEBUG
+		if (this->_cullFrozen) return this->_cullMtx;
+#endif
 		return this->_projection * this->_view;
 	}
+
+#ifdef _DEBUG
+	void CameraBase::setCullFrozen(bool frozen) {
+		this->_cullFrozen = frozen;
+		this->_cullMtx = this->_projection * this->_view;
+	}
+
+	bool CameraBase::isCullFrozen() const { return this->_cullFrozen; }
+#endif
 
 	const rawrbox::Matrix4x4& CameraBase::getModelTransform() const {
 		return this->_world;

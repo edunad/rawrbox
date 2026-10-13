@@ -40,6 +40,9 @@ namespace rawrbox {
 		}
 
 		settings.signatures = {rawrbox::BindlessManager::signature};
+		if (helper.Find("INSTANCED") != nullptr)
+			settings.signatures.push_back(rawrbox::BindlessManager::instanceSignature);
+
 		settings.layout = layout;
 		// -------------------
 

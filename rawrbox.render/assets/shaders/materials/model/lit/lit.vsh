@@ -9,6 +9,10 @@
 	#define TRANSFORM_BONES
 #endif
 
+#ifdef INSTANCED
+	#include "instance.fxh"
+#endif
+
 Texture2DArray g_Textures[];
 SamplerState g_Sampler;
 
@@ -26,23 +30,11 @@ struct VSInput {
 	float4 BoneWeight : ATTRIB5;
 
 	#ifdef INSTANCED
-	// Instance attributes
-	float4 MtrxRow0 : ATTRIB6;
-	float4 MtrxRow1 : ATTRIB7;
-	float4 MtrxRow2 : ATTRIB8;
-	float4 MtrxRow3 : ATTRIB9;
-
-	uint4 InstData : ATTRIB10; // Color, slice, gpu id, ??
+	uint InstanceIndex : ATTRIB6;
 	#endif
 #else
 	#ifdef INSTANCED
-	// Instance attributes
-	float4 MtrxRow0 : ATTRIB4;
-	float4 MtrxRow1 : ATTRIB5;
-	float4 MtrxRow2 : ATTRIB6;
-	float4 MtrxRow3 : ATTRIB7;
-
-	uint4 InstData : ATTRIB8; // Color, slice, gpu id, ??
+	uint InstanceIndex : ATTRIB4;
 	#endif
 #endif
 };
@@ -74,11 +66,12 @@ void main(in VSInput VSIn, out PSInput PSIn) {
 #endif
 
 #ifdef INSTANCED
-	float4x4 InstanceMatr = MatrixFromRows(VSIn.MtrxRow0, VSIn.MtrxRow1, VSIn.MtrxRow2, VSIn.MtrxRow3);
+	Instance instance = Instances[VSIn.InstanceIndex];
+	float3x4 instanceMatr = GetInstanceMatrix(instance);
 
-	pos = mul(pos, InstanceMatr);
-	normal = mul(normal, (float3x3)InstanceMatr);
-	tangent.xyz = mul(tangent.xyz, (float3x3)InstanceMatr);
+	pos = float4(mul(instanceMatr, pos), pos.w);
+	normal = mul((float3x3)instanceMatr, normal);
+	tangent.xyz = mul((float3x3)instanceMatr, tangent.xyz);
 #endif
 
 	TransformedData transform = applyPosTransforms(pos, VSIn.UV);
@@ -93,9 +86,9 @@ void main(in VSInput VSIn, out PSInput PSIn) {
 
 #ifdef INSTANCED
 	PSIn.Data = uint3(
-	    Pack_RGBA8_UNORM(Unpack_RGBA8_UNORM(VSIn.InstData.x) * Unpack_RGBA8_UNORM(ColorOverride)),
-	    VSIn.InstData.z,
-	    (uint)VSIn.Pos.w + VSIn.InstData.y + SliceOverride);
+	    Pack_RGBA8_UNORM(Unpack_RGBA8_UNORM(instance.data.x) * Unpack_RGBA8_UNORM(ColorOverride)),
+	    instance.data.z,
+	    (uint)VSIn.Pos.w + instance.data.y + SliceOverride);
 #else
 	PSIn.Data = uint3(ColorOverride, GPUID, (uint)VSIn.Pos.w + SliceOverride);
 #endif

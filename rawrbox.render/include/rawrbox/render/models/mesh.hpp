@@ -159,6 +159,10 @@ namespace rawrbox {
 		virtual void setTransparent(bool transparent) { this->_transparent = transparent; }
 		[[nodiscard]] virtual bool isTransparent() const { return this->_transparent; }
 
+		// CULLING ---
+		[[nodiscard]] virtual bool isCullable() const { return this->data.billboard == 0 && this->data.displacement == nullptr; }
+		// ---------
+
 		[[nodiscard]] virtual const std::vector<T>& getVertices() const { return this->vertices; }
 		[[nodiscard]] virtual const std::vector<uint32_t>& getIndices() const { return this->indices; }
 

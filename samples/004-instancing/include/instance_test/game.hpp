@@ -1,14 +1,15 @@
 #pragma once
 
 #include <rawrbox/engine/engine.hpp>
+#include <rawrbox/render/cameras/orbit.hpp>
 #include <rawrbox/render/models/instanced.hpp>
-#include <rawrbox/render/textures/atlas.hpp>
 
 #include <memory>
 
 namespace instance_test {
 	class Game : public rawrbox::Engine {
 		std::unique_ptr<rawrbox::InstancedModel<>> _model = std::make_unique<rawrbox::InstancedModel<>>();
+		rawrbox::CameraOrbit* _camera = nullptr;
 		bool _ready = false;
 
 		void setupGLFW() override;
@@ -27,6 +28,7 @@ namespace instance_test {
 		~Game() override = default;
 
 		void drawWorld();
+		void drawOverlay() const;
 
 		void loadContent();
 		void contentLoaded();

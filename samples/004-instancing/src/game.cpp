@@ -37,17 +37,30 @@ namespace instance_test {
 		auto* render = window->createRenderer();
 		render->onIntroCompleted = [this]() { this->loadContent(); };
 		render->setDrawCall([this](const rawrbox::CameraBase& /*camera*/, const rawrbox::DrawPass& pass) {
-			if (pass != rawrbox::DrawPass::PASS_WORLD) return;
-			this->drawWorld();
+			if (pass == rawrbox::DrawPass::PASS_WORLD) {
+				this->drawWorld();
+			} else {
+				this->drawOverlay();
+			}
 		});
 		// ---------------
 
 		// Setup camera
-		auto* cam = render->createCamera<rawrbox::CameraOrbit>(*window);
-		cam->setPos({0.F, 5.F, -5.F});
-		cam->setAngle({0.F, rawrbox::MathUtils::toRad(-45), 0.F, 0.F});
-		cam->canUseKeyboard([]() { return true; });
-		cam->canUseMouse([]() { return true; });
+		this->_camera = render->createCamera<rawrbox::CameraOrbit>(*window);
+		this->_camera->setPos({0.F, 5.F, -5.F});
+		this->_camera->setAngle({0.F, rawrbox::MathUtils::toRad(-45), 0.F, 0.F});
+		this->_camera->canUseKeyboard([]() { return true; });
+		this->_camera->canUseMouse([]() { return true; });
+		// --------------
+
+		// BINDS ----
+		window->onKey += [this](rawrbox::Window& /*w*/, uint32_t key, uint32_t /*scancode*/, uint32_t action, uint32_t /*mods*/) {
+			if (!this->_ready || action != rawrbox::KEY_ACTION_UP) return;
+#ifdef _DEBUG
+			if (key == rawrbox::KEY_F1) this->_camera->setCullFrozen(!this->_camera->isCullFrozen());
+#endif
+			if (key == rawrbox::KEY_F2) rawrbox::RENDERER->occlusion()->setEnabled(!rawrbox::RENDERER->occlusion()->isEnabled());
+		};
 		// --------------
 
 		// Add loaders
@@ -117,6 +130,16 @@ namespace instance_test {
 	void Game::drawWorld() {
 		if (!this->_ready || this->_model == nullptr) return;
 		this->_model->draw();
+	}
+
+	void Game::drawOverlay() const {
+		if (!this->_ready) return;
+		auto* stencil = rawrbox::RENDERER->stencil();
+
+#ifdef _DEBUG
+		stencil->drawText(fmt::format("[F1]   FREEZE CULL: {}", this->_camera->isCullFrozen()), {15, 15});
+#endif
+		stencil->drawText(fmt::format("[F2]   OCCLUSION: {}", rawrbox::RENDERER->occlusion()->isEnabled()), {15, 30});
 	}
 
 	void Game::draw() {

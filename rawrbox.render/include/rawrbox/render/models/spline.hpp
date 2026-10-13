@@ -148,10 +148,14 @@ namespace rawrbox {
 		}
 
 		void draw() override {
+			// FRUSTUM CULL ----
+			if (this->_mesh->isCullable() && !this->getCachedVertexBounds().inFrustum(rawrbox::RENDERER->getPassCamera()->getViewProjMtx() * this->getMatrix())) return;
+			// -------------------
+
 			rawrbox::ModelBase<M>::draw();
 
 			// Bind materials uniforms & textures ----
-			rawrbox::MAIN_CAMERA->setModelTransform(this->getMatrix());
+			rawrbox::RENDERER->getPassCamera()->setModelTransform(this->getMatrix());
 
 			this->_material->bindPipeline(*this->_mesh);
 			this->_material->bindVertexUniforms(*this->_mesh);

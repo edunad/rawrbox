@@ -95,6 +95,10 @@ namespace light {
 			if (key == rawrbox::KEY_F5) this->_shadows->setDebug(static_cast<rawrbox::SHADOW_DEBUG>((static_cast<uint32_t>(this->_shadows->getDebug()) + 1U) % static_cast<uint32_t>(rawrbox::SHADOW_DEBUG::COUNT)));
 #endif
 			if (key == rawrbox::KEY_F6) this->_shadows->setBudget(this->_shadows->getBudget() >= 64 ? 0 : std::max(this->_shadows->getBudget() * 2U, 8U));
+#ifdef _DEBUG
+			if (key == rawrbox::KEY_F7) this->_camera->setCullFrozen(!this->_camera->isCullFrozen());
+#endif
+			if (key == rawrbox::KEY_F8) rawrbox::RENDERER->occlusion()->setEnabled(!rawrbox::RENDERER->occlusion()->isEnabled());
 
 			if (key >= rawrbox::KEY_1 && key < rawrbox::KEY_1 + ROOMS.size()) this->setRoom(key - rawrbox::KEY_1);
 		};
@@ -283,8 +287,12 @@ namespace light {
 		stencil->drawText(fmt::format("[F5]   SHADOW DEBUG: {}", magic_enum::enum_name(this->_shadows->getDebug())), {15, 90});
 #endif
 		stencil->drawText(fmt::format("[F6]   RENDER BUDGET: {}", this->_shadows->getBudget() == 0 ? "unlimited" : fmt::format("{} pages", this->_shadows->getBudget())), {15, 105});
+#ifdef _DEBUG
+		stencil->drawText(fmt::format("[F7]   FREEZE CULL: {}", this->_camera->isCullFrozen()), {15, 120});
+#endif
+		stencil->drawText(fmt::format("[F8]   OCCLUSION: {}", rawrbox::RENDERER->occlusion()->isEnabled()), {15, 135});
 
-		stencil->drawText(fmt::format("[1-{}]  ROOM: {}", ROOMS.size(), ROOMS[this->_room].name), {15, 135});
+		stencil->drawText(fmt::format("[1-{}]  ROOM: {}", ROOMS.size(), ROOMS[this->_room].name), {15, 150});
 	}
 
 	void Game::draw() {

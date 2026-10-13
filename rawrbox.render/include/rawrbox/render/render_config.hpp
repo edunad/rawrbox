@@ -38,6 +38,10 @@
 #define RB_RENDER_TILE_THREADS 64
 // ----------------
 
+// OCCLUSION ------
+#define RB_RENDER_OCCLUSION_THREADS 8U
+// ----------------
+
 // CAMERA -----
 // Add more layers if needed, you can then check if the camera should draw your model by checking if the layer is enabled
 #define RB_RENDER_CAMERA_LAYERS(flag) \

@@ -79,6 +79,38 @@ namespace rawrbox {
 		}
 		// -----------
 
+		// FRUSTUM ---
+		[[nodiscard]] bool inFrustum(const rawrbox::Matrix4x4& viewProj) const
+			requires std::is_same_v<NumberType, float>
+		{
+			if (this->isInfinite()) return true;
+
+			uint32_t outside = 0x3FU;
+
+			for (uint32_t corner = 0; corner < 8; corner++) {
+				const auto clip = viewProj.mulVec(rawrbox::Vector4f{
+				    (corner & 1U) != 0 ? this->max.x : this->min.x,
+				    (corner & 2U) != 0 ? this->max.y : this->min.y,
+				    (corner & 4U) != 0 ? this->max.z : this->min.z,
+				    1.F});
+
+				uint32_t planes = 0;
+
+				if (clip.x < -clip.w) planes |= 1U;
+				if (clip.x > clip.w) planes |= 2U;
+				if (clip.y < -clip.w) planes |= 4U;
+				if (clip.y > clip.w) planes |= 8U;
+				if (clip.z < -clip.w) planes |= 16U;
+				if (clip.z > clip.w) planes |= 32U;
+
+				outside &= planes;
+				if (outside == 0) return true;
+			}
+
+			return false;
+		}
+		// -----------
+
 		bool operator==(const BBOXType& other) const { return this->min == other.min && this->max == other.max; }
 		bool operator!=(const BBOXType& other) const { return !operator==(other); }
 

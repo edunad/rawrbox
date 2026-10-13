@@ -4,10 +4,15 @@
 
 #include <BS_thread_pool.hpp>
 
+#include <mutex>
+
 namespace rawrbox {
 	class ASYNC {
 	protected:
 		static std::unique_ptr<BS::thread_pool<>> _pool;
+
+		static std::mutex _lock;
+		static bool _closed;
 
 		// LOGGER ------
 		static std::unique_ptr<rawrbox::Logger> _logger;
