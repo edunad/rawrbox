@@ -27,8 +27,8 @@ namespace rawrbox {
 
 		std::array<uint32_t, 2> radiance = {};
 
-		static constexpr uint32_t TYPE_MASK = 0x3U;
-		static constexpr uint32_t SHADOW_SHIFT = 2U;
+		static constexpr uint32_t TYPE_MASK = 0x7U;
+		static constexpr uint32_t SHADOW_SHIFT = 3U;
 	};
 
 	struct LightConstants {

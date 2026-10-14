@@ -48,6 +48,10 @@ namespace gpu {
 		cam->canUseMouse([]() { return true; });
 		// --------------
 
+		// Pre-compile shaders before content load
+		render->precompile<rawrbox::MaterialUnlit, rawrbox::MaterialInstanced, rawrbox::MaterialText3D>();
+		// ---------------------------------------
+		
 		render->init();
 
 		// BINDS ----

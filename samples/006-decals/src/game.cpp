@@ -73,6 +73,10 @@ namespace decal_test {
 		};
 		// -----
 
+		// Pre-compile shaders before content load
+		render->precompile<rawrbox::MaterialUnlit, rawrbox::MaterialLit>();
+		// ---------------------------------------
+
 		render->init();
 	}
 

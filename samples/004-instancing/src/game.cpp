@@ -67,6 +67,10 @@ namespace instance_test {
 		rawrbox::RESOURCES::addLoader<rawrbox::TextureLoader>();
 		// --------------
 
+		// Pre-compile shaders before content load
+		render->precompile<rawrbox::MaterialInstanced>();
+		// ---------------------------------------
+		
 		render->init();
 	}
 

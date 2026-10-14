@@ -56,6 +56,10 @@ namespace particle_system {
 		rawrbox::RESOURCES::addLoader<rawrbox::TextureLoader>();
 		// --------------
 
+		// Pre-compile shaders before content load
+		render->precompile<rawrbox::MaterialParticle, rawrbox::MaterialUnlit, rawrbox::MaterialText3D>();
+		// ---------------------------------------
+
 		render->init();
 	}
 

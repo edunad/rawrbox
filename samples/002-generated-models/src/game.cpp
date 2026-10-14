@@ -64,6 +64,10 @@ namespace model {
 		rawrbox::RESOURCES::addLoader<rawrbox::TextureLoader>();
 		// --------------
 
+		// Pre-compile shaders before content load
+		render->precompile<rawrbox::MaterialUnlit, rawrbox::MaterialText3D>();
+		// ---------------------------------------
+		
 		render->init();
 	}
 

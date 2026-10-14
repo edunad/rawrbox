@@ -17,7 +17,6 @@ namespace rawrbox {
 	std::array<Diligent::IPipelineState*, 4> DebugDraw::_pipelines = {};
 
 	Diligent::RefCntAutoPtr<Diligent::IBuffer> DebugDraw::_buffer;
-	size_t DebugDraw::_bufferVertices = 0;
 	// ----------------
 
 	// PRIVATE ----
@@ -29,7 +28,7 @@ namespace rawrbox {
 		_queues[queue].push_back({pos, color});
 	}
 
-	void DebugDraw::createPipelines() {
+	void DebugDraw::init() {
 		rawrbox::PipeSettings settings;
 
 		settings.pVS = "debug_draw.vsh";
@@ -55,42 +54,27 @@ namespace rawrbox {
 			const std::string name = std::string("DebugDraw::") + (depthTest ? "Depth" : "NoDepth") + (line ? "::Line" : "");
 			_pipelines[i] = rawrbox::PipelineUtils::createPipeline(name, settings);
 		}
-	}
 
-	void DebugDraw::ensureBuffer(size_t vertices) {
-		if (_buffer != nullptr && vertices <= _bufferVertices) return;
-
-		size_t size = std::max(MIN_BUFFER_VERTICES, _bufferVertices);
-		while (size < vertices) {
-			size *= 2;
-		}
-
-		RAWRBOX_DESTROY(_buffer);
-
+		// Buffer ---
 		Diligent::BufferDesc desc;
 		desc.Name = "RawrBox::Buffer::DebugDraw";
 		desc.Usage = Diligent::USAGE_DYNAMIC;
 		desc.CPUAccessFlags = Diligent::CPU_ACCESS_WRITE;
 		desc.BindFlags = Diligent::BIND_VERTEX_BUFFER;
-		desc.Size = static_cast<uint64_t>(size * sizeof(rawrbox::DebugVertex));
+		desc.Size = static_cast<uint64_t>(RB_RENDER_MAX_DEBUG_VERTICES * sizeof(rawrbox::DebugVertex));
 
 		rawrbox::RENDERER->device()->CreateBuffer(desc, nullptr, &_buffer);
 		if (_buffer == nullptr) RAWRBOX_CRITICAL("Failed to create debug draw buffer");
 
 		rawrbox::BarrierUtils::barrier({{_buffer, Diligent::RESOURCE_STATE_UNKNOWN, Diligent::RESOURCE_STATE_VERTEX_BUFFER, Diligent::STATE_TRANSITION_FLAG_UPDATE_STATE}});
-		_bufferVertices = size;
+		// -----
 	}
 	// ------------
 
 	void DebugDraw::shutdown() {
-		for (auto& queue : _queues) {
-			queue = {};
-		}
-
+		_queues = {};
 		RAWRBOX_DESTROY(_buffer);
-
 		_pipelines = {};
-		_bufferVertices = 0;
 	}
 
 	void DebugDraw::line(const rawrbox::Vector3f& a, const rawrbox::Vector3f& b, const rawrbox::Colorf& color, bool depthTest) {
@@ -145,11 +129,10 @@ namespace rawrbox {
 		if (rawrbox::MAIN_CAMERA == nullptr) RAWRBOX_CRITICAL("Main camera not initialized");
 
 		auto* context = rawrbox::RENDERER->context();
-		if (_pipelines[0] == nullptr) createPipelines();
-		ensureBuffer(total);
 
-		// Upload ----
+		// Upload, drop if overflow ----
 		std::array<uint32_t, 4> offsets = {};
+		std::array<uint32_t, 4> counts = {};
 		{
 			Diligent::MapHelper<rawrbox::DebugVertex> data(context, _buffer, Diligent::MAP_WRITE, Diligent::MAP_FLAG_DISCARD);
 			if (data == nullptr) RAWRBOX_CRITICAL("Failed to map debug draw buffer");
@@ -158,10 +141,13 @@ namespace rawrbox {
 			size_t offset = 0;
 			for (size_t i = 0; i < _queues.size(); i++) {
 				offsets[i] = static_cast<uint32_t>(offset);
-				if (_queues[i].empty()) continue;
+				counts[i] = static_cast<uint32_t>(std::min(_queues[i].size(), RB_RENDER_MAX_DEBUG_VERTICES - offset));
+				counts[i] -= counts[i] % ((i & 1U) != 0 ? 2U : 3U);
 
-				std::memcpy(dst + offset, _queues[i].data(), _queues[i].size() * sizeof(rawrbox::DebugVertex));
-				offset += _queues[i].size();
+				if (counts[i] == 0) continue;
+
+				std::memcpy(dst + offset, _queues[i].data(), counts[i] * sizeof(rawrbox::DebugVertex));
+				offset += counts[i];
 			}
 		}
 		// ---------------------------------
@@ -172,12 +158,12 @@ namespace rawrbox {
 		context->SetVertexBuffers(0, 1, buffers.data(), nullptr, Diligent::RESOURCE_STATE_TRANSITION_MODE_VERIFY, Diligent::SET_VERTEX_BUFFERS_FLAG_RESET);
 
 		for (size_t i = 0; i < _queues.size(); i++) {
-			if (_queues[i].empty()) continue;
+			if (counts[i] == 0) continue;
 
 			context->SetPipelineState(_pipelines[i]);
 
 			Diligent::DrawAttribs attrs;
-			attrs.NumVertices = static_cast<uint32_t>(_queues[i].size());
+			attrs.NumVertices = counts[i];
 			attrs.StartVertexLocation = offsets[i];
 
 			context->Draw(attrs);

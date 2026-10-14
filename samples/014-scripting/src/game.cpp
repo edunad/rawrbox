@@ -122,6 +122,10 @@ namespace scripting_test {
 		// rawrbox::SCRIPTING::loadMod("./mods/test_mod"); // To load a specific mod
 		// ----
 
+		// Pre-compile shaders before content load
+		render->precompile<rawrbox::MaterialUnlit, rawrbox::MaterialInstanced>();
+		// ---------------------------------------
+		
 		render->init();
 	}
 

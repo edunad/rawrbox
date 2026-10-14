@@ -22,21 +22,16 @@ namespace rawrbox {
 	class DebugDraw {
 
 	protected:
-		static constexpr size_t MIN_BUFFER_VERTICES = 4096;
-
 		static std::array<std::vector<rawrbox::DebugVertex>, 4> _queues;
 		static std::array<Diligent::IPipelineState*, 4> _pipelines;
 
 		static Diligent::RefCntAutoPtr<Diligent::IBuffer> _buffer;
-		static size_t _bufferVertices;
 
 		static size_t queueIndex(bool line, bool depthTest);
 		static void push(size_t queue, const rawrbox::Vector3f& pos, uint32_t color);
 
-		static void createPipelines();
-		static void ensureBuffer(size_t vertices);
-
 	public:
+		static void init();
 		static void shutdown();
 
 		// UTILS ----

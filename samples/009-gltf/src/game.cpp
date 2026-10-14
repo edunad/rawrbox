@@ -61,6 +61,10 @@ namespace gltf {
 		rawrbox::MaterialSkinned::DEBUG_MODE = false;
 #endif
 
+		// Pre-compile shaders before content load
+		render->precompile<rawrbox::MaterialUnlit, rawrbox::MaterialLit, rawrbox::MaterialSkinned, rawrbox::MaterialSkinnedLit, rawrbox::MaterialText3D>();
+		// ---------------------------------------
+		
 		render->init();
 	}
 

@@ -1,5 +1,6 @@
 #include <rawrbox/render/lights/directional.hpp>
 #include <rawrbox/render/lights/point.hpp>
+#include <rawrbox/render/lights/rect.hpp>
 #include <rawrbox/render/lights/spot.hpp>
 #include <rawrbox/render/scripting/global/lights/manager.hpp>
 
@@ -30,6 +31,10 @@ namespace rawrbox {
 
 	void LightsGlobal::addSpot(const rawrbox::Vector3f& pos, const rawrbox::Vector3f& direction, const rawrbox::Colori& color, float penumbra, float umbra, float radius) {
 		rawrbox::LIGHTS::add<rawrbox::SpotLight>(pos, direction, color.cast<float>(), penumbra, umbra, radius);
+	}
+
+	void LightsGlobal::addRect(const rawrbox::Vector3f& pos, const rawrbox::Vector3f& direction, const rawrbox::Vector3f& right, const rawrbox::Colori& color, const rawrbox::Vector2f& size, float radius) {
+		rawrbox::LIGHTS::add<rawrbox::RectLight>(pos, direction, right, color.cast<float>(), size, radius);
 	}
 
 	void LightsGlobal::addDirectional(const rawrbox::Vector3f& pos, const rawrbox::Vector3f& direction, const rawrbox::Colori& color) {
@@ -75,6 +80,7 @@ namespace rawrbox {
 		    // LIGHT ---
 		    .addFunction("addPoint", &LightsGlobal::addPoint)
 		    .addFunction("addSpot", &LightsGlobal::addSpot)
+		    .addFunction("addRect", &LightsGlobal::addRect)
 		    .addFunction("addDirectional", &LightsGlobal::addDirectional)
 		    //
 		    .addFunction("remove",

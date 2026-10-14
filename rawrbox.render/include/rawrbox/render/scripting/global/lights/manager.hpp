@@ -19,6 +19,7 @@ namespace rawrbox {
 		// Light ----
 		static void addPoint(const rawrbox::Vector3f& pos, const rawrbox::Colori& color, float radius);
 		static void addSpot(const rawrbox::Vector3f& pos, const rawrbox::Vector3f& direction, const rawrbox::Colori& color, float penumbra, float umbra, float radius);
+		static void addRect(const rawrbox::Vector3f& pos, const rawrbox::Vector3f& direction, const rawrbox::Vector3f& right, const rawrbox::Colori& color, const rawrbox::Vector2f& size, float radius);
 		static void addDirectional(const rawrbox::Vector3f& pos, const rawrbox::Vector3f& direction, const rawrbox::Colori& color);
 
 		static void remove(const rawrbox::LightBase& light);

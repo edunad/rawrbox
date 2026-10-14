@@ -56,6 +56,10 @@ namespace bass_test {
 		rawrbox::RESOURCES::addLoader<rawrbox::BASSLoader>();
 		// --------------
 
+		// Pre-compile shaders before content load
+		render->precompile<rawrbox::MaterialUnlit, rawrbox::MaterialText3D>();
+		// ---------------------------------------
+		
 		render->init();
 	}
 

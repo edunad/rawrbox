@@ -30,17 +30,75 @@ float DirectionalSpotAttenuation(float3 L, float3 direction, float cosUmbra, flo
 	return falloff * falloff;
 }
 
-// Distance between rays is proportional to distance squared
-// Extra windowing function to make light radius finite
 // https://blog.selfshadow.com/publications/s2013-shading-course/karis/s2013_pbs_epic_notes_v2.pdf
-float RadialAttenuation(float3 L, float range) {
-	float distSq = dot(L, L);
-	float distanceAttenuation = 1 / (distSq + 1);
-	float windowing = Square(saturate(1 - Square(distSq * Square(rcp(range)))));
-	return distanceAttenuation * windowing;
+
+float GetDistanceFalloff(float distSq) {
+	return 1.0 / (distSq + 1.0);
 }
 
+float GetRangeWindow(float distSq, float range) {
+	return Square(saturate(1.0 - Square(distSq * Square(rcp(range)))));
+}
+
+float RadialAttenuation(float3 L, float range) {
+	float distSq = dot(L, L);
+	return GetDistanceFalloff(distSq) * GetRangeWindow(distSq, range);
+}
+
+// RECT LIGHTS ---
+struct RectLight {
+	float3 center;
+	float3 normal;
+	float3 right;
+	float3 up;
+	float2 extent;
+};
+
+RectLight GetRectLight(Light light) {
+	RectLight rect;
+	rect.center = light.position;
+	rect.normal = light.direction;
+	rect.extent = Unpack_RG16_FLOAT(asuint(light.cosUmbra));
+
+	float3 right = UnpackOctNormal(Unpack_RG16_FLOAT(asuint(light.cosPenumbra)));
+	rect.right = normalize(right - rect.normal * dot(right, rect.normal));
+	rect.up = cross(rect.normal, rect.right);
+
+	return rect;
+}
+
+float3 GetRectClosestPoint(RectLight rect, float3 pos) {
+	float3 offset = pos - rect.center;
+	float2 uv = clamp(float2(dot(offset, rect.right), dot(offset, rect.up)), -rect.extent, rect.extent);
+	return rect.center + rect.right * uv.x + rect.up * uv.y;
+}
+
+float3 GetRectRayPoint(RectLight rect, float3 origin, float3 dir) {
+	float denom = dot(dir, rect.normal);
+	float t = abs(denom) > 1e-4 ? dot(rect.center - origin, rect.normal) / denom : -1.0;
+
+	float3 hit = t > 0.0 ? origin + dir * t : origin + dir * max(dot(rect.center - origin, dir), 0.0);
+	return GetRectClosestPoint(rect, hit);
+}
+// ------
+
 float GetAttenuation(Light light, float3 worldPosition, out float3 L) {
+	// RECT LIGHTS
+	if (GetLightType(light) == LIGHT_RECT) {
+		RectLight rect = GetRectLight(light);
+		float3 offset = worldPosition - rect.center;
+
+		L = -rect.normal;
+		if (dot(offset, rect.normal) <= 1e-4) return 0.0;
+
+		float3 toLight = GetRectClosestPoint(rect, worldPosition) - worldPosition;
+		float distSq = max(dot(toLight, toLight), 1e-6);
+		L = toLight * rsqrt(distSq);
+
+		return GetDistanceFalloff(distSq) * GetRangeWindow(dot(offset, offset), light.radius) * saturate(dot(rect.normal, -L));
+	}
+	//--------------------
+
 	// Directional (sun)
 	if (GetLightType(light) == LIGHT_DIRECTIONAL) {
 		float lenSq = dot(light.direction, light.direction);
@@ -183,6 +241,48 @@ LightResult DefaultLitBxDF(float3 specularColor, float specularRoughness, float3
 void ApplyLight(uint index, inout LightResult lighting, float3 specular, float R, float3 diffuse, float3 N, float3 geoNormal, float3 V, float3 worldPos, float dither) {
 	if (TOTAL_LIGHTS == 0) return;
 	Light light = GetLight(index);
+
+	// RECT ---
+	if (GetLightType(light) == LIGHT_RECT) {
+		RectLight rect = GetRectLight(light);
+
+		float3 offset = worldPos - rect.center;
+		if (dot(offset, rect.normal) <= 1e-4) return;
+
+		float window = GetRangeWindow(dot(offset, offset), light.radius);
+		if (window <= 0.0) return;
+
+		// Diffuse
+		float3 toDiffuse = 0.5 * (GetRectClosestPoint(rect, worldPos) + GetRectRayPoint(rect, worldPos, N)) - worldPos;
+		float diffuseDistSq = max(dot(toDiffuse, toDiffuse), 1e-6);
+		float3 Ld = toDiffuse * rsqrt(diffuseDistSq);
+
+		float wrap = saturate(max(rect.extent.x, rect.extent.y) * rsqrt(diffuseDistSq));
+		float NdotLd = saturate((dot(N, Ld) + wrap) / (1.0 + wrap));
+		float diffuseFalloff = window * GetDistanceFalloff(diffuseDistSq) * saturate(dot(rect.normal, -Ld));
+
+		// Specular
+		float3 toSpecular = GetRectRayPoint(rect, worldPos, reflect(-V, N)) - worldPos;
+		float specularDistSq = max(dot(toSpecular, toSpecular), 1e-6);
+		float3 Ls = toSpecular * rsqrt(specularDistSq);
+
+		float a = max(Square(R), 0.01);
+		float sourceRadius = 2.0 * sqrt(rect.extent.x * rect.extent.y * INV_PI);
+		float energy = Square(a / saturate(a + 0.5 * saturate(sourceRadius * rsqrt(specularDistSq))));
+		float specularFalloff = window * GetDistanceFalloff(specularDistSq) * saturate(dot(rect.normal, -Ls)) * energy;
+
+	#ifdef READ_SHADOWS
+		float shadow = GetShadow(light, worldPos, geoNormal, dither);
+		diffuseFalloff *= shadow;
+		specularFalloff *= shadow;
+	#endif
+
+		float3 radiance = GetLightRadiance(light);
+		lighting.Diffuse += (diffuseFalloff * NdotLd) * Diffuse_Lambert(diffuse) * radiance;
+		lighting.Specular += DefaultLitBxDF(specular, R, diffuse, N, V, Ls, specularFalloff).Specular * radiance;
+		return;
+	}
+	// ------
 
 	float3 L;
 	float attenuation = GetAttenuation(light, worldPos, L);

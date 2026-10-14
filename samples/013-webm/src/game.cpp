@@ -57,6 +57,10 @@ namespace webm_test {
 		rawrbox::RESOURCES::addLoader<rawrbox::WEBMLoader>();
 		// ----------
 
+		// Pre-compile shaders before content load
+		render->precompile<rawrbox::MaterialUnlit>();
+		// ---------------------------------------
+		
 		render->init();
 	}
 

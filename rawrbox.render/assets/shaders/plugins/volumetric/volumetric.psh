@@ -64,22 +64,28 @@ struct PSOutput {
 };
 
 // MARCH ---
+bool ClipHalfSpace(float3 origin, float3 dir, float3 planePoint, float3 normal, float start, inout float2 range) {
+	float dv = dot(dir, normal);
+	float ov = dot(origin - planePoint, normal);
+	if (abs(dv) <= 1e-6) return ov >= start;
+
+	float plane = (start - ov) / dv;
+	if (dv > 0.0) {
+		range.x = max(range.x, plane);
+	} else {
+		range.y = min(range.y, plane);
+	}
+
+	return range.x < range.y;
+}
+
 bool ClipCone(float3 origin, float3 dir, float3 apex, float3 axis, float cosAngle, float start, inout float2 range) {
+	if (!ClipHalfSpace(origin, dir, apex, axis, start, range)) return false;
+
 	float3 offset = origin - apex;
 	float dv = dot(dir, axis);
 	float ov = dot(offset, axis);
 	float cos2 = cosAngle * cosAngle;
-
-	if (abs(dv) > 1e-6) {
-		float plane = (start - ov) / dv;
-		if (dv > 0.0) {
-			range.x = max(range.x, plane);
-		} else {
-			range.y = min(range.y, plane);
-		}
-	} else if (ov < start) {
-		return false;
-	}
 
 	float a = dv * dv - cos2;
 	float b = dv * ov - dot(dir, offset) * cos2;
@@ -135,6 +141,7 @@ void March(in PSInput PSIn, out PSOutput PSOut) {
 		float root = sqrt(disc);
 		float2 range = float2(-b - root, -b + root);
 		if (spot && !ClipCone(Camera.pos, dir, beam.position, beam.direction, beam.cosUmbra, volume.params.z, range)) continue;
+		if (GetLightType(light) == LIGHT_RECT && !ClipHalfSpace(Camera.pos, dir, light.position, light.direction, 0.0, range)) continue;
 
 		range = float2(max(range.x, 0.0), min(range.y, rayLength));
 		if (range.x >= range.y) continue;

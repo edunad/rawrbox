@@ -97,6 +97,10 @@ namespace post_process {
 		rawrbox::RESOURCES::addLoader<rawrbox::TextureLoader>();
 		// --------------
 
+		// Pre-compile shaders before content load
+		render->precompile<rawrbox::MaterialUnlit>();
+		// ---------------------------------------
+		
 		render->init();
 	}
 

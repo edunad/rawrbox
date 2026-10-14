@@ -72,6 +72,10 @@ namespace phys_2d_test {
 		};
 		// -----
 
+		// Pre-compile shaders before content load
+		render->precompile<rawrbox::MaterialUnlit>();
+		// ---------------------------------------
+		
 		render->init();
 	}
 

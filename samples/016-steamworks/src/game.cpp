@@ -51,6 +51,11 @@ namespace steamworks {
 		// --------------
 
 		if (!rawrbox::SteamSDK::init()) throw std::runtime_error("Failed to start steam sdk");
+
+		// Pre-compile shaders before content load
+		render->precompile<rawrbox::MaterialUnlit>();
+		// ---------------------------------------
+		
 		render->init();
 	}
 

@@ -6,6 +6,7 @@
 #include <rawrbox/render/utils/barrier.hpp>
 
 #include <algorithm>
+#include <bit>
 #include <cmath>
 
 namespace rawrbox {
@@ -353,6 +354,12 @@ namespace rawrbox {
 
 			data.cosPenumbra = std::cos(rawrbox::MathUtils::toRad(spot.x) / 2.F);
 			data.cosUmbra = std::cos(rawrbox::MathUtils::toRad(spot.y) / 2.F);
+		} else if (light.getType() == rawrbox::LightType::RECT) {
+			const auto rect = light.getData();
+			
+			// RE-USE UMBRA AND PENUMBRA
+			data.cosUmbra = std::bit_cast<float>(static_cast<uint32_t>(rawrbox::PackUtils::toFP16(rect.x)) | (static_cast<uint32_t>(rawrbox::PackUtils::toFP16(rect.y)) << 16U));
+			data.cosPenumbra = std::bit_cast<float>(static_cast<uint32_t>(rawrbox::PackUtils::toFP16(rect.z)) | (static_cast<uint32_t>(rawrbox::PackUtils::toFP16(rect.w)) << 16U));
 		}
 
 		return data;

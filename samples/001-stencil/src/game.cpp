@@ -59,6 +59,10 @@ namespace stencil {
 		rawrbox::RESOURCES::addLoader<rawrbox::SVGLoader>();
 		//  --------------
 
+		// Pre-compile shaders before content load
+		render->precompile<rawrbox::MaterialUnlit>();
+		//  --------------
+
 		render->init();
 	}
 

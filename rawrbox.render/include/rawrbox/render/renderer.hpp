@@ -79,6 +79,8 @@ namespace rawrbox {
 		bool _transparent = false;
 		bool _initialized = false;
 
+		std::vector<std::function<void()>> _precompile = {}; // Materials built at the end of init
+
 		Diligent::RENDER_DEVICE_TYPE _type = Diligent::RENDER_DEVICE_TYPE_UNDEFINED;
 
 		// HANDLES ---
@@ -160,6 +162,15 @@ namespace rawrbox {
 		[[nodiscard]] virtual bool hasPlugin(const std::string& plugin) const;
 		[[nodiscard]] virtual const rawrbox::RenderPluginList& getPlugins() const;
 		// -----------------------------------
+
+		// MATERIALS ---
+		// Compiles the materials' pipelines behind the intro, instead of when their first model uploads
+		template <typename... M>
+		void precompile() {
+			if (this->_initialized) RAWRBOX_CRITICAL("'precompile' must be called before 'init'!");
+			(this->_precompile.emplace_back([]() { M().init(); }), ...);
+		}
+		// ------
 
 		virtual void setDrawCall(std::function<void(const rawrbox::CameraBase&, const rawrbox::DrawPass&)> call);
 

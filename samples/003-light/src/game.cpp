@@ -2,11 +2,13 @@
 #include <rawrbox/math/utils/math.hpp>
 #include <rawrbox/render/cameras/orbit.hpp>
 #include <rawrbox/render/lights/point.hpp>
+#include <rawrbox/render/lights/rect.hpp>
 #include <rawrbox/render/lights/spot.hpp>
 #include <rawrbox/render/plugins/clustered.hpp>
 #include <rawrbox/render/plugins/post_process.hpp>
 #include <rawrbox/render/post_process/noise.hpp>
 #include <rawrbox/render/resources/font.hpp>
+#include <rawrbox/render/resources/texture.hpp>
 #include <rawrbox/resources/manager.hpp>
 #include <rawrbox/utils/keys.hpp>
 
@@ -111,14 +113,20 @@ namespace light {
 		// Add loaders ----
 		rawrbox::RESOURCES::addLoader<rawrbox::FontLoader>();
 		rawrbox::RESOURCES::addLoader<rawrbox::GLTFLoader>();
+		rawrbox::RESOURCES::addLoader<rawrbox::TextureLoader>();
 		// -----
 
+		// Pre-compile shaders before content load
+		render->precompile<rawrbox::MaterialLit, rawrbox::MaterialSkinnedLit>();
+		// ---------------------------------------
 		render->init();
 	}
 
 	void Game::loadContent() {
 		const std::vector<std::pair<std::string, uint32_t>> initialContentFiles = {
-		    {"./assets/models/kelley_road/scene.gltf", rawrbox::GLTFLoadFlags::IMPORT_TEXTURES | rawrbox::GLTFLoadFlags::IMPORT_ANIMATIONS}};
+		    {"./assets/models/kelley_road/scene.gltf", rawrbox::GLTFLoadFlags::IMPORT_TEXTURES | rawrbox::GLTFLoadFlags::IMPORT_ANIMATIONS},
+		    {"./assets/models/kelley_road/textures/television_emission.png", 0},
+		    {"./assets/models/kelley_road/textures/accessories_emission.png", 0}};
 
 		rawrbox::RESOURCES::loadListAsync(initialContentFiles, [this]() {
 			rawrbox::runOnRenderThread([this]() {
@@ -148,6 +156,23 @@ namespace light {
 		}
 		// ----------
 
+		// TV screen & basement tube glow, the emission masks only light the screen / tube texels ---
+		auto* tvScreen = this->_house->getMeshByName("Cube.044_television_0");
+		auto* basementTube = this->_house->getMeshByName("Cube.228_accessories_0");
+
+		const std::array<std::pair<rawrbox::Mesh<rawrbox::MaterialLit::vertexBufferType>*, std::string>, 2> masks = {{
+		    {tvScreen, "./assets/models/kelley_road/textures/television_emission.png"},
+		    {basementTube, "./assets/models/kelley_road/textures/accessories_emission.png"},
+		}};
+
+		for (const auto& [mesh, path] : masks) {
+			if (mesh == nullptr) continue;
+
+			mesh->setMergeable(false);
+			mesh->textures.emission = rawrbox::RESOURCES::getFile<rawrbox::ResourceTexture>(path)->get();
+		}
+		// ----------
+
 		this->_house->setScale({SCALE, SCALE, SCALE});
 		this->_house->upload();
 		this->_house->setShadowMode(rawrbox::ShadowMode::STATIC);
@@ -174,10 +199,15 @@ namespace light {
 		// Lights ----
 		rawrbox::LIGHTS::setAmbient({0.02F, 0.02F, 0.03F, 1.F});
 
-		const auto& tv = this->addLight(rawrbox::LIGHTS::add<rawrbox::SpotLight>(scale(320.F, 250.F, 530.F), rawrbox::Vector3f{0.F, -0.15F, 1.F}.normalized(), rawrbox::Colorf{0.45F, 0.6F, 1.F, 1.F}, 90.F, 150.F, 6.F), light::Flicker::TV, 16.F);
-		this->_volumetric->add(*tv.light, {.width = 0.5F});
+		const rawrbox::Colorf tvColor = {0.45F, 0.6F, 1.F, 1.F};
+		const rawrbox::Colorf basementColor = {1.F, 0.08F, 0.05F, 1.F};
 
-		this->addLight(rawrbox::LIGHTS::add<rawrbox::PointLight>(scale(320.F, 230.F, 500.F), rawrbox::Colorf{0.45F, 0.6F, 1.F, 1.F}, 0.6F), light::Flicker::TV, 4.F, false);
+		auto& tv = this->addLight(rawrbox::LIGHTS::add<rawrbox::RectLight>(scale(320.F, 250.F, 530.F), rawrbox::Vector3f{0.F, 0.F, 1.F}, rawrbox::Vector3f{1.F, 0.F, 0.F}, tvColor, rawrbox::Vector2f{0.5F, 0.38F}, 6.F), light::Flicker::TV, 16.F);
+		tv.shade = tvScreen;
+		tv.shadeEmission = 4.F;
+		this->_volumetric->add(*tv.light);
+
+		this->addLight(rawrbox::LIGHTS::add<rawrbox::PointLight>(scale(320.F, 230.F, 500.F), tvColor, 0.6F), light::Flicker::TV, 4.F, false);
 
 		auto& hallway = this->addLight(rawrbox::LIGHTS::add<rawrbox::SpotLight>(scale(-590.F, 690.F, -850.F), rawrbox::Vector3f{0.F, -1.F, 0.F}, rawrbox::Colorf{1.F, 0.72F, 0.42F, 1.F}, 100.F, 160.F, 4.5F), light::Flicker::FAILING, 10.F);
 		hallway.glow = rawrbox::LIGHTS::add<rawrbox::PointLight>(scale(-590.F, 640.F, -850.F), rawrbox::Colorf{1.F, 0.72F, 0.42F, 1.F}, 0.8F);
@@ -200,7 +230,9 @@ namespace light {
 		bathroom->setShadowLodBias(1.F);
 
 		this->addLight(bathroom, light::Flicker::FAILING, 4.F);
-		auto& basement = this->addLight(rawrbox::LIGHTS::add<rawrbox::PointLight>(scale(200.F, -400.F, 50.F), rawrbox::Colorf{1.F, 0.08F, 0.05F, 1.F}, 6.F), light::Flicker::TV, 14.F);
+		auto& basement = this->addLight(rawrbox::LIGHTS::add<rawrbox::RectLight>(scale(325.F, -275.F, 200.F), rawrbox::Vector3f{0.F, -1.F, 0.F}, rawrbox::Vector3f{1.F, 0.F, 0.F}, basementColor, rawrbox::Vector2f{1.3F, 0.2F}, 6.F), light::Flicker::TV, 14.F);
+		basement.shade = basementTube;
+		basement.shadeEmission = 1.5F;
 		this->_volumetric->add(*basement.light, {.density = 0.015F});
 		// ----------
 

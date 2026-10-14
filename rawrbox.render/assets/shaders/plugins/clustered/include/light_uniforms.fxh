@@ -22,7 +22,7 @@ struct Light {
 	float3 direction;
 	uint type;
 
-    // SPOT LIGHT ----
+    // SPOT ----
 	float cosUmbra;
 	float cosPenumbra;
 	// ----------------
@@ -37,9 +37,10 @@ float3 GetLightRadiance(Light light) {
 #define LIGHT_POINT       1
 #define LIGHT_SPOT        2
 #define LIGHT_DIRECTIONAL 3
+#define LIGHT_RECT        4
 
-#define LIGHT_TYPE_MASK    0x3u
-#define LIGHT_SHADOW_SHIFT 2u
+#define LIGHT_TYPE_MASK    0x7u
+#define LIGHT_SHADOW_SHIFT 3u
 
 uint GetLightType(Light light) {
 	return light.type & LIGHT_TYPE_MASK;
