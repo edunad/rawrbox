@@ -65,10 +65,17 @@ namespace decal_test {
 		// BINDS ----
 		window->onMouseKey += [this](auto&, const rawrbox::Vector2i&, int button, int action, int) {
 			const bool isDown = action == 1;
-			if (!isDown || button != rawrbox::MOUSE_BUTTON_1) return;
-			this->generateDecals();
+			if (!this->_ready || !isDown || button != rawrbox::MOUSE_BUTTON_1) return;
+
+			rawrbox::runOnRenderThread([this]() {
+				this->generateDecals(); // Decals need to be on the render thread
+			});
 		};
 		// -----
+
+		// Pre-compile shaders before content load
+		render->precompile<rawrbox::MaterialUnlit, rawrbox::MaterialLit>();
+		// ---------------------------------------
 
 		render->init();
 	}
@@ -181,8 +188,10 @@ namespace decal_test {
 	}
 
 	void Game::drawOverlay() const {
-		if (!this->_ready) return;
 		auto* stencil = rawrbox::RENDERER->stencil();
+		stencil->drawText(fmt::format("FPS: {}", this->getCurrentFPS()), {static_cast<float>(stencil->getSize().x) - 15.F, 15.F}, rawrbox::Colors::White(), rawrbox::Colors::Black(), rawrbox::Alignment::Right);
+
+		if (!this->_ready) return;
 
 		stencil->drawText(fmt::format("[MOUSE_1]   RANDOMIZE DECALS"), {15, 15});
 	}

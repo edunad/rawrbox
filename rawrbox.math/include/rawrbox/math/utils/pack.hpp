@@ -12,12 +12,12 @@ namespace rawrbox {
 		static int32_t toSnorm(float _value, float _scale);
 		static float fromSnorm(int32_t _value, float _scale);
 
+	public:
 		// Octahedron
 		static std::array<float, 2> encodeOctahedron(float x, float y, float z);
 		static std::array<float, 3> decodeOctahedron(float u, float v);
 		// ------------------
 
-	public:
 		static uint32_t packRgba8(float x, float y, float z, float w);
 		static uint32_t packNormal(float _x, float _y = 0.0F, float _z = 0.0F, float _w = 0.0F);
 

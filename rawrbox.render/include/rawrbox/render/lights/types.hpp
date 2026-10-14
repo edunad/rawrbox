@@ -8,5 +8,8 @@ namespace rawrbox {
 		POINT,
 		SPOT,
 		DIRECTIONAL,
+		RECT,
+		
+		COUNT
 	};
 }

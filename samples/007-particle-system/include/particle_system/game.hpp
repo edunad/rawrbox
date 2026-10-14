@@ -34,6 +34,7 @@ namespace particle_system {
 		~Game() override = default;
 
 		void drawWorld();
+		void drawOverlay() const;
 
 		void loadContent();
 		void contentLoaded();

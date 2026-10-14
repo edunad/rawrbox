@@ -7,6 +7,7 @@
 #include <rawrbox/render/materials/lit.hpp>
 #include <rawrbox/render/materials/skinnedLit.hpp>
 #include <rawrbox/render/plugins/shadows.hpp>
+#include <rawrbox/render/plugins/volumetric.hpp>
 #include <rawrbox/render/post_process/base.hpp>
 
 #include <memory>
@@ -51,8 +52,9 @@ namespace light {
 		rawrbox::CameraOrbit* _camera = nullptr;
 
 		rawrbox::ShadowPlugin* _shadows = nullptr;
+		rawrbox::VolumetricPlugin* _volumetric = nullptr;
 		rawrbox::PostProcessBase* _noise = nullptr;
-
+		
 		size_t _room = 0;
 
 		float _time = 0.F;

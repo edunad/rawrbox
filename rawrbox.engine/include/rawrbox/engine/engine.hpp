@@ -21,6 +21,13 @@ namespace rawrbox {
 		uint32_t _tps = 66;
 		uint32_t _fps = 60;
 
+		// FRAME RATE ---
+		uint32_t _frames = 0;
+		float _framesTime = 0.F;
+
+		uint32_t _currentFPS = 0;
+		// ----
+
 		std::unique_ptr<rawrbox::Logger> _logger = std::make_unique<rawrbox::Logger>("RawrBox-Engine");
 
 		rawrbox::Watch _timer;
@@ -59,6 +66,9 @@ namespace rawrbox {
 		// sets the draw rate per second
 		virtual void setFPS(uint32_t framesPerSecond);
 		[[nodiscard]] virtual uint32_t getFPS() const;
+
+		// actual FPS
+		[[nodiscard]] virtual uint32_t getCurrentFPS() const;
 
 		// returns true after quit() is called
 		[[nodiscard]] bool isQuitting() const;

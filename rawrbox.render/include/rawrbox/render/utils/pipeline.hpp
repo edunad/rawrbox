@@ -65,6 +65,8 @@ namespace rawrbox {
 		std::string pPS;
 		std::string pGS;
 
+		std::string psEntry = "main";
+
 		std::string bind;
 
 		std::vector<rawrbox::PipeUniforms> uniforms = {};
@@ -95,6 +97,11 @@ namespace rawrbox {
 		static std::unordered_map<uint32_t, Diligent::RefCntAutoPtr<Diligent::ISampler>> _samplers;
 		static std::unordered_map<Diligent::SHADER_TYPE, Diligent::ShaderMacroHelper> _globalMacros;
 
+		// Pipelines compiling in the background ---
+		static std::vector<std::pair<Diligent::IPipelineState*, std::string>> _compiling; // Desc is not readable until compiled
+		static size_t _compilingTotal;
+		// ------
+
 		static Diligent::RefCntAutoPtr<Diligent::IRenderStateCache> _stateCache;
 
 		static std::filesystem::path _stateCachePath;
@@ -108,6 +115,13 @@ namespace rawrbox {
 		// ---
 		static void init(Diligent::IRenderDevice& device);
 		static void shutdown();
+
+		// ASYNC COMPILE ---
+		[[nodiscard]] static bool isCompiling(); // Drops finished pipelines, true while any is still compiling
+		[[nodiscard]] static float getCompileProgress(); // 0 - 1 over the current batch
+		[[nodiscard]] static std::string getCompilingName(); // Oldest pipeline still compiling
+		static void waitCompiling();
+		// ------
 
 		static Diligent::ISampler* registerSampler(uint32_t id, Diligent::SamplerDesc desc);
 		static Diligent::IShader* compileShader(const std::string& name, Diligent::SHADER_TYPE type, const Diligent::ShaderMacroHelper& macros = {}, const std::string& entry = "main");

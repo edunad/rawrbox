@@ -31,6 +31,7 @@ namespace ui_test {
 		void update() override;
 		void fixedUpdate() override;
 		void draw() override;
+		void drawOverlay() const;
 
 	public:
 		Game() = default;

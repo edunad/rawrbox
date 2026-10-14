@@ -75,6 +75,7 @@ namespace rawrbox {
 
 		void preRender(const rawrbox::CameraBase& camera) override;
 
+		[[nodiscard]] short getPriority() const override;
 		std::string getID() override;
 	};
 } // namespace rawrbox

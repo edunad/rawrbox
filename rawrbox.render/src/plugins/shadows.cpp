@@ -460,7 +460,10 @@ namespace rawrbox {
 			}
 
 			slot.direction = direction;
-			slot.cosCone = light->getType() == rawrbox::LightType::SPOT ? std::cos(rawrbox::MathUtils::toRad(light->getData().y) / 2.F) : -1.F;
+			slot.cosCone = -1.F;
+			
+			if (light->getType() == rawrbox::LightType::SPOT) slot.cosCone = std::cos(rawrbox::MathUtils::toRad(light->getData().y) / 2.F);
+			if (light->getType() == rawrbox::LightType::RECT) slot.cosCone = 0.F;
 
 			if (slot.invalid) {
 				for (uint32_t face = 0; face < 6; face++) {
@@ -925,24 +928,6 @@ namespace rawrbox {
 	void ShadowPlugin::drawDebug(const rawrbox::CameraBase& camera) {
 		auto* context = rawrbox::RENDERER->context();
 
-		if (this->_debugProgram == nullptr) {
-			auto* cluster = rawrbox::RENDERER->getPlugin<rawrbox::ClusteredPlugin>("Clustered");
-
-			rawrbox::PipeSettings settings;
-			settings.pVS = "quad.vsh";
-			settings.pPS = "shadow_debug.psh";
-			settings.topology = Diligent::PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP;
-			settings.cull = Diligent::CULL_MODE_NONE;
-			settings.depth = Diligent::COMPARISON_FUNC_UNKNOWN;
-			settings.depthWrite = false;
-			settings.depthFormat = false;
-			settings.blending = {Diligent::BLEND_FACTOR_SRC_ALPHA, Diligent::BLEND_FACTOR_INV_SRC_ALPHA};
-			settings.macros = cluster->getClusterMacros() + this->getShadowMacros();
-			settings.signatures = {rawrbox::BindlessManager::signature};
-
-			this->_debugProgram = rawrbox::PipelineUtils::createPipeline("Shadows::Debug", settings);
-		}
-
 		// COLOR, NO DEPTH ---
 		auto* target = camera.getColor(true);
 		auto* depth = camera.getDepth()->GetTexture();
@@ -1057,7 +1042,7 @@ namespace rawrbox {
 		if (!light.castShadows() || !light.isActive()) return false;
 		if (type == rawrbox::LightType::DIRECTIONAL) return true;
 
-		return light.getRadius() > 0.F && (type == rawrbox::LightType::POINT || type == rawrbox::LightType::SPOT);
+		return light.getRadius() > 0.F && (type == rawrbox::LightType::POINT || type == rawrbox::LightType::SPOT || type == rawrbox::LightType::RECT);
 	}
 
 	bool ShadowPlugin::sphereIntersects(const rawrbox::BBOX& bounds, const rawrbox::ShadowSlot& slot) {
@@ -1518,15 +1503,32 @@ namespace rawrbox {
 		settings.entry = "Discard";
 		this->_discardProgram = rawrbox::PipelineUtils::createComputePipeline("Shadows::Discard", settings);
 
-		settings.pCS = "shadow_cull.csh";
-		settings.entry = "main";
+		settings.entry = "Cull";
 		this->_cullProgram = rawrbox::PipelineUtils::createComputePipeline("Shadows::Cull", settings);
 
 		settings.pCS = "shadow_mark.csh";
+		settings.entry = "main";
 		settings.signatures = {this->_markSignature};
 		this->_markProgram = rawrbox::PipelineUtils::createComputePipeline("Shadows::Mark", settings);
+
+#ifdef _DEBUG
+		rawrbox::PipeSettings debug;
+		debug.pVS = "quad.vsh";
+		debug.pPS = "shadow_debug.psh";
+		debug.topology = Diligent::PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP;
+		debug.cull = Diligent::CULL_MODE_NONE;
+		debug.depth = Diligent::COMPARISON_FUNC_UNKNOWN;
+		debug.depthWrite = false;
+		debug.depthFormat = false;
+		debug.blending = {Diligent::BLEND_FACTOR_SRC_ALPHA, Diligent::BLEND_FACTOR_INV_SRC_ALPHA};
+		debug.macros = settings.macros;
+		debug.signatures = {rawrbox::BindlessManager::signature};
+
+		this->_debugProgram = rawrbox::PipelineUtils::createPipeline("Shadows::Debug", debug);
+#endif
 	}
 	// ---------
 
+	short ShadowPlugin::getPriority() const { return -50; }
 	std::string ShadowPlugin::getID() { return "Shadows"; }
 } // namespace rawrbox

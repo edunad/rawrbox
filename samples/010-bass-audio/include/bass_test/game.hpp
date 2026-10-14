@@ -35,5 +35,6 @@ namespace bass_test {
 		void contentLoaded();
 
 		void drawWorld();
+		void drawOverlay() const;
 	};
 } // namespace bass_test

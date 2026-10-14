@@ -40,6 +40,7 @@
 #include <rawrbox/render/textures/utils/utils.hpp>
 #include <rawrbox/render/textures/webp.hpp>
 #include <rawrbox/render/utils/barrier.hpp>
+#include <rawrbox/render/utils/debug_draw.hpp>
 #include <rawrbox/render/utils/render.hpp>
 #include <rawrbox/render/utils/swapchain.hpp>
 #include <rawrbox/utils/path.hpp>
@@ -64,6 +65,12 @@ namespace rawrbox {
 		RAWRBOX_DESTROY(this->_swapChain);
 	}
 
+#ifdef _DEBUG
+	constexpr uint32_t ASYNC_COMPILE_THREADS = 2U; // On debug, Vulkan locks the threads to 1
+#else
+	constexpr uint32_t ASYNC_COMPILE_THREADS = 0xFFFFFFFFU; // Diligent picks
+#endif
+
 	void RendererBase::init(Diligent::DeviceFeatures features) {
 		Diligent::SwapChainDesc SCDesc;
 		SCDesc.ColorBufferFormat = Diligent::TEX_FORMAT_RGBA8_UNORM; // Don't use SRGB
@@ -81,6 +88,8 @@ namespace rawrbox {
 
 		features.VertexPipelineUAVWritesAndAtomics = Diligent::DEVICE_FEATURE_STATE_ENABLED;
 		features.PixelUAVWritesAndAtomics = Diligent::DEVICE_FEATURE_STATE_ENABLED;
+
+		features.AsyncShaderCompilation = Diligent::DEVICE_FEATURE_STATE_ENABLED;
 		// ---------------------------------------------------
 
 #ifdef _DEBUG
@@ -113,6 +122,7 @@ namespace rawrbox {
 
 					Diligent::EngineD3D12CreateInfo EngineCI;
 					EngineCI.Features = features;
+					EngineCI.NumAsyncShaderCompilationThreads = ASYNC_COMPILE_THREADS;
 					// EngineCI.D3D12ValidationFlags = Diligent::D3D12_VALIDATION_FLAG_NONE;
 					// EngineCI.EnableValidation = false;
 
@@ -165,6 +175,7 @@ namespace rawrbox {
 
 					Diligent::EngineVkCreateInfo EngineCI;
 					EngineCI.Features = features;
+					EngineCI.NumAsyncShaderCompilationThreads = ASYNC_COMPILE_THREADS;
 					EngineCI.MainDescriptorPoolSize.NumSampledImageDescriptors += RB_RENDER_MAX_TEXTURES + RB_RENDER_MAX_VERTEX_TEXTURES;
 	#ifdef _WIN32
 					EngineCI.pDxCompilerPath = "dxcompiler.dll";
@@ -384,7 +395,15 @@ namespace rawrbox {
 
 		// Init render utils ---
 		RenderUtils::init();
+		DebugDraw::init();
 		// -------------------------
+
+		// Setup stencil, ready before anything else so it can draw the compile progress ---
+		this->_stencil = std::make_unique<rawrbox::Stencil>(this->_size);
+		this->_stencil->upload();
+
+		rawrbox::PipelineUtils::waitCompiling();
+		// ------------------
 
 		// Upload plugins ---
 		for (auto& plugin : this->_renderPlugins) {
@@ -399,14 +418,17 @@ namespace rawrbox {
 		this->_GPUBlit->upload();
 		// ---------------
 
-		// Setup stencil ----
-		this->_stencil = std::make_unique<rawrbox::Stencil>(this->_size);
-		this->_stencil->upload();
-		// ------------------
-
 		// Setup occlusion ----
 		this->_occlusion = std::make_unique<rawrbox::Occlusion>();
 		this->_occlusion->upload(*rawrbox::MAIN_CAMERA);
+		// ------------------
+
+		// Precompile materials ---
+		for (const auto& build : this->_precompile) {
+			build();
+		}
+
+		this->_precompile.clear();
 		// ------------------
 
 		this->playIntro();
@@ -431,8 +453,13 @@ namespace rawrbox {
 	}
 
 	// PLUGINS ---------------------------
-	bool RendererBase::hasPlugin(const std::string& plugin) const { return this->_renderPlugins.find(plugin) != this->_renderPlugins.end(); }
-	const std::map<std::string, std::unique_ptr<rawrbox::RenderPlugin>>& RendererBase::getPlugins() const { return this->_renderPlugins; }
+	bool RendererBase::hasPlugin(const std::string& plugin) const {
+		return std::ranges::any_of(this->_renderPlugins, [&plugin](const auto& entry) {
+			return entry.first == plugin;
+		});
+	}
+
+	const rawrbox::RenderPluginList& RendererBase::getPlugins() const { return this->_renderPlugins; }
 	// -----------------------------------
 
 	void RendererBase::setDrawCall(std::function<void(const rawrbox::CameraBase&, const rawrbox::DrawPass&)> call) { this->_drawCall = std::move(call); }
@@ -481,6 +508,32 @@ namespace rawrbox {
 
 		// Update textures ---
 		rawrbox::BindlessManager::update();
+		// --------------------
+
+		// Pipelines still compiling, show intros only ---
+		if (rawrbox::PipelineUtils::isCompiling()) {
+			rawrbox::MAIN_CAMERA->updateBuffer();
+			this->_context->CommitShaderResources(rawrbox::BindlessManager::signatureBind, Diligent::RESOURCE_STATE_TRANSITION_MODE_VERIFY);
+
+			if (this->_currentIntro != nullptr) this->_drawCall(*rawrbox::MAIN_CAMERA, rawrbox::DrawPass::PASS_OVERLAY);
+
+			const auto size = this->_size.cast<float>();
+			const float progress = rawrbox::PipelineUtils::getCompileProgress();
+
+			constexpr rawrbox::Vector2f bar = {220.F, 4.F};
+			const rawrbox::Vector2f barPos = {(size.x - bar.x) * 0.5F, size.y - 45.F};
+
+			this->_stencil->drawText(fmt::format("COMPILING SHADERS {}%", static_cast<int>(progress * 100.F)), {size.x * 0.5F, barPos.y - 18.F}, rawrbox::Colors::White(), rawrbox::Colors::Transparent(), rawrbox::Alignment::Center);
+
+			this->_stencil->drawBox(barPos, bar, rawrbox::Color::RGBHex(0x2a2a2d));
+			this->_stencil->drawBox(barPos, {bar.x * progress, bar.y}, rawrbox::Colors::White());
+
+			this->_stencil->drawText(rawrbox::PipelineUtils::getCompilingName(), {size.x * 0.5F, barPos.y + 12.F}, rawrbox::Colors::Gray(), rawrbox::Colors::Transparent(), rawrbox::Alignment::Center);
+			this->_stencil->render();
+
+			this->frame();
+			return;
+		}
 		// --------------------
 
 		for (auto& camera : this->_cameras) {
@@ -623,7 +676,7 @@ namespace rawrbox {
 		this->_currentIntro = nullptr;
 		this->_introComplete = true;
 
-		this->onIntroCompleted();
+		if (this->onIntroCompleted != nullptr) this->onIntroCompleted();
 	}
 
 	void RendererBase::skipIntros(bool skip) {

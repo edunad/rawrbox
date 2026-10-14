@@ -19,9 +19,12 @@
 #include <SwapChain.h>
 #include <fmt/printf.h>
 
+#include <algorithm>
 #include <filesystem>
 #include <functional>
 #include <map>
+#include <utility>
+#include <vector>
 
 namespace rawrbox {
 	class TextureWEBP;
@@ -37,10 +40,12 @@ namespace rawrbox {
 		[[nodiscard]] bool isValid() const { return this->texture != nullptr; }
 	};
 
+	using RenderPluginList = std::vector<std::pair<std::string, std::unique_ptr<rawrbox::RenderPlugin>>>; // Sorted by priority
+
 	class RendererBase {
 	protected:
 		// PLUGINS -----
-		std::map<std::string, std::unique_ptr<rawrbox::RenderPlugin>> _renderPlugins = {};
+		rawrbox::RenderPluginList _renderPlugins = {};
 		// --------------
 
 #ifdef _DEBUG
@@ -73,6 +78,8 @@ namespace rawrbox {
 		bool _vsync = false;
 		bool _transparent = false;
 		bool _initialized = false;
+
+		std::vector<std::function<void()>> _precompile = {}; // Materials built at the end of init
 
 		Diligent::RENDER_DEVICE_TYPE _type = Diligent::RENDER_DEVICE_TYPE_UNDEFINED;
 
@@ -131,10 +138,11 @@ namespace rawrbox {
 			auto renderPass = std::make_unique<T>(std::forward<CallbackArgs>(args)...);
 
 			auto id = renderPass->getID();
-			if (this->_renderPlugins.contains(id)) RAWRBOX_CRITICAL("Plugin '{}' already registered!", id);
+			if (this->hasPlugin(id)) RAWRBOX_CRITICAL("Plugin '{}' already registered!", id);
 
 			auto* pass = renderPass.get();
-			this->_renderPlugins[id] = std::move(renderPass);
+			const auto order = std::ranges::upper_bound(this->_renderPlugins, pass->getPriority(), {}, [](const auto& plugin) { return plugin.second->getPriority(); });
+			this->_renderPlugins.emplace(order, id, std::move(renderPass));
 			this->_logger->info("Registered renderer plugin '{}'", id);
 
 			return pass;
@@ -143,15 +151,26 @@ namespace rawrbox {
 		template <typename T = rawrbox::RenderPlugin>
 			requires(std::derived_from<T, rawrbox::RenderPlugin>)
 		[[nodiscard]] T* getPlugin(const std::string& id) const {
-			const auto fnd = this->_renderPlugins.find(id);
-			if (fnd == this->_renderPlugins.end()) return nullptr;
+			const auto fnd = std::ranges::find_if(this->_renderPlugins, [&id](const auto& plugin) {
+				return plugin.first == id;
+			});
 
+			if (fnd == this->_renderPlugins.end()) return nullptr;
 			return dynamic_cast<T*>(fnd->second.get());
 		}
 
 		[[nodiscard]] virtual bool hasPlugin(const std::string& plugin) const;
-		[[nodiscard]] virtual const std::map<std::string, std::unique_ptr<rawrbox::RenderPlugin>>& getPlugins() const;
+		[[nodiscard]] virtual const rawrbox::RenderPluginList& getPlugins() const;
 		// -----------------------------------
+
+		// MATERIALS ---
+		// Compiles the materials' pipelines behind the intro, instead of when their first model uploads
+		template <typename... M>
+		void precompile() {
+			if (this->_initialized) RAWRBOX_CRITICAL("'precompile' must be called before 'init'!");
+			(this->_precompile.emplace_back([]() { M().init(); }), ...);
+		}
+		// ------
 
 		virtual void setDrawCall(std::function<void(const rawrbox::CameraBase&, const rawrbox::DrawPass&)> call);
 

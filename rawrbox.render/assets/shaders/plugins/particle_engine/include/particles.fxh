@@ -10,8 +10,8 @@ struct Particle {
 	float atlasIndex; // 4 bytes
 
 	float3 rotation; // 12 bytes
+	uint size;       // 4 bytes
 
-	float2 size;  // 8 bytes
 	float4 color; // 16 bytes
 };
 

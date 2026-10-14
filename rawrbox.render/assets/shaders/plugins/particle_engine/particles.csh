@@ -101,12 +101,12 @@ void main(uint3 dispatchThreadID: SV_DispatchThreadID, uint groupIndex: SV_Group
 			particle.color = Unpack_RGBA8_UNORM(EmitterConstants.color.x);
 
 			particle.velocity = CalculateVelocity(hash);
-			particle.size = CalculateSize(hash);
+			particle.size = Pack_RG16_FLOAT(CalculateSize(hash));
 			particle.lifeTime = CalculateLife(hash);
 			particle.atlasIndex = CalculateAtlas(hash);
 			particle.rotation = CalculateRotation(hash);
 		} else {
-			particle.size = float2(0.0F, 0.0F);
+			particle.size = 0u;
 			particle.color = float4(0.0F, 0.0F, 0.0F, 0.0F);
 		}
 	} else {

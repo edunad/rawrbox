@@ -35,8 +35,11 @@ namespace bass_test {
 		auto* render = window->createRenderer();
 		render->onIntroCompleted = [this]() { this->loadContent(); };
 		render->setDrawCall([this](const rawrbox::CameraBase& /*camera*/, const rawrbox::DrawPass& pass) {
-			if (pass != rawrbox::DrawPass::PASS_WORLD) return;
-			this->drawWorld();
+			if (pass == rawrbox::DrawPass::PASS_WORLD) {
+				this->drawWorld();
+			} else {
+				this->drawOverlay();
+			}
 		});
 		// ---------------
 
@@ -53,6 +56,10 @@ namespace bass_test {
 		rawrbox::RESOURCES::addLoader<rawrbox::BASSLoader>();
 		// --------------
 
+		// Pre-compile shaders before content load
+		render->precompile<rawrbox::MaterialUnlit, rawrbox::MaterialText3D>();
+		// ---------------------------------------
+		
 		render->init();
 	}
 
@@ -155,6 +162,11 @@ namespace bass_test {
 		this->_modelGrid->draw();
 		this->_beatText->draw();
 		this->_text->draw();
+	}
+
+	void Game::drawOverlay() const {
+		auto* stencil = rawrbox::RENDERER->stencil();
+		stencil->drawText(fmt::format("FPS: {}", this->getCurrentFPS()), {static_cast<float>(stencil->getSize().x) - 15.F, 15.F}, rawrbox::Colors::White(), rawrbox::Colors::Black(), rawrbox::Alignment::Right);
 	}
 
 	void Game::draw() {

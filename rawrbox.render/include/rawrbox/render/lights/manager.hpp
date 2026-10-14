@@ -27,8 +27,8 @@ namespace rawrbox {
 
 		std::array<uint32_t, 2> radiance = {};
 
-		static constexpr uint32_t TYPE_MASK = 0x3U;
-		static constexpr uint32_t SHADOW_SHIFT = 2U;
+		static constexpr uint32_t TYPE_MASK = 0x7U;
+		static constexpr uint32_t SHADOW_SHIFT = 3U;
 	};
 
 	struct LightConstants {
@@ -113,6 +113,7 @@ namespace rawrbox {
 		static Diligent::IBufferView* getZBinBuffer();
 		static Diligent::IBufferView* getBoundsBuffer();
 
+		static rawrbox::LightDataVertex getVertexData(const rawrbox::LightBase& light);
 		static rawrbox::Vector4f getBounds(const rawrbox::LightDataVertex& light);
 		// ----------
 

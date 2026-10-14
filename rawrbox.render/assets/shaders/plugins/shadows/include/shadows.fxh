@@ -40,13 +40,28 @@ float GetShadowLit(uint occluder, float receiver) {
 	return occluder == SHADOW_EMPTY || receiver <= asfloat(occluder) ? 1.0 : 0.0;
 }
 
-float GetShadowDither(uint centerOccluder, uint tapOccluder, float receiver, float2 offset, float depthToTexels) {
+float GetShadowDither(uint centerOccluder, uint tapOccluder, float receiver, float2 offset, float depthToTexels, float lightSize) {
 	float centerLit = GetShadowLit(centerOccluder, receiver);
 	float tapLit = GetShadowLit(tapOccluder, receiver);
 	if (centerLit == tapLit) return centerLit;
 
-	float blocker = (receiver - asfloat(centerLit < 0.5 ? centerOccluder : tapOccluder)) * depthToTexels;
-	return length(offset) <= blocker * SHADOW_CONTACT_HARDEN ? tapLit : centerLit;
+	float occluder = asfloat(centerLit < 0.5 ? centerOccluder : tapOccluder);
+	float blocker = (receiver - occluder) * depthToTexels;
+	float harden = max(SHADOW_CONTACT_HARDEN, lightSize / max(occluder, 1e-3));
+
+	return length(offset) <= blocker * harden ? tapLit : centerLit;
+}
+// -----------
+
+// TEMPORAL DITHERING (based on https://gdcvault.com/play/1023002/Low-Complexity-High-Fidelity-INSIDE) ---
+float GetShadowTemporalDither(float dither) {
+	uint rank = (uint)round(dither * 17.0) - 1u;
+	return float(((rank + SHADOW_DITHER_OFFSET) & 15u) + 1u) / 17.0;
+}
+
+float2 GetShadowTexelJitter(float dither) {
+	uint cell = ((((uint)round(dither * 17.0) - 1u) * 5u) + 1u) & 15u;
+	return (float2(cell & 3u, cell >> 2u) + 0.5) / 4.0 - 0.5;
 }
 // -----------
 
@@ -57,15 +72,17 @@ float GetClipmapShadow(uint slot, float3 worldPos, float3 normal, float dither) 
 	float offsetScale = (SHADOW_NORMAL_BIAS + SHADOW_DITHER_SIZE * 0.5) * (1.0 - saturate(NdotL));
 
 	uint level = min(GetShadowMip(GetShadowLod(slot, GetViewDepth(worldPos), GetClipmapExtent(slot), NdotL), dither), SHADOW_CLIPMAP_LEVELS - 1u);
+	float2 jitter = GetShadowTexelJitter(dither);
 
 	[loop]
 	for (; level < SHADOW_CLIPMAP_LEVELS; level++) {
 		float texelSize = GetClipmapTexelSize(slot, level);
 		float3 biased = worldPos + normal * texelSize * offsetScale;
 
-		float2 coord = GetClipmapPos(slot, biased) / texelSize;
+		float2 coord = GetClipmapPos(slot, biased) / texelSize + jitter;
 		int2 center = int2(floor(coord));
 		int2 origin = GetClipmapOrigin(slot, level);
+
 		if (!IsClipmapInside(center - origin)) continue;
 
 		uint centerOccluder;
@@ -80,15 +97,36 @@ float GetClipmapShadow(uint slot, float3 worldPos, float3 normal, float dither) 
 		uint tapOccluder;
 		if (!IsClipmapInside(tap - origin) || !LoadShadowOccluder(GetShadowEntry(slot, level, 0u, GetClipmapTablePage(tap)), uint2(tap & int(SHADOW_PAGE_SIZE - 1u)), tapOccluder)) tapOccluder = centerOccluder;
 
-		return GetShadowDither(centerOccluder, tapOccluder, receiver, offset, 1.0 / texelSize);
+		return GetShadowDither(centerOccluder, tapOccluder, receiver, offset, 1.0 / texelSize, 0.0);
 	}
 
 	return 1.0;
 }
 
+float GetShadowVolumetric(Light light, float3 worldPos) {
+	uint shadow = GetLightShadow(light);
+	if (shadow == 0u) return 1.0;
+
+	uint slot = shadow - 1u;
+	if (IsShadowClipmap(slot)) return 1.0;
+
+	float3 dir = worldPos - light.position;
+	uint face = GetShadowFace(dir);
+	uint mip = SHADOW_MIPS - 1u;
+	uint2 texel = GetShadowTexel(dir, face, mip);
+
+	uint occluder;
+	if (!LoadShadowOccluder(GetShadowEntry(slot, face, mip, texel / SHADOW_PAGE_SIZE), texel % SHADOW_PAGE_SIZE, occluder)) return 0.0;
+
+	float texelSize = GetShadowTexelSize(GetShadowAxisDistance(dir), mip);
+	return GetShadowLit(occluder, (length(dir) - texelSize) / light.radius - SHADOW_DEPTH_BIAS);
+}
+
 float GetShadow(Light light, float3 worldPos, float3 normal, float dither) {
 	uint shadow = GetLightShadow(light);
 	if (shadow == 0u) return 1.0;
+
+	dither = GetShadowTemporalDither(dither);
 
 	uint slot = shadow - 1u;
 	if (IsShadowClipmap(slot)) return GetClipmapShadow(slot, worldPos, normal, dither);
@@ -99,6 +137,13 @@ float GetShadow(Light light, float3 worldPos, float3 normal, float dither) {
 	float NdotL = dot(normal, -normalize(dir));
 	float slope = min(sqrt(saturate(1.0 - NdotL * NdotL)) / max(NdotL, 1e-3), SHADOW_MAX_SLOPE);
 	float offsetScale = (SHADOW_NORMAL_BIAS + SHADOW_DITHER_SIZE * 0.5) * (1.0 - saturate(NdotL));
+	float2 jitter = GetShadowTexelJitter(dither);
+
+	float lightSize = 0.0;
+	if (GetLightType(light) == LIGHT_RECT) {
+		float2 extent = Unpack_RG16_FLOAT(asuint(light.cosUmbra));
+		lightSize = 2.0 * max(extent.x, extent.y) / light.radius;
+	}
 
 	[loop]
 	for (uint mip = GetShadowMip(GetShadowLod(slot, GetViewDepth(worldPos), axisDistance, NdotL), dither); mip < SHADOW_MIPS; mip++) {
@@ -107,7 +152,7 @@ float GetShadow(Light light, float3 worldPos, float3 normal, float dither) {
 
 		uint face = GetShadowFace(biasDir);
 		float size = SHADOW_VIRTUAL_SIZE >> mip;
-		float2 coord = saturate(GetShadowFaceUV(biasDir, face)) * size;
+		float2 coord = saturate(GetShadowFaceUV(biasDir, face)) * size + jitter;
 		uint2 center = (uint2)clamp(coord, 0.0, size - 1.0);
 
 		uint centerOccluder;
@@ -123,7 +168,7 @@ float GetShadow(Light light, float3 worldPos, float3 normal, float dither) {
 		uint tapOccluder;
 		if (!LoadShadowOccluder(GetShadowEntry(slot, face, mip, tap / SHADOW_PAGE_SIZE), tap % SHADOW_PAGE_SIZE, tapOccluder)) tapOccluder = centerOccluder;
 
-		return GetShadowDither(centerOccluder, tapOccluder, receiver, offset, light.radius / texelSize);
+		return GetShadowDither(centerOccluder, tapOccluder, receiver, offset, light.radius / texelSize, lightSize);
 	}
 
 	return 1.0;

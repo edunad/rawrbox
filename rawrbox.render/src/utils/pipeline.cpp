@@ -14,6 +14,9 @@ namespace rawrbox {
 	std::unordered_map<std::string, Diligent::RefCntAutoPtr<Diligent::IShaderResourceBinding>> PipelineUtils::_binds = {};
 	std::unordered_map<std::string, Diligent::RefCntAutoPtr<Diligent::IShader>> PipelineUtils::_shaders = {};
 	std::unordered_map<uint32_t, Diligent::RefCntAutoPtr<Diligent::ISampler>> PipelineUtils::_samplers = {};
+
+	std::vector<std::pair<Diligent::IPipelineState*, std::string>> PipelineUtils::_compiling = {};
+	size_t PipelineUtils::_compilingTotal = 0;
 	std::unordered_map<Diligent::SHADER_TYPE, Diligent::ShaderMacroHelper> PipelineUtils::_globalMacros = {};
 
 	Diligent::RefCntAutoPtr<Diligent::IRenderStateCache> PipelineUtils::_stateCache;
@@ -92,6 +95,9 @@ namespace rawrbox {
 		}
 		// ------
 
+		_compiling.clear();
+		_compilingTotal = 0;
+
 		_pipelines.clear();
 		_binds.clear();
 		_shaders.clear();
@@ -105,6 +111,40 @@ namespace rawrbox {
 		defaultSampler = nullptr;
 		initialized = false;
 	}
+
+	// ASYNC COMPILE ---
+	bool PipelineUtils::isCompiling() {
+		std::erase_if(_compiling, [](const auto& pipe) {
+			const auto status = pipe.first->GetStatus();
+			if (status == Diligent::PIPELINE_STATE_STATUS_FAILED) RAWRBOX_CRITICAL("Failed to compile pipeline '{}'", pipe.second);
+
+			return status == Diligent::PIPELINE_STATE_STATUS_READY;
+		});
+
+		if (_compiling.empty()) _compilingTotal = 0;
+		return !_compiling.empty();
+	}
+
+	float PipelineUtils::getCompileProgress() {
+		if (_compilingTotal == 0) return 1.F;
+		return 1.F - static_cast<float>(_compiling.size()) / static_cast<float>(_compilingTotal);
+	}
+
+	std::string PipelineUtils::getCompilingName() {
+		if (_compiling.empty()) return "";
+		return _compiling.front().second;
+	}
+
+	void PipelineUtils::waitCompiling() {
+		for (const auto& pipe : _compiling) {
+			if (pipe.first->GetStatus(true) != Diligent::PIPELINE_STATE_STATUS_READY)
+				RAWRBOX_CRITICAL("Failed to compile pipeline '{}'", pipe.second);
+		}
+
+		_compiling.clear();
+		_compilingTotal = 0;
+	}
+	// ------
 
 	Diligent::ISampler* PipelineUtils::registerSampler(uint32_t id, Diligent::SamplerDesc desc) {
 		auto fnd = _samplers.find(id);
@@ -138,7 +178,7 @@ namespace rawrbox {
 		Diligent::ShaderCreateInfo ShaderCI;
 		ShaderCI.SourceLanguage = Diligent::SHADER_SOURCE_LANGUAGE_HLSL;
 		ShaderCI.pShaderSourceStreamFactory = rawrbox::SHADER_FACTORY;
-		ShaderCI.CompileFlags = Diligent::SHADER_COMPILE_FLAG_ENABLE_UNBOUNDED_ARRAYS;
+		ShaderCI.CompileFlags = Diligent::SHADER_COMPILE_FLAG_ENABLE_UNBOUNDED_ARRAYS | Diligent::SHADER_COMPILE_FLAG_ASYNCHRONOUS;
 		ShaderCI.GLSLExtensions = "#extension GL_EXT_nonuniform_qualifier : require\n";
 		ShaderCI.ShaderCompiler = Diligent::SHADER_COMPILER_DXC;
 
@@ -155,7 +195,11 @@ namespace rawrbox {
 
 		const std::string label = entry == "main" ? name : fmt::format("{}::{}", name, entry);
 		if (shader != nullptr) {
-			_logger->info("Shader '{}' {}", fmt::styled(label, fmt::fg(fmt::color::coral)), fmt::styled(" [✓ OK]", fmt::fg(fmt::color::green_yellow)));
+			if (shader->GetStatus() == Diligent::SHADER_STATUS_READY) {
+				_logger->info("Shader '{}' {}", fmt::styled(label, fmt::fg(fmt::color::coral)), fmt::styled(" [✓ OK]", fmt::fg(fmt::color::green_yellow)));
+			} else {
+				_logger->info("Shader '{}' {}", fmt::styled(label, fmt::fg(fmt::color::coral)), fmt::styled(" [⧗ COMPILING]", fmt::fg(fmt::color::yellow)));
+			}
 		} else {
 			RAWRBOX_CRITICAL("Shader '{}' {}", fmt::styled(label, fmt::fg(fmt::color::coral)), fmt::styled(" [✖ FAILED]", fmt::fg(fmt::color::red)));
 		}
@@ -207,10 +251,15 @@ namespace rawrbox {
 		}
 
 		PSOCreateInfo.pCS = rawrbox::PipelineUtils::compileShader(settings.pCS, Diligent::SHADER_TYPE_COMPUTE, settings.macros, settings.entry);
+		PSOCreateInfo.Flags = Diligent::PSO_CREATE_FLAG_ASYNCHRONOUS;
 
 		_stateCache->CreateComputePipelineState(PSOCreateInfo, &pipe);
 		if (pipe == nullptr) RAWRBOX_CRITICAL("Failed to create pipeline '{}'", name);
 
+		_compiling.emplace_back(pipe, name);
+		_compilingTotal++;
+
+		if (settings.signatures.empty()) waitCompiling(); // Static variables & binds need compiled
 		if (settings.signatures.empty()) {
 			for (auto& uni : settings.uniforms) {
 				if (uni.uniform == nullptr) continue;
@@ -294,7 +343,7 @@ namespace rawrbox {
 
 		// SHADERS ----
 		info.pVS = rawrbox::PipelineUtils::compileShader(settings.pVS, Diligent::SHADER_TYPE_VERTEX, settings.macros);
-		info.pPS = rawrbox::PipelineUtils::compileShader(settings.pPS, Diligent::SHADER_TYPE_PIXEL, settings.macros);
+		info.pPS = rawrbox::PipelineUtils::compileShader(settings.pPS, Diligent::SHADER_TYPE_PIXEL, settings.macros, settings.psEntry);
 		info.pGS = rawrbox::PipelineUtils::compileShader(settings.pGS, Diligent::SHADER_TYPE_GEOMETRY, settings.macros);
 		// -------------
 
@@ -318,9 +367,15 @@ namespace rawrbox {
 		}
 
 		// ---------------------
+		info.Flags = Diligent::PSO_CREATE_FLAG_ASYNCHRONOUS;
+
 		_stateCache->CreateGraphicsPipelineState(info, &pipe);
 		if (pipe == nullptr) RAWRBOX_CRITICAL("Failed to create pipeline '{}'", name);
 
+		_compiling.emplace_back(pipe, name);
+		_compilingTotal++;
+
+		if (settings.signatures.empty()) waitCompiling(); //  Static variables & binds need compiled
 		if (settings.signatures.empty()) {
 			for (auto& uni : settings.uniforms) {
 				if (uni.uniform == nullptr) continue;

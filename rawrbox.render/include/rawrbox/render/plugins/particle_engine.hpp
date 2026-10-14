@@ -16,18 +16,10 @@ namespace rawrbox {
 
 		// SIGNATURE ---
 		Diligent::RefCntAutoPtr<Diligent::IPipelineResourceSignature> _signature;
-		Diligent::RefCntAutoPtr<Diligent::IPipelineResourceSignature> _dynamicSignature;
-
-		Diligent::RefCntAutoPtr<Diligent::IShaderResourceBinding> _signatureBind;
-		Diligent::RefCntAutoPtr<Diligent::IShaderResourceBinding> _dynamicSignatureBind;
+		Diligent::RefCntAutoPtr<Diligent::IPipelineResourceSignature> _drawSignature;
 		// --------------
 
-		// BUFFERS -----
-		Diligent::RefCntAutoPtr<Diligent::IBuffer> _uniforms;
-		// -------------
-
 		void createSignatures();
-		void createBuffers();
 
 		void createPipelines();
 
@@ -47,13 +39,9 @@ namespace rawrbox {
 		void initialize(const rawrbox::Vector2u& size) override;
 		void upload() override;
 
-		void signatures(std::vector<Diligent::PipelineResourceDesc>& sig) override;
-		void bindStatic(Diligent::IPipelineResourceSignature& sig) override;
-
 		void preRender(const rawrbox::CameraBase& camera) override;
 
-		[[nodiscard]] Diligent::IPipelineResourceSignature* getSignature(bool dynamic = true) const;
-		[[nodiscard]] Diligent::IShaderResourceBinding* getBind(bool dynamic = true) const;
+		[[nodiscard]] Diligent::IPipelineResourceSignature* getSignature(bool draw = true) const;
 
 		// REGISTER ----
 		void registerEmitter(rawrbox::Emitter<>* em);

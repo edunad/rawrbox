@@ -50,6 +50,7 @@ namespace rawrbox {
 		[[nodiscard]] virtual size_t count() const;
 		// ---------
 
+		[[nodiscard]] short getPriority() const override;
 		std::string getID() override;
 	};
 } // namespace rawrbox
