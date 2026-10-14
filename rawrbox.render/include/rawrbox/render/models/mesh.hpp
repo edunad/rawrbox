@@ -88,6 +88,7 @@ namespace rawrbox {
 		bool _wireframe = false;
 		bool _lineMode = false;
 		bool _transparent = false;
+		bool _castShadows = true;
 
 		rawrbox::Vector3f _scale = {1, 1, 1};
 		rawrbox::Vector3f _pos = {};
@@ -158,6 +159,9 @@ namespace rawrbox {
 		virtual void setAlphaCutoff(float cutoff) { this->textures.alphaCutoff = cutoff; }
 		virtual void setTransparent(bool transparent) { this->_transparent = transparent; }
 		[[nodiscard]] virtual bool isTransparent() const { return this->_transparent; }
+
+		[[nodiscard]] virtual bool castShadows() const { return this->_castShadows; }
+		virtual void setCastShadows(bool cast) { this->_castShadows = cast; }
 
 		// CULLING ---
 		[[nodiscard]] virtual bool isCullable() const { return this->data.billboard == 0 && this->data.displacement == nullptr; }
@@ -341,13 +345,14 @@ namespace rawrbox {
 			if (this->vertices.size() + other.vertices.size() >= RB_RENDER_MAX_VERTICES) return false; // Max vertice limit
 			if (this->indices.size() + other.indices.size() >= RB_RENDER_MAX_INDICES) return false;    // Max indice limit
 
-			return this->textures == other.textures && // TODO: Replace with canMerge and pass textureID down to vertex?
+			return this->textures == other.textures &&
 			       this->color == other.color &&
 			       this->meshID == other.meshID &&
 			       this->data == other.data &&
 			       this->_wireframe == other._wireframe &&
 			       this->_lineMode == other._lineMode &&
-			       this->_transparent == other._transparent;
+			       this->_transparent == other._transparent &&
+			       this->_castShadows == other._castShadows;
 		}
 	};
 } // namespace rawrbox

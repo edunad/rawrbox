@@ -119,6 +119,7 @@ namespace light {
 		// Pre-compile shaders before content load
 		render->precompile<rawrbox::MaterialLit, rawrbox::MaterialSkinnedLit>();
 		// ---------------------------------------
+
 		render->init();
 	}
 
@@ -152,11 +153,12 @@ namespace light {
 			if (shade == nullptr) continue;
 
 			shade->setMergeable(false);
+			shade->setCastShadows(false);
 			shade->textures.emission = shade->textures.texture;
 		}
 		// ----------
 
-		// TV screen & basement tube glow, the emission masks only light the screen / tube texels ---
+		// TV screen & basement glow---
 		auto* tvScreen = this->_house->getMeshByName("Cube.044_television_0");
 		auto* basementTube = this->_house->getMeshByName("Cube.228_accessories_0");
 
@@ -169,6 +171,7 @@ namespace light {
 			if (mesh == nullptr) continue;
 
 			mesh->setMergeable(false);
+			mesh->setCastShadows(false);
 			mesh->textures.emission = rawrbox::RESOURCES::getFile<rawrbox::ResourceTexture>(path)->get();
 		}
 		// ----------
@@ -199,24 +202,24 @@ namespace light {
 		// Lights ----
 		rawrbox::LIGHTS::setAmbient({0.02F, 0.02F, 0.03F, 1.F});
 
-		const rawrbox::Colorf tvColor = {0.45F, 0.6F, 1.F, 1.F};
-		const rawrbox::Colorf basementColor = {1.F, 0.08F, 0.05F, 1.F};
+		constexpr rawrbox::Colorf tvColor = {0.45F, 0.6F, 1.F, 1.F};
+		constexpr rawrbox::Colorf basementColor = {1.F, 0.08F, 0.05F, 1.F};
 
-		auto& tv = this->addLight(rawrbox::LIGHTS::add<rawrbox::RectLight>(scale(320.F, 250.F, 530.F), rawrbox::Vector3f{0.F, 0.F, 1.F}, rawrbox::Vector3f{1.F, 0.F, 0.F}, tvColor, rawrbox::Vector2f{0.5F, 0.38F}, 6.F), light::Flicker::TV, 16.F);
+		auto& tv = this->addLight(rawrbox::LIGHTS::add<rawrbox::RectLight>(scale(320.F, 250.F, 564.F), rawrbox::Vector3f{0.F, 0.F, 1.F}, rawrbox::Vector3f{1.F, 0.F, 0.F}, tvColor, rawrbox::Vector2f{0.5F, 0.38F}, 6.F), light::Flicker::TV, 16.F);
 		tv.shade = tvScreen;
 		tv.shadeEmission = 4.F;
 		this->_volumetric->add(*tv.light);
 
 		this->addLight(rawrbox::LIGHTS::add<rawrbox::PointLight>(scale(320.F, 230.F, 500.F), tvColor, 0.6F), light::Flicker::TV, 4.F, false);
 
-		auto& hallway = this->addLight(rawrbox::LIGHTS::add<rawrbox::SpotLight>(scale(-590.F, 690.F, -850.F), rawrbox::Vector3f{0.F, -1.F, 0.F}, rawrbox::Colorf{1.F, 0.72F, 0.42F, 1.F}, 100.F, 160.F, 4.5F), light::Flicker::FAILING, 10.F);
+		auto& hallway = this->addLight(rawrbox::LIGHTS::add<rawrbox::SpotLight>(scale(-590.F, 800.F, -850.F), rawrbox::Vector3f{0.F, -1.F, 0.F}, rawrbox::Colorf{1.F, 0.72F, 0.42F, 1.F}, 100.F, 160.F, 4.5F), light::Flicker::FAILING, 10.F);
 		hallway.glow = rawrbox::LIGHTS::add<rawrbox::PointLight>(scale(-590.F, 640.F, -850.F), rawrbox::Colorf{1.F, 0.72F, 0.42F, 1.F}, 0.8F);
 		hallway.glowIntensity = 3.F;
 		hallway.shade = hallwayShade;
 		hallway.shadeEmission = 1.5F;
 		this->_volumetric->add(*hallway.light, {.width = 0.4F});
 
-		auto* kitchen = rawrbox::LIGHTS::add<rawrbox::SpotLight>(scale(-1400.F, 690.F, 100.F), rawrbox::Vector3f{0.F, -1.F, 0.F}, rawrbox::Colorf{0.75F, 0.9F, 0.55F, 1.F}, 100.F, 160.F, 5.F);
+		auto* kitchen = rawrbox::LIGHTS::add<rawrbox::SpotLight>(scale(-1400.F, 800.F, 100.F), rawrbox::Vector3f{0.F, -1.F, 0.F}, rawrbox::Colorf{0.75F, 0.9F, 0.55F, 1.F}, 100.F, 160.F, 5.F);
 		kitchen->setShadowLodBias(1.F);
 		this->_volumetric->add(*kitchen, {.width = 0.4F});
 

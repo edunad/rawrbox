@@ -63,9 +63,9 @@ StructuredBuffer<ShadowSlotStruct> ShadowSlots;
 #define SHADOW_NEAR 0.001
 #define SHADOW_ALL_VIEWS 0xFFFFFFFFu
 
-#define SHADOW_MIP_BLEND 0.35
+#define SHADOW_MIP_BLEND     0.35
 #define SHADOW_SLOPE_MIN_COS 0.25
-#define SHADOW_MAX_SLOPE     4.0
+#define SHADOW_MAX_SLOPE     8.0 // 83 deg-ish
 
 // Slot 13 + face 3 + mip 4 + layer 1 ---
 #define SHADOW_SLOT_BITS  13u

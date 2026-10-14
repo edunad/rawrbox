@@ -46,6 +46,9 @@ namespace rawrbox {
 			    .addFunction("setTransparent", &MeshC::setTransparent)
 			    .addFunction("isTransparent", &MeshC::isTransparent)
 
+			    .addFunction("setCastShadows", &MeshC::setCastShadows)
+			    .addFunction("castShadows", &MeshC::castShadows)
+
 			    .addFunction("getSlice", &MeshC::getSlice)
 			    .addFunction("setSlice", &MeshC::setSlice)
 

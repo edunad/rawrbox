@@ -597,7 +597,7 @@ namespace rawrbox {
 		}
 
 		[[nodiscard]] bool canCastShadows(const rawrbox::Mesh<typename M::vertexBufferType>& mesh) const {
-			return this->canCastShadows() && !mesh.isTransparent() && !mesh.getWireframe() && !mesh.getLineMode();
+			return this->canCastShadows() && mesh.castShadows() && !mesh.isTransparent() && !mesh.getWireframe() && !mesh.getLineMode();
 		}
 
 		void bindShadowMesh(const rawrbox::Mesh<typename M::vertexBufferType>& mesh, const rawrbox::Matrix4x4& matrix) {
