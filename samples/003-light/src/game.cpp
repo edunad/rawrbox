@@ -60,6 +60,7 @@ namespace light {
 
 		render->addPlugin<rawrbox::ClusteredPlugin>();
 		this->_shadows = render->addPlugin<rawrbox::ShadowPlugin>();
+		this->_volumetric = render->addPlugin<rawrbox::VolumetricPlugin>();
 
 		auto* postProcess = render->addPlugin<rawrbox::PostProcessPlugin>();
 		this->_noise = postProcess->add<rawrbox::PostProcessNoise>(0.08F);
@@ -99,6 +100,7 @@ namespace light {
 			if (key == rawrbox::KEY_F7) this->_camera->setCullFrozen(!this->_camera->isCullFrozen());
 #endif
 			if (key == rawrbox::KEY_F8) rawrbox::RENDERER->occlusion()->setEnabled(!rawrbox::RENDERER->occlusion()->isEnabled());
+			if (key == rawrbox::KEY_F9) this->_volumetric->setEnabled(!this->_volumetric->isEnabled());
 
 			if (key >= rawrbox::KEY_1 && key < rawrbox::KEY_1 + ROOMS.size()) this->setRoom(key - rawrbox::KEY_1);
 		};
@@ -172,7 +174,9 @@ namespace light {
 		// Lights ----
 		rawrbox::LIGHTS::setAmbient({0.02F, 0.02F, 0.03F, 1.F});
 
-		this->addLight(rawrbox::LIGHTS::add<rawrbox::SpotLight>(scale(320.F, 250.F, 530.F), rawrbox::Vector3f{0.F, -0.15F, 1.F}.normalized(), rawrbox::Colorf{0.45F, 0.6F, 1.F, 1.F}, 90.F, 150.F, 6.F), light::Flicker::TV, 16.F);
+		const auto& tv = this->addLight(rawrbox::LIGHTS::add<rawrbox::SpotLight>(scale(320.F, 250.F, 530.F), rawrbox::Vector3f{0.F, -0.15F, 1.F}.normalized(), rawrbox::Colorf{0.45F, 0.6F, 1.F, 1.F}, 90.F, 150.F, 6.F), light::Flicker::TV, 16.F);
+		this->_volumetric->add(*tv.light, {.width = 0.5F});
+
 		this->addLight(rawrbox::LIGHTS::add<rawrbox::PointLight>(scale(320.F, 230.F, 500.F), rawrbox::Colorf{0.45F, 0.6F, 1.F, 1.F}, 0.6F), light::Flicker::TV, 4.F, false);
 
 		auto& hallway = this->addLight(rawrbox::LIGHTS::add<rawrbox::SpotLight>(scale(-590.F, 690.F, -850.F), rawrbox::Vector3f{0.F, -1.F, 0.F}, rawrbox::Colorf{1.F, 0.72F, 0.42F, 1.F}, 100.F, 160.F, 4.5F), light::Flicker::FAILING, 10.F);
@@ -180,9 +184,11 @@ namespace light {
 		hallway.glowIntensity = 3.F;
 		hallway.shade = hallwayShade;
 		hallway.shadeEmission = 1.5F;
+		this->_volumetric->add(*hallway.light, {.width = 0.4F});
 
 		auto* kitchen = rawrbox::LIGHTS::add<rawrbox::SpotLight>(scale(-1400.F, 690.F, 100.F), rawrbox::Vector3f{0.F, -1.F, 0.F}, rawrbox::Colorf{0.75F, 0.9F, 0.55F, 1.F}, 100.F, 160.F, 5.F);
 		kitchen->setShadowLodBias(1.F);
+		this->_volumetric->add(*kitchen, {.width = 0.4F});
 
 		auto& kitchenLamp = this->addLight(kitchen, light::Flicker::BUZZ, 5.F);
 		kitchenLamp.glow = rawrbox::LIGHTS::add<rawrbox::PointLight>(scale(-1400.F, 640.F, 100.F), rawrbox::Colorf{0.75F, 0.9F, 0.55F, 1.F}, 0.8F);
@@ -194,7 +200,8 @@ namespace light {
 		bathroom->setShadowLodBias(1.F);
 
 		this->addLight(bathroom, light::Flicker::FAILING, 4.F);
-		this->addLight(rawrbox::LIGHTS::add<rawrbox::PointLight>(scale(200.F, -400.F, 50.F), rawrbox::Colorf{1.F, 0.08F, 0.05F, 1.F}, 6.F), light::Flicker::TV, 14.F);
+		auto& basement = this->addLight(rawrbox::LIGHTS::add<rawrbox::PointLight>(scale(200.F, -400.F, 50.F), rawrbox::Colorf{1.F, 0.08F, 0.05F, 1.F}, 6.F), light::Flicker::TV, 14.F);
+		this->_volumetric->add(*basement.light, {.density = 0.015F});
 		// ----------
 
 		this->_ready = true;
@@ -275,9 +282,10 @@ namespace light {
 	}
 
 	void Game::drawOverlay() const {
-		if (!this->_ready || this->_shadows == nullptr) return;
-
 		auto* stencil = rawrbox::RENDERER->stencil();
+		stencil->drawText(fmt::format("FPS: {}", this->getCurrentFPS()), {static_cast<float>(stencil->getSize().x) - 15.F, 15.F}, rawrbox::Colors::White(), rawrbox::Colors::Black(), rawrbox::Alignment::Right);
+
+		if (!this->_ready || this->_shadows == nullptr) return;
 
 		stencil->drawText(fmt::format("[F1]   SHADOWS: {}", this->_shadows->isEnabled()), {15, 15});
 		stencil->drawText(fmt::format("[F2]   LOD BIAS: {}", this->_shadows->getLodBias()), {15, 30});
@@ -292,7 +300,9 @@ namespace light {
 #endif
 		stencil->drawText(fmt::format("[F8]   OCCLUSION: {}", rawrbox::RENDERER->occlusion()->isEnabled()), {15, 135});
 
-		stencil->drawText(fmt::format("[1-{}]  ROOM: {}", ROOMS.size(), ROOMS[this->_room].name), {15, 150});
+		stencil->drawText(fmt::format("[F9]   VOLUMETRIC: {}", this->_volumetric->isEnabled()), {15, 150});
+
+		stencil->drawText(fmt::format("[1-{}]  ROOM: {}", ROOMS.size(), ROOMS[this->_room].name), {15, 165});
 	}
 
 	void Game::draw() {

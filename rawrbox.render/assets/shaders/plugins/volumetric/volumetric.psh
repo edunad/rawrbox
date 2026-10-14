@@ -1,0 +1,228 @@
+// Based on : https://gdcvault.com/play/1023002/Low-Complexity-High-Fidelity-INSIDE
+
+#include "camera.fxh"
+#include "dither.fxh"
+#include "light_uniforms.fxh"
+#include "math.fxh"
+#include "noise.fxh"
+
+#define READ_LIGHTS
+#define READ_TILES
+#include "binning.fxh"
+
+#ifdef SHADOW_PLUGIN
+	#define READ_SHADOWS
+	#include "shadows.fxh"
+#endif
+
+// UNIFORMS ---
+struct VolumetricConstantsStruct {
+	float4 prevClip[4];
+
+	uint4 settings;
+};
+
+struct VolumetricLight {
+	Light light;
+	float4 params;
+};
+// ------------
+
+ConstantBuffer<VolumetricConstantsStruct> VolumetricConstants;
+StructuredBuffer<VolumetricLight> VolumetricLights;
+
+#define VOLUMETRIC_LIGHTS  VolumetricConstants.settings.x
+#define VOLUMETRIC_DEPTH   (VolumetricConstants.settings.y & 0xFFFFu)
+#define VOLUMETRIC_SCATTER (VolumetricConstants.settings.y >> 16u)
+#define VOLUMETRIC_HISTORY (VolumetricConstants.settings.z & 0xFFFFu) // 0 = no history
+#define VOLUMETRIC_CURRENT (VolumetricConstants.settings.z >> 16u)
+
+#define VOLUMETRIC_JITTER frac(float(VolumetricConstants.settings.w & 0xFFFFu) * 0.618034)
+
+uint2 GetVolumetricPixel(uint2 cell) {
+	return min(cell * VOLUMETRIC_DIVISIONS + VOLUMETRIC_DIVISIONS / 2u, uint2(ScreenSize) - 1u);
+}
+
+// Camera to surface (in world space) ---
+float3 GetVolumetricRay(uint2 pixel, float depth) {
+	return mul((float3x3)Camera.view, GetViewFromDepth(pixel + 0.5, depth));
+}
+// ------
+
+Texture2DArray g_Textures[];
+SamplerState g_Sampler;
+
+#include "lighting.fxh"
+
+struct PSInput {
+	float4 Pos : SV_POSITION;
+	float2 UV : TEX_COORD;
+};
+
+struct PSOutput {
+	float4 Color : SV_TARGET0;
+};
+
+// MARCH ---
+bool ClipCone(float3 origin, float3 dir, float3 apex, float3 axis, float cosAngle, float start, inout float2 range) {
+	float3 offset = origin - apex;
+	float dv = dot(dir, axis);
+	float ov = dot(offset, axis);
+	float cos2 = cosAngle * cosAngle;
+
+	if (abs(dv) > 1e-6) {
+		float plane = (start - ov) / dv;
+		if (dv > 0.0) {
+			range.x = max(range.x, plane);
+		} else {
+			range.y = min(range.y, plane);
+		}
+	} else if (ov < start) {
+		return false;
+	}
+
+	float a = dv * dv - cos2;
+	float b = dv * ov - dot(dir, offset) * cos2;
+	float c = ov * ov - dot(offset, offset) * cos2;
+	if (abs(a) < 1e-6) a = 1e-6;
+
+	float disc = b * b - a * c;
+	if (disc < 0.0) return a > 0.0 && range.x < range.y;
+
+	float root = sqrt(disc);
+	float t0 = (-b - root) / a;
+	float t1 = (-b + root) / a;
+
+	if (a < 0.0) {
+		range = float2(max(range.x, min(t0, t1)), min(range.y, max(t0, t1)));
+	} else if (dv > 0.0) {
+		range.x = max(range.x, max(t0, t1));
+	} else {
+		range.y = min(range.y, min(t0, t1));
+	}
+
+	return range.x < range.y;
+}
+
+void March(in PSInput PSIn, out PSOutput PSOut) {
+	uint2 pixel = GetVolumetricPixel(uint2(PSIn.Pos.xy));
+
+	float3 ray = GetVolumetricRay(pixel, g_Textures[VOLUMETRIC_DEPTH].Load(int4(pixel, 0, 0)).r);
+	float rayLength = length(ray);
+	float3 dir = ray / max(rayLength, 1e-4);
+
+	float dither = frac(InterleavedGradientNoise(floor(PSIn.Pos.xy)) + VOLUMETRIC_JITTER);
+	float3 scatter = float3(0.0, 0.0, 0.0);
+
+	[loop]
+	for (uint index = 0; index < VOLUMETRIC_LIGHTS; index++) {
+		VolumetricLight volume = VolumetricLights[index];
+		Light light = volume.light;
+		bool spot = GetLightType(light) == LIGHT_SPOT;
+
+		// BEAM ---
+		Light beam = light;
+		beam.position -= light.direction * volume.params.y;
+		beam.radius += volume.params.y;
+		// ------
+
+		// SPHERE ---
+		float3 offset = Camera.pos - beam.position;
+		float b = dot(offset, dir);
+		float disc = b * b - dot(offset, offset) + beam.radius * beam.radius;
+		if (disc <= 0.0) continue;
+
+		float root = sqrt(disc);
+		float2 range = float2(-b - root, -b + root);
+		if (spot && !ClipCone(Camera.pos, dir, beam.position, beam.direction, beam.cosUmbra, volume.params.z, range)) continue;
+
+		range = float2(max(range.x, 0.0), min(range.y, rayLength));
+		if (range.x >= range.y) continue;
+		// ------
+
+		// MARCH ---
+		float stepLength = (range.y - range.x) / VOLUMETRIC_STEPS;
+		float energy = 0.0;
+
+		[unroll]
+		for (uint i = 0; i < VOLUMETRIC_STEPS; i++) {
+			float3 pos = Camera.pos + dir * (range.x + (i + dither) * stepLength);
+
+			float3 L;
+			float attenuation = GetAttenuation(beam, pos, L);
+#ifdef SHADOW_PLUGIN
+			if (attenuation > 0.0) attenuation *= GetShadowVolumetric(light, pos);
+#endif
+			energy += attenuation;
+		}
+
+		scatter += GetLightRadiance(light) * energy * stepLength * volume.params.x;
+		// ------
+	}
+
+	PSOut.Color = float4(scatter, 1.0);
+}
+// ------
+
+// RESOLVE  ---
+float3 LoadScatter(uint id, int2 cell, int2 size) {
+	return g_Textures[id].Load(int4(clamp(cell, int2(0, 0), size - 1), 0, 0)).rgb;
+}
+
+void Resolve(in PSInput PSIn, out PSOutput PSOut) {
+	int2 cell = int2(PSIn.Pos.xy);
+	int2 size = int2((uint2(ScreenSize) + VOLUMETRIC_DIVISIONS - 1u) / VOLUMETRIC_DIVISIONS);
+
+	float3 current = LoadScatter(VOLUMETRIC_SCATTER, cell, size);
+	PSOut.Color = float4(current, 1.0);
+	if (VOLUMETRIC_HISTORY == 0u) return;
+
+	// NEIGHBORHOOD ---
+	float3 low = current;
+	float3 high = current;
+
+	[unroll] for (int y = -1; y <= 1; y++) {
+		[unroll] for (int x = -1; x <= 1; x++) {
+			float3 neighbour = LoadScatter(VOLUMETRIC_SCATTER, cell + int2(x, y), size);
+			low = min(low, neighbour);
+			high = max(high, neighbour);
+		}
+	}
+	// ------
+
+	// RE-PROJECT ---
+	uint2 pixel = GetVolumetricPixel(uint2(cell));
+	float4 world = float4(Camera.pos + GetVolumetricRay(pixel, g_Textures[VOLUMETRIC_DEPTH].Load(int4(pixel, 0, 0)).r), 1.0);
+	float4 clip = float4(dot(VolumetricConstants.prevClip[0], world), dot(VolumetricConstants.prevClip[1], world), dot(VolumetricConstants.prevClip[2], world), dot(VolumetricConstants.prevClip[3], world));
+	if (clip.w <= 1e-5) return;
+
+	float2 uv = float2(clip.x, -clip.y) / clip.w * 0.5 + 0.5;
+	if (any(uv < 0.0) || any(uv > 1.0)) return;
+
+	float2 texel = uv * float2(size) - 0.5;
+	int2 base = int2(floor(texel));
+	float2 weight = frac(texel);
+
+	float3 top = lerp(LoadScatter(VOLUMETRIC_HISTORY, base, size), LoadScatter(VOLUMETRIC_HISTORY, base + int2(1, 0), size), weight.x);
+	float3 bottom = lerp(LoadScatter(VOLUMETRIC_HISTORY, base + int2(0, 1), size), LoadScatter(VOLUMETRIC_HISTORY, base + int2(1, 1), size), weight.x);
+	float3 history = clamp(lerp(top, bottom, weight.y), low, high);
+	// ------
+
+	PSOut.Color = float4(lerp(history, current, VOLUMETRIC_BLEND), 1.0);
+}
+// ------
+
+// COMPOSITE ---
+void Composite(in PSInput PSIn, out PSOutput PSOut) {
+	uint2 cell = uint2(PSIn.Pos.xy) / VOLUMETRIC_DIVISIONS;
+	float3 scatter = g_Textures[VOLUMETRIC_CURRENT].Load(int4(cell, 0, 0)).rgb;
+
+	// BANDS ---
+	float peak = max(scatter.r, max(scatter.g, scatter.b));
+	float level = floor(peak * VOLUMETRIC_LEVELS + getBayer4x4(PSIn.Pos.xy)) / VOLUMETRIC_LEVELS;
+	if (level <= 0.0) discard;
+	// ------
+
+	PSOut.Color = float4(scatter * (level / peak), 0.0);
+}
+// ------

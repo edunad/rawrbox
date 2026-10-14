@@ -49,5 +49,6 @@ namespace gltf {
 		void contentLoaded();
 
 		void drawWorld();
+		void drawOverlay() const;
 	};
 } // namespace gltf

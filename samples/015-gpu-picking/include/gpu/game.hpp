@@ -35,6 +35,7 @@ namespace gpu {
 		~Game() override = default;
 
 		void drawWorld();
+		void drawOverlay() const;
 
 		void loadContent();
 		void contentLoaded();

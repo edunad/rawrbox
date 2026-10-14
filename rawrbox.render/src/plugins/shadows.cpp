@@ -1518,15 +1518,16 @@ namespace rawrbox {
 		settings.entry = "Discard";
 		this->_discardProgram = rawrbox::PipelineUtils::createComputePipeline("Shadows::Discard", settings);
 
-		settings.pCS = "shadow_cull.csh";
-		settings.entry = "main";
+		settings.entry = "Cull";
 		this->_cullProgram = rawrbox::PipelineUtils::createComputePipeline("Shadows::Cull", settings);
 
 		settings.pCS = "shadow_mark.csh";
+		settings.entry = "main";
 		settings.signatures = {this->_markSignature};
 		this->_markProgram = rawrbox::PipelineUtils::createComputePipeline("Shadows::Mark", settings);
 	}
 	// ---------
 
+	short ShadowPlugin::getPriority() const { return -50; }
 	std::string ShadowPlugin::getID() { return "Shadows"; }
 } // namespace rawrbox

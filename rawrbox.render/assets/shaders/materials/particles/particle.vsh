@@ -1,3 +1,5 @@
+#include "unpack.fxh"
+
 #define READ_PARTICLES
 #include "particles.fxh"
 
@@ -46,7 +48,7 @@ void main(in VSInput VSIn, out PSInput PSIn) {
 
 	PSIn.POS = float4(particle.position, 1.0);
 	PSIn.UV = float3(0.0, 0.0, particle.atlasIndex);
-	PSIn.SIZE = particle.size;
+	PSIn.SIZE = Unpack_RG16_FLOAT(particle.size);
 	PSIn.ROTATION = makeRotationMatrix(particle.rotation);
 	PSIn.COLOR = particle.color;
 }

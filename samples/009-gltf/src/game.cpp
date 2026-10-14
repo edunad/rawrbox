@@ -37,8 +37,11 @@ namespace gltf {
 		render->onIntroCompleted = [this]() { this->loadContent(); };
 		render->addPlugin<rawrbox::ClusteredPlugin>();
 		render->setDrawCall([this](const rawrbox::CameraBase& /*camera*/, const rawrbox::DrawPass& pass) {
-			if (pass != rawrbox::DrawPass::PASS_WORLD) return;
-			this->drawWorld();
+			if (pass == rawrbox::DrawPass::PASS_WORLD) {
+				this->drawWorld();
+			} else {
+				this->drawOverlay();
+			}
 		});
 		// ---------------
 
@@ -289,6 +292,11 @@ namespace gltf {
 		// ----
 
 		if (this->_bbox != nullptr) this->_bbox->draw();
+	}
+
+	void Game::drawOverlay() const {
+		auto* stencil = rawrbox::RENDERER->stencil();
+		stencil->drawText(fmt::format("FPS: {}", this->getCurrentFPS()), {static_cast<float>(stencil->getSize().x) - 15.F, 15.F}, rawrbox::Colors::White(), rawrbox::Colors::Black(), rawrbox::Alignment::Right);
 	}
 
 	void Game::draw() {

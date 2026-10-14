@@ -66,7 +66,7 @@ namespace rawrbox {
 		this->_linePipeline = rawrbox::PipelineUtils::createPipeline("Stencil::2DLine", settings);
 
 		settings.topology = Diligent::PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
-		settings.pPS = "stencil_text.psh";
+		settings.psEntry = "mainText";
 		this->_textPipeline = rawrbox::PipelineUtils::createPipeline("Stencil::2DText", settings);
 		// -------------
 	}
@@ -332,15 +332,15 @@ namespace rawrbox {
 		auto fontWidth = static_cast<float>(stb_easy_font_width(textCh));
 		auto fontHeight = static_cast<float>(stb_easy_font_height(textCh));
 
-		// Draw background ---
-		if (!bgCol.invisible()) {
-			this->drawBox({pos.x - 2.F, pos.y - 2.F}, {fontWidth + 3.F, fontHeight - 1.F}, bgCol);
-		}
-		// ---------------
-
 		// Setup position ---
 		rawrbox::Vector2f startpos = this->alignPosition(pos, {fontWidth, fontHeight}, alignX, alignY);
 		// ------------------
+
+		// Draw background ---
+		if (!bgCol.invisible()) {
+			this->drawBox({startpos.x - 2.F, startpos.y - 2.F}, {fontWidth + 3.F, fontHeight - 1.F}, bgCol);
+		}
+		// ---------------
 
 		// Setup --------
 		this->setupDrawCall(this->_2dPipeline);

@@ -40,11 +40,7 @@ struct PSOutput {
 
 float3 GetViewPosition(int2 pixel) {
 	int2 clamped = clamp(pixel, int2(0, 0), int2(ScreenSize) - 1);
-	float depth = g_Textures[SHADOW_DEBUG_DEPTH].Load(int4(clamped, 0, 0)).r;
-	float2 ndc = float2((clamped.x + 0.5) / ScreenSize.x * 2.0 - 1.0, 1.0 - (clamped.y + 0.5) / ScreenSize.y * 2.0);
-	float viewDepth = (2.0 * NearFar.x * NearFar.y) / (NearFar.y + NearFar.x - depth * (NearFar.y - NearFar.x));
-
-	return float3(ndc.x * viewDepth / SCamera.proj[0][0], ndc.y * viewDepth / SCamera.proj[1][1], viewDepth);
+	return GetViewFromDepth(clamped + 0.5, g_Textures[SHADOW_DEBUG_DEPTH].Load(int4(clamped, 0, 0)).r);
 }
 
 float3 GetViewNormal(int2 pixel, float3 center) {

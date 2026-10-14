@@ -10,6 +10,8 @@
 #include <Buffer.h>
 #include <PipelineState.h>
 
+#include <vector>
+
 namespace rawrbox {
 
 	struct EmitterUniforms {
@@ -56,6 +58,11 @@ namespace rawrbox {
 		Diligent::IBufferView* _bufferRead = nullptr;
 		Diligent::IBufferView* _bufferWrite = nullptr;
 
+		Diligent::RefCntAutoPtr<Diligent::IBuffer> _uniformBuffer;
+
+		Diligent::RefCntAutoPtr<Diligent::IShaderResourceBinding> _computeBind;
+		Diligent::RefCntAutoPtr<Diligent::IShaderResourceBinding> _drawBind;
+
 		rawrbox::EmitterUniforms _uniforms = {};
 		std::unique_ptr<M> _material = std::make_unique<M>();
 
@@ -75,7 +82,11 @@ namespace rawrbox {
 		virtual ~Emitter() {
 			this->_bufferRead = nullptr;
 			this->_bufferWrite = nullptr;
+			RAWRBOX_DESTROY(this->_computeBind);
+			RAWRBOX_DESTROY(this->_drawBind);
+
 			RAWRBOX_DESTROY(this->_buffer);
+			RAWRBOX_DESTROY(this->_uniformBuffer);
 
 			// UNREGISTER ----
 			auto* engine = rawrbox::RENDERER->getPlugin<rawrbox::ParticleEnginePlugin>("ParticleEngine");
@@ -149,6 +160,8 @@ namespace rawrbox {
 		[[nodiscard]] virtual Diligent::IBuffer* getData() const { return this->_buffer; }
 
 		[[nodiscard]] virtual const rawrbox::EmitterUniforms& getUniform() const { return this->_uniforms; }
+		[[nodiscard]] virtual Diligent::IBuffer* getUniformBuffer() const { return this->_uniformBuffer; }
+		[[nodiscard]] virtual Diligent::IShaderResourceBinding* getBind(bool draw = true) const { return draw ? this->_drawBind : this->_computeBind; }
 
 		[[nodiscard]] virtual uint32_t maxParticles() const { return this->_maxParticles; }
 		// --------
@@ -168,14 +181,46 @@ namespace rawrbox {
 			BuffDesc.BindFlags = Diligent::BIND_SHADER_RESOURCE | Diligent::BIND_UNORDERED_ACCESS;
 			BuffDesc.Size = BuffDesc.ElementByteStride * this->_maxParticles;
 
-			rawrbox::RENDERER->device()->CreateBuffer(BuffDesc, nullptr, &this->_buffer);
+			const std::vector<rawrbox::Particle> particles(this->_maxParticles);
+
+			Diligent::BufferData BuffData;
+			BuffData.pData = particles.data();
+			BuffData.DataSize = BuffDesc.Size;
+
+			rawrbox::RENDERER->device()->CreateBuffer(BuffDesc, &BuffData, &this->_buffer);
 
 			_bufferWrite = this->_buffer->GetDefaultView(Diligent::BUFFER_VIEW_UNORDERED_ACCESS);
 			_bufferRead = this->_buffer->GetDefaultView(Diligent::BUFFER_VIEW_SHADER_RESOURCE);
 			// -----------
 
+			// Create uniforms --
+			Diligent::BufferDesc UniformDesc;
+			UniformDesc.Name = "RawrBox::Emitter::Uniforms";
+			UniformDesc.Usage = Diligent::USAGE_DEFAULT;
+			UniformDesc.BindFlags = Diligent::BIND_UNIFORM_BUFFER;
+			UniformDesc.Size = sizeof(rawrbox::EmitterUniforms);
+
+			rawrbox::RENDERER->device()->CreateBuffer(UniformDesc, nullptr, &this->_uniformBuffer);
+			if (this->_uniformBuffer == nullptr) RAWRBOX_CRITICAL("Failed to create emitter uniforms");
+			// -----------
+
 			// BARRIER -----
-			rawrbox::BarrierUtils::barrier({{this->_buffer, Diligent::RESOURCE_STATE_UNKNOWN, Diligent::RESOURCE_STATE_SHADER_RESOURCE, Diligent::STATE_TRANSITION_FLAG_UPDATE_STATE}});
+			rawrbox::BarrierUtils::barrier({
+			    {this->_buffer, Diligent::RESOURCE_STATE_UNKNOWN, Diligent::RESOURCE_STATE_SHADER_RESOURCE, Diligent::STATE_TRANSITION_FLAG_UPDATE_STATE},
+			    {this->_uniformBuffer, Diligent::RESOURCE_STATE_UNKNOWN, Diligent::RESOURCE_STATE_CONSTANT_BUFFER, Diligent::STATE_TRANSITION_FLAG_UPDATE_STATE},
+			});
+			// -----------
+
+			// Bindings, set once ---
+			engine->getSignature(false)->CreateShaderResourceBinding(&this->_computeBind, true);
+			engine->getSignature(true)->CreateShaderResourceBinding(&this->_drawBind, true);
+			if (this->_computeBind == nullptr || this->_drawBind == nullptr) RAWRBOX_CRITICAL("Failed to create emitter bindings");
+
+			this->_computeBind->GetVariableByName(Diligent::SHADER_TYPE_COMPUTE, "Particles")->Set(this->_bufferWrite);
+			this->_computeBind->GetVariableByName(Diligent::SHADER_TYPE_COMPUTE, "EmitterConstants")->Set(this->_uniformBuffer);
+
+			this->_drawBind->GetVariableByName(Diligent::SHADER_TYPE_VERTEX, "Particles")->Set(this->_bufferRead);
+			this->_drawBind->GetVariableByName(Diligent::SHADER_TYPE_GEOMETRY, "EmitterConstants")->Set(this->_uniformBuffer);
 			// -----------
 
 			// Initialize material ----
@@ -189,27 +234,19 @@ namespace rawrbox {
 
 		virtual void draw() {
 			if (!this->isEnabled()) return;
+			if (this->_drawBind == nullptr) RAWRBOX_CRITICAL("Emitter not uploaded");
+
 			auto* context = rawrbox::RENDERER->context();
-
-			auto* engine = rawrbox::RENDERER->getPlugin<rawrbox::ParticleEnginePlugin>("ParticleEngine");
-			if (engine == nullptr) RAWRBOX_CRITICAL("Emitter requires the `ParticleEngine` renderer plugin");
-			auto* bind = engine->getBind();
-
 			this->_uniforms.time += rawrbox::DELTA_TIME;
-
-			// Setup bind ---
-			bind->GetVariableByName(Diligent::SHADER_TYPE_VERTEX, "Particles")->Set(this->_bufferRead);
-			// ---------------
-
-			context->CommitShaderResources(bind, Diligent::RESOURCE_STATE_TRANSITION_MODE_VERIFY);
 
 			// Bind pipeline ----
 			context->SetPipelineState(this->_material->base);
+			context->CommitShaderResources(this->_drawBind, Diligent::RESOURCE_STATE_TRANSITION_MODE_VERIFY);
 			// ----------
 
 			Diligent::DrawAttribs DrawAttrs;
 			DrawAttrs.NumVertices = this->_maxParticles;
-			DrawAttrs.Flags = Diligent::DRAW_FLAG_VERIFY_ALL | Diligent::DRAW_FLAG_DYNAMIC_RESOURCE_BUFFERS_INTACT;
+			DrawAttrs.Flags = Diligent::DRAW_FLAG_VERIFY_ALL;
 			context->Draw(DrawAttrs);
 		}
 	};

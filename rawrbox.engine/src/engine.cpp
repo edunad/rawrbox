@@ -142,6 +142,17 @@ namespace rawrbox {
 				rawrbox::FRAME_ALPHA = this->_deltaTimeAccumulator / rawrbox::DELTA_TIME;
 				this->draw();
 				// ----------
+
+				// FRAME RATE ---
+				this->_frames++;
+				this->_framesTime += rawrbox::DELTA_TIME;
+
+				if (this->_framesTime >= 1.F) {
+					this->_currentFPS = this->_frames;
+					this->_frames = 0;
+					this->_framesTime -= 1.F;
+				}
+				// ----------
 			}
 
 			this->_logger->warn("Thread 'rawrbox:render' shutdown");
@@ -167,6 +178,7 @@ namespace rawrbox {
 
 	void Engine::setFPS(uint32_t framesPerSecond) { this->_fps = framesPerSecond; }
 	uint32_t Engine::getFPS() const { return this->_fps; }
+	uint32_t Engine::getCurrentFPS() const { return this->_currentFPS; }
 
 	bool Engine::isQuitting() const { return this->_shutdown != ENGINE_THREADS::NONE; }
 } // namespace rawrbox

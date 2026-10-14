@@ -39,6 +39,8 @@ StructuredBuffer<ShadowSlotStruct> ShadowSlots;
 #define SHADOW_RENDER_BUDGET    ShadowConstants.misc.z
 #define SHADOW_DRAWS            ShadowConstants.misc.w
 
+#define SHADOW_DITHER_OFFSET    ((SHADOW_FRAME * 7u) & 15u)
+
 // PAGE TABLE ----
 #define SHADOW_LIGHT_ENTRIES (SHADOW_FACE_ENTRIES * 6u)
 #define SHADOW_TOTAL_PAGES   (SHADOW_POOL_PAGES * SHADOW_POOL_PAGES)

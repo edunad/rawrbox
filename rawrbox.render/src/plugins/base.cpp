@@ -5,6 +5,8 @@ namespace rawrbox {
 	// UTILS --------
 	void RenderPlugin::setEnabled(bool enabled) { this->_enabled = enabled; }
 	bool RenderPlugin::isEnabled() const { return this->_enabled; }
+
+	short RenderPlugin::getPriority() const { return 0; }
 	// --------------
 
 	void RenderPlugin::requirements(Diligent::DeviceFeatures& /*features*/) {}

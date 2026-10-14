@@ -18,22 +18,20 @@ namespace rawrbox {
 		auto* context = rawrbox::RENDERER->context();
 		auto* targetRT = target.getRT();
 
+		// SETUP UNIFORMS ----------------------------
+		const rawrbox::BindlessPostProcessBuffer constants = {.data = this->_data, .textureIDs = textureIDs};
+		context->UpdateBuffer(this->_buffer, 0, sizeof(rawrbox::BindlessPostProcessBuffer), &constants, Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
+
+		const Diligent::StateTransitionDesc constantsBarrier = {this->_buffer, Diligent::RESOURCE_STATE_UNKNOWN, Diligent::RESOURCE_STATE_CONSTANT_BUFFER, Diligent::STATE_TRANSITION_FLAG_UPDATE_STATE};
+		context->TransitionResourceStates(1, &constantsBarrier);
+		// -----------
+
 		// BARRIER ----
 		rawrbox::BarrierUtils::barrier({{target.getTexture(), Diligent::RESOURCE_STATE_UNKNOWN, Diligent::RESOURCE_STATE_RENDER_TARGET, Diligent::STATE_TRANSITION_FLAG_UPDATE_STATE}});
 		// --------
-		
+
 		context->SetRenderTargets(1, &targetRT, nullptr, Diligent::RESOURCE_STATE_TRANSITION_MODE_VERIFY);
 		context->SetPipelineState(pipeline);
-
-		// SETUP UNIFORMS ----------------------------
-		{
-			Diligent::MapHelper<rawrbox::BindlessPostProcessBuffer> CBConstants(context, this->_buffer, Diligent::MAP_WRITE, Diligent::MAP_FLAG_DISCARD);
-			if (CBConstants == nullptr) RAWRBOX_CRITICAL("Failed to map the postprocess constants buffer!");
-
-			CBConstants->data = this->_data;
-			CBConstants->textureIDs = textureIDs;
-		}
-		// -----------
 
 		// Draw quad
 		Diligent::DrawAttribs DrawAttrs;

@@ -52,7 +52,7 @@ namespace ui_test {
 		render->onIntroCompleted = [this]() { this->loadContent(); };
 		render->setDrawCall([this](const rawrbox::CameraBase& /*camera*/, const rawrbox::DrawPass& pass) {
 			if (pass != rawrbox::DrawPass::PASS_OVERLAY) return;
-			this->_ROOT_UI->render();
+			this->drawOverlay();
 		});
 		// ---------------
 
@@ -496,6 +496,13 @@ namespace ui_test {
 			this->_graph->getCategory(1).addEntry(rawrbox::FIXED_DELTA_TIME);
 		}
 #endif
+	}
+
+	void Game::drawOverlay() const {
+		this->_ROOT_UI->render();
+
+		auto* stencil = rawrbox::RENDERER->stencil();
+		stencil->drawText(fmt::format("FPS: {}", this->getCurrentFPS()), {static_cast<float>(stencil->getSize().x) - 15.F, 15.F}, rawrbox::Colors::White(), rawrbox::Colors::Black(), rawrbox::Alignment::Right);
 	}
 
 	void Game::draw() {

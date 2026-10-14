@@ -58,5 +58,12 @@ float3 ScreenToView(float3 screen, float2 invScreenSize, float2 nearFar, float4x
 	float2 screenNormalized = screen.xy * invScreenSize;
 	return ViewPositionFromDepth(screenNormalized, screen.z, nearFar, invProj);
 }
+
+float3 GetViewFromDepth(float2 pixel, float depth) {
+	float2 ndc = float2(pixel.x / ScreenSize.x * 2.0 - 1.0, 1.0 - pixel.y / ScreenSize.y * 2.0);
+	float viewDepth = (2.0 * NearFar.x * NearFar.y) / (NearFar.y + NearFar.x - depth * (NearFar.y - NearFar.x));
+
+	return float3(ndc.x * viewDepth / SCamera.proj[0][0], ndc.y * viewDepth / SCamera.proj[1][1], viewDepth);
+}
 // -----------------------
 #endif

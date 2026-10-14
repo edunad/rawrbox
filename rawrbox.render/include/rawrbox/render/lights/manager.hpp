@@ -113,6 +113,7 @@ namespace rawrbox {
 		static Diligent::IBufferView* getZBinBuffer();
 		static Diligent::IBufferView* getBoundsBuffer();
 
+		static rawrbox::LightDataVertex getVertexData(const rawrbox::LightBase& light);
 		static rawrbox::Vector4f getBounds(const rawrbox::LightDataVertex& light);
 		// ----------
 

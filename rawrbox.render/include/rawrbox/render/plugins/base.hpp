@@ -29,6 +29,8 @@ namespace rawrbox {
 		// UTILS ----
 		virtual void setEnabled(bool enabled);
 		[[nodiscard]] virtual bool isEnabled() const;
+
+		[[nodiscard]] virtual short getPriority() const;
 		// ----------
 
 		virtual void requirements(Diligent::DeviceFeatures& features);

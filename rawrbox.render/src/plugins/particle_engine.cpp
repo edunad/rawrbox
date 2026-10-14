@@ -6,17 +6,15 @@
 namespace rawrbox {
 	ParticleEnginePlugin::~ParticleEnginePlugin() {
 		RAWRBOX_DESTROY(this->_signature);
-		RAWRBOX_DESTROY(this->_signatureBind);
-		RAWRBOX_DESTROY(this->_uniforms);
+		RAWRBOX_DESTROY(this->_drawSignature);
 	}
 
 	void ParticleEnginePlugin::initialize(const rawrbox::Vector2u& /*size*/) {
-		this->createBuffers();
 		this->createSignatures();
 	}
 
 	void ParticleEnginePlugin::createSignatures() {
-		if (this->_signature != nullptr || this->_signatureBind != nullptr) RAWRBOX_CRITICAL("Signatures already bound!");
+		if (this->_signature != nullptr || this->_drawSignature != nullptr) RAWRBOX_CRITICAL("Signatures already bound!");
 
 		std::vector<Diligent::PipelineResourceDesc> resources = {
 		    // CAMERA ------
@@ -25,8 +23,8 @@ namespace rawrbox {
 		    // --------------
 
 		    // PARTICLES ---
-		    {Diligent::SHADER_TYPE_COMPUTE, "EmitterConstants", 1, Diligent::SHADER_RESOURCE_TYPE_CONSTANT_BUFFER, Diligent::SHADER_RESOURCE_VARIABLE_TYPE_STATIC},
-		    {Diligent::SHADER_TYPE_COMPUTE, "Particles", 1, Diligent::SHADER_RESOURCE_TYPE_BUFFER_UAV, Diligent::SHADER_RESOURCE_VARIABLE_TYPE_DYNAMIC},
+		    {Diligent::SHADER_TYPE_COMPUTE, "EmitterConstants", 1, Diligent::SHADER_RESOURCE_TYPE_CONSTANT_BUFFER, Diligent::SHADER_RESOURCE_VARIABLE_TYPE_MUTABLE, Diligent::PIPELINE_RESOURCE_FLAG_NO_DYNAMIC_BUFFERS},
+		    {Diligent::SHADER_TYPE_COMPUTE, "Particles", 1, Diligent::SHADER_RESOURCE_TYPE_BUFFER_UAV, Diligent::SHADER_RESOURCE_VARIABLE_TYPE_MUTABLE, Diligent::PIPELINE_RESOURCE_FLAG_NO_DYNAMIC_BUFFERS},
 		    // ------------
 		};
 
@@ -44,34 +42,20 @@ namespace rawrbox {
 		rawrbox::RENDERER->device()->CreatePipelineResourceSignature(PRSDesc, &this->_signature);
 		// ----------------------
 
-		// Dynamic signature ---
-		PRSDesc.Name = "RawrBox::SIGNATURE::Particles::Dynamic";
+		// Draw signature ---
+		PRSDesc.Name = "RawrBox::SIGNATURE::Particles::Draw";
 		PRSDesc.BindingIndex = 1;
 
 		resources = {
-		    {Diligent::SHADER_TYPE_VERTEX, "Particles", 1, Diligent::SHADER_RESOURCE_TYPE_BUFFER_SRV, Diligent::SHADER_RESOURCE_VARIABLE_TYPE_DYNAMIC},
+		    {Diligent::SHADER_TYPE_VERTEX, "Particles", 1, Diligent::SHADER_RESOURCE_TYPE_BUFFER_SRV, Diligent::SHADER_RESOURCE_VARIABLE_TYPE_MUTABLE, Diligent::PIPELINE_RESOURCE_FLAG_NO_DYNAMIC_BUFFERS},
+		    {Diligent::SHADER_TYPE_GEOMETRY, "EmitterConstants", 1, Diligent::SHADER_RESOURCE_TYPE_CONSTANT_BUFFER, Diligent::SHADER_RESOURCE_VARIABLE_TYPE_MUTABLE, Diligent::PIPELINE_RESOURCE_FLAG_NO_DYNAMIC_BUFFERS},
 		};
 
 		PRSDesc.Resources = resources.data();
 		PRSDesc.NumResources = static_cast<uint8_t>(resources.size());
 
-		rawrbox::RENDERER->device()->CreatePipelineResourceSignature(PRSDesc, &this->_dynamicSignature);
+		rawrbox::RENDERER->device()->CreatePipelineResourceSignature(PRSDesc, &this->_drawSignature);
 		// ----------------
-	}
-
-	void ParticleEnginePlugin::createBuffers() {
-		Diligent::BufferDesc BuffDesc;
-		BuffDesc.Name = "rawrbox::Emitter::Uniforms";
-		BuffDesc.Usage = Diligent::USAGE_DYNAMIC;
-		BuffDesc.CPUAccessFlags = Diligent::CPU_ACCESS_WRITE;
-		BuffDesc.BindFlags = Diligent::BIND_UNIFORM_BUFFER;
-		BuffDesc.Size = sizeof(rawrbox::EmitterUniforms);
-
-		rawrbox::RENDERER->device()->CreateBuffer(BuffDesc, nullptr, &this->_uniforms);
-
-		// BARRIER -----
-		rawrbox::BarrierUtils::barrier({{this->_uniforms, Diligent::RESOURCE_STATE_UNKNOWN, Diligent::RESOURCE_STATE_CONSTANT_BUFFER, Diligent::STATE_TRANSITION_FLAG_UPDATE_STATE}});
-		// -----------
 	}
 
 	void ParticleEnginePlugin::createPipelines() {
@@ -85,30 +69,19 @@ namespace rawrbox {
 	}
 
 	void ParticleEnginePlugin::upload() {
-		if (this->_signature == nullptr || this->_dynamicSignature == nullptr || this->_uniforms == nullptr) RAWRBOX_CRITICAL("Plugin not initialized!");
+		if (this->_signature == nullptr || this->_drawSignature == nullptr) RAWRBOX_CRITICAL("Plugin not initialized!");
 
 		// Compute bind ---
 		this->_signature->GetStaticVariableByName(Diligent::SHADER_TYPE_COMPUTE, "Camera")->Set(rawrbox::CameraBase::uniforms);
 		this->_signature->GetStaticVariableByName(Diligent::SHADER_TYPE_COMPUTE, "SCamera")->Set(rawrbox::CameraBase::staticUniforms);
-
-		this->_signature->GetStaticVariableByName(Diligent::SHADER_TYPE_COMPUTE, "EmitterConstants")->Set(this->_uniforms);
-
-		this->_signature->CreateShaderResourceBinding(&this->_signatureBind, true);
-		this->_dynamicSignature->CreateShaderResourceBinding(&this->_dynamicSignatureBind, true);
 		// ----------------
 
 		this->createPipelines();
 	}
 
-	void ParticleEnginePlugin::signatures(std::vector<Diligent::PipelineResourceDesc>& sig) {
-		sig.emplace_back(Diligent::SHADER_TYPE_GEOMETRY, "EmitterConstants", 1, Diligent::SHADER_RESOURCE_TYPE_CONSTANT_BUFFER, Diligent::SHADER_RESOURCE_VARIABLE_TYPE_STATIC);
-	}
+	void ParticleEnginePlugin::preRender(const rawrbox::CameraBase& camera) {
+		if (&camera != rawrbox::MAIN_CAMERA) return; // Simulate once per frame
 
-	void ParticleEnginePlugin::bindStatic(Diligent::IPipelineResourceSignature& sig) {
-		sig.GetStaticVariableByName(Diligent::SHADER_TYPE_GEOMETRY, "EmitterConstants")->Set(this->_uniforms);
-	}
-
-	void ParticleEnginePlugin::preRender(const rawrbox::CameraBase& /*camera*/) {
 		for (auto* emitter : this->_registeredEmitters) {
 			if (emitter == nullptr || !emitter->isEnabled()) continue;
 
@@ -117,8 +90,7 @@ namespace rawrbox {
 		}
 	}
 
-	Diligent::IPipelineResourceSignature* ParticleEnginePlugin::getSignature(bool dynamic) const { return dynamic ? this->_dynamicSignature : this->_signature; }
-	Diligent::IShaderResourceBinding* ParticleEnginePlugin::getBind(bool dynamic) const { return dynamic ? this->_dynamicSignatureBind : this->_signatureBind; }
+	Diligent::IPipelineResourceSignature* ParticleEnginePlugin::getSignature(bool draw) const { return draw ? this->_drawSignature : this->_signature; }
 
 	// REGISTER ----
 	void ParticleEnginePlugin::registerEmitter(rawrbox::Emitter<>* em) {
@@ -140,25 +112,19 @@ namespace rawrbox {
 	// RENDERING ---
 	void ParticleEnginePlugin::setupEmitter(rawrbox::Emitter<>* emitter) {
 		if (emitter == nullptr) RAWRBOX_CRITICAL("Invalid emitter");
-		if (this->_signature == nullptr || this->_signatureBind == nullptr || this->_uniforms == nullptr) RAWRBOX_CRITICAL("Plugin not uploaded!");
+		if (this->_signature == nullptr) RAWRBOX_CRITICAL("Plugin not uploaded!");
+
+		auto* uniforms = emitter->getUniformBuffer();
 
 		// Update uniforms ----
-		{
-			Diligent::MapHelper<rawrbox::EmitterUniforms> Constants(rawrbox::RENDERER->context(), this->_uniforms, Diligent::MAP_WRITE, Diligent::MAP_FLAG_DISCARD);
-			if (Constants == nullptr) RAWRBOX_CRITICAL("Failed to map emitter constants buffer!");
-
-			std::memcpy(Constants, &emitter->getUniform(), sizeof(rawrbox::EmitterUniforms));
-		}
+		rawrbox::RENDERER->context()->UpdateBuffer(uniforms, 0, sizeof(rawrbox::EmitterUniforms), &emitter->getUniform(), Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
+		rawrbox::BarrierUtils::barrier({{uniforms, Diligent::RESOURCE_STATE_UNKNOWN, Diligent::RESOURCE_STATE_CONSTANT_BUFFER, Diligent::STATE_TRANSITION_FLAG_UPDATE_STATE}});
 		// --------
-
-		// Setup signature ---
-		this->_signatureBind->GetVariableByName(Diligent::SHADER_TYPE_COMPUTE, "Particles")->Set(emitter->getBuffer(false));
-		//  ------------------
 	}
 
 	void ParticleEnginePlugin::computeEmitter(rawrbox::Emitter<>* emitter) {
 		if (emitter == nullptr) RAWRBOX_CRITICAL("Invalid emitter");
-		if (this->_signature == nullptr || this->_signatureBind == nullptr || this->_uniforms == nullptr) RAWRBOX_CRITICAL("Plugin not uploaded!");
+		if (this->_signature == nullptr) RAWRBOX_CRITICAL("Plugin not uploaded!");
 
 		auto* renderer = rawrbox::RENDERER;
 		auto* context = renderer->context();
@@ -170,12 +136,9 @@ namespace rawrbox {
 		});
 		//  -----------
 
-		// Commit compute signature --
-		context->CommitShaderResources(this->_signatureBind, Diligent::RESOURCE_STATE_TRANSITION_MODE_VERIFY);
-		// -----------------------
-
 		// Update the particles ---
 		context->SetPipelineState(this->_updateProgram);
+		context->CommitShaderResources(emitter->getBind(false), Diligent::RESOURCE_STATE_TRANSITION_MODE_VERIFY);
 		context->DispatchCompute({rawrbox::MathUtils::divideRound<uint32_t>(emitter->maxParticles(), 256), 1, 1});
 		/// ------------
 

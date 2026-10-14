@@ -36,8 +36,11 @@ namespace particle_system {
 		render->addPlugin<rawrbox::ParticleEnginePlugin>();
 		render->onIntroCompleted = [this]() { this->loadContent(); };
 		render->setDrawCall([this](const rawrbox::CameraBase& /*camera*/, const rawrbox::DrawPass& pass) {
-			if (pass != rawrbox::DrawPass::PASS_WORLD) return;
-			this->drawWorld();
+			if (pass == rawrbox::DrawPass::PASS_WORLD) {
+				this->drawWorld();
+			} else {
+				this->drawOverlay();
+			}
 		});
 		// ---------------
 
@@ -165,6 +168,11 @@ namespace particle_system {
 		if (this->_text != nullptr) this->_text->draw();
 		if (this->_emitter != nullptr) this->_emitter->draw();
 		if (this->_emitter2 != nullptr) this->_emitter2->draw();
+	}
+
+	void Game::drawOverlay() const {
+		auto* stencil = rawrbox::RENDERER->stencil();
+		stencil->drawText(fmt::format("FPS: {}", this->getCurrentFPS()), {static_cast<float>(stencil->getSize().x) - 15.F, 15.F}, rawrbox::Colors::White(), rawrbox::Colors::Black(), rawrbox::Alignment::Right);
 	}
 
 	void Game::draw() {

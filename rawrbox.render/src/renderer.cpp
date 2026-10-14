@@ -431,8 +431,13 @@ namespace rawrbox {
 	}
 
 	// PLUGINS ---------------------------
-	bool RendererBase::hasPlugin(const std::string& plugin) const { return this->_renderPlugins.find(plugin) != this->_renderPlugins.end(); }
-	const std::map<std::string, std::unique_ptr<rawrbox::RenderPlugin>>& RendererBase::getPlugins() const { return this->_renderPlugins; }
+	bool RendererBase::hasPlugin(const std::string& plugin) const {
+		return std::ranges::any_of(this->_renderPlugins, [&plugin](const auto& entry) {
+			return entry.first == plugin;
+		});
+	}
+
+	const rawrbox::RenderPluginList& RendererBase::getPlugins() const { return this->_renderPlugins; }
 	// -----------------------------------
 
 	void RendererBase::setDrawCall(std::function<void(const rawrbox::CameraBase&, const rawrbox::DrawPass&)> call) { this->_drawCall = std::move(call); }

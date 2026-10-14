@@ -174,9 +174,10 @@ namespace stencil {
 	}
 
 	void Game::drawOverlay() {
-		if (!this->_ready) return;
-
 		auto* stencil = rawrbox::RENDERER->stencil();
+		stencil->drawText(fmt::format("FPS: {}", this->getCurrentFPS()), {static_cast<float>(stencil->getSize().x) - 15.F, 15.F}, rawrbox::Colors::White(), rawrbox::Colors::Black(), rawrbox::Alignment::Right);
+
+		if (!this->_ready) return;
 
 		stencil->pushOffset({20, 50});
 

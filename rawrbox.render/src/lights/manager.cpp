@@ -196,34 +196,7 @@ namespace rawrbox {
 				break;
 			}
 
-			rawrbox::LightDataVertex light = {};
-
-			light.position = l->getWorldPos();
-			light.radius = l->getRadius();
-
-			light.direction = l->getDirection();
-
-			// Encode shadow slot into the type
-			const auto shadowSlot = l->getShadowSlot();
-			light.type = static_cast<uint32_t>(l->getType()) | ((shadowSlot.has_value() ? shadowSlot.value() + 1U : 0U) << rawrbox::LightDataVertex::SHADOW_SHIFT);
-			// ------
-
-			const auto color = l->getColor();
-			const float scale = std::max({color.r, color.g, color.b, 1.F});
-			const auto radiance = (color / scale).toLinear().rgb() * (scale * l->getIntensity());
-
-			light.radiance = {
-			    static_cast<uint32_t>(rawrbox::PackUtils::toFP16(radiance.x)) | (static_cast<uint32_t>(rawrbox::PackUtils::toFP16(radiance.y)) << 16U),
-			    static_cast<uint32_t>(rawrbox::PackUtils::toFP16(radiance.z))};
-
-			if (l->getType() == rawrbox::LightType::SPOT) {
-				auto data = l->getData();
-
-				light.cosPenumbra = std::cos(rawrbox::MathUtils::toRad(data.x) / 2.F);
-				light.cosUmbra = std::cos(rawrbox::MathUtils::toRad(data.y) / 2.F);
-			}
-
-			_data.push_back(light);
+			_data.push_back(getVertexData(*l));
 		}
 		// ----
 
@@ -353,6 +326,37 @@ namespace rawrbox {
 	Diligent::IBufferView* LIGHTS::getBuffer() { return _bufferRead; }
 	Diligent::IBufferView* LIGHTS::getZBinBuffer() { return _zbinBufferRead; }
 	Diligent::IBufferView* LIGHTS::getBoundsBuffer() { return _boundsBufferRead; }
+
+	rawrbox::LightDataVertex LIGHTS::getVertexData(const rawrbox::LightBase& light) {
+		rawrbox::LightDataVertex data = {};
+
+		data.position = light.getWorldPos();
+		data.radius = light.getRadius();
+
+		data.direction = light.getDirection();
+
+		// Encode shadow slot into the type
+		const auto shadowSlot = light.getShadowSlot();
+		data.type = static_cast<uint32_t>(light.getType()) | ((shadowSlot.has_value() ? shadowSlot.value() + 1U : 0U) << rawrbox::LightDataVertex::SHADOW_SHIFT);
+		// ------
+
+		const auto color = light.getColor();
+		const float scale = std::max({color.r, color.g, color.b, 1.F});
+		const auto radiance = (color / scale).toLinear().rgb() * (scale * light.getIntensity());
+
+		data.radiance = {
+		    static_cast<uint32_t>(rawrbox::PackUtils::toFP16(radiance.x)) | (static_cast<uint32_t>(rawrbox::PackUtils::toFP16(radiance.y)) << 16U),
+		    static_cast<uint32_t>(rawrbox::PackUtils::toFP16(radiance.z))};
+
+		if (light.getType() == rawrbox::LightType::SPOT) {
+			const auto spot = light.getData();
+
+			data.cosPenumbra = std::cos(rawrbox::MathUtils::toRad(spot.x) / 2.F);
+			data.cosUmbra = std::cos(rawrbox::MathUtils::toRad(spot.y) / 2.F);
+		}
+
+		return data;
+	}
 
 	rawrbox::Vector4f LIGHTS::getBounds(const rawrbox::LightDataVertex& light) {
 		const float dirLength = light.direction.length();

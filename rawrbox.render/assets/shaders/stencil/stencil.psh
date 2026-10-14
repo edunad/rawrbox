@@ -23,3 +23,10 @@ void main(in PSInput PSIn, out PSOutput PSOut) {
 
 	PSOut.Color = color;
 }
+
+void mainText(in PSInput PSIn, out PSOutput PSOut) {
+	float a = g_Textures[NonUniformResourceIndex(PSIn.TextureID)].Sample(g_Sampler, PSIn.UV.xyz).r * PSIn.Color.a;
+	if (a <= 0.0) discard;
+
+	PSOut.Color = float4(PSIn.Color.rgb, a);
+}

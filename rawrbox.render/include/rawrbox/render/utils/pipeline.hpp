@@ -65,6 +65,8 @@ namespace rawrbox {
 		std::string pPS;
 		std::string pGS;
 
+		std::string psEntry = "main";
+
 		std::string bind;
 
 		std::vector<rawrbox::PipeUniforms> uniforms = {};

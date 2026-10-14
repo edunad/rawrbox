@@ -248,9 +248,11 @@ namespace phys_3d_test {
 	}
 
 	void Game::drawOverlay() const {
+		auto* stencil = rawrbox::RENDERER->stencil();
+		stencil->drawText(fmt::format("FPS: {}", this->getCurrentFPS()), {static_cast<float>(stencil->getSize().x) - 15.F, 15.F}, rawrbox::Colors::White(), rawrbox::Colors::Black(), rawrbox::Alignment::Right);
+
 		if (!this->_ready) return;
 
-		auto* stencil = rawrbox::RENDERER->stencil();
 		stencil->drawText(fmt::format("[F1]   PAUSED: {}", !rawrbox::PHYSICS::simulate), {15, 15});
 #ifdef _DEBUG
 		stencil->drawText(fmt::format("[F2]   DEBUG: {}", this->_debug), {15, 28});

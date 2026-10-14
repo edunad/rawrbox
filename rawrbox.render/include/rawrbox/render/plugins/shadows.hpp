@@ -354,7 +354,7 @@ namespace rawrbox {
 
 		static constexpr uint32_t MAX_CULL_ENTRIES = 4096U;
 		static constexpr uint32_t CULL_PARAMS = 5U;
-		
+
 		static constexpr uint32_t NO_COUNTER = 0xFFFFFFFFU;
 		static constexpr uint32_t COUNTED = 0x80000000U;
 
@@ -419,6 +419,7 @@ namespace rawrbox {
 		void preRender(const rawrbox::CameraBase& camera) override;
 		void postRender(const rawrbox::CameraBase& camera) override;
 
+		[[nodiscard]] short getPriority() const override;
 		std::string getID() override;
 	};
 } // namespace rawrbox

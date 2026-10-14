@@ -281,6 +281,7 @@ namespace rawrbox {
 	}
 	// ----------
 
+	short ClusteredPlugin::getPriority() const { return -100; }
 	std::string ClusteredPlugin::getID() { return "Clustered"; }
 
 } // namespace rawrbox

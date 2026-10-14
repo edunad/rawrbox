@@ -155,8 +155,10 @@ namespace post_process {
 	}
 
 	void Game::drawOverlay() const {
-		if (!this->_ready) return;
 		auto* stencil = rawrbox::RENDERER->stencil();
+		stencil->drawText(fmt::format("FPS: {}", this->getCurrentFPS()), {static_cast<float>(stencil->getSize().x) - 15.F, 15.F}, rawrbox::Colors::White(), rawrbox::Colors::Black(), rawrbox::Alignment::Right);
+
+		if (!this->_ready) return;
 
 		stencil->drawText(fmt::format("[F1]   SKYBOX -> {}", this->_skybox->isEnabled() ? "enabled" : "disabled"), {15, 15}, rawrbox::Colors::White(), rawrbox::Colors::Black());
 		stencil->drawText(fmt::format("[F2]   DITHER -> {}", this->_dither->isEnabled() ? "enabled" : "disabled"), {15, 30}, rawrbox::Colors::White(), rawrbox::Colors::Black());

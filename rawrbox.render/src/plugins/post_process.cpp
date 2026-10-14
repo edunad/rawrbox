@@ -19,9 +19,8 @@ namespace rawrbox {
 
 		Diligent::BufferDesc BuffPixelDesc;
 		BuffPixelDesc.Name = "rawrbox::PostProcess";
-		BuffPixelDesc.Usage = Diligent::USAGE_DYNAMIC;
+		BuffPixelDesc.Usage = Diligent::USAGE_DEFAULT;
 		BuffPixelDesc.BindFlags = Diligent::BIND_UNIFORM_BUFFER;
-		BuffPixelDesc.CPUAccessFlags = Diligent::CPU_ACCESS_WRITE;
 		BuffPixelDesc.Size = sizeof(rawrbox::BindlessPostProcessBuffer);
 
 		rawrbox::RENDERER->device()->CreateBuffer(BuffPixelDesc, nullptr, &this->_buffer);
@@ -49,7 +48,7 @@ namespace rawrbox {
 	}
 
 	void PostProcessPlugin::signatures(std::vector<Diligent::PipelineResourceDesc>& sig) {
-		sig.emplace_back(Diligent::SHADER_TYPE_PIXEL, "PostProcessConstants", 1, Diligent::SHADER_RESOURCE_TYPE_CONSTANT_BUFFER, Diligent::SHADER_RESOURCE_VARIABLE_TYPE_STATIC);
+		sig.emplace_back(Diligent::SHADER_TYPE_PIXEL, "PostProcessConstants", 1, Diligent::SHADER_RESOURCE_TYPE_CONSTANT_BUFFER, Diligent::SHADER_RESOURCE_VARIABLE_TYPE_STATIC, Diligent::PIPELINE_RESOURCE_FLAG_NO_DYNAMIC_BUFFERS);
 	}
 
 	void PostProcessPlugin::bindStatic(Diligent::IPipelineResourceSignature& sig) {
@@ -127,6 +126,7 @@ namespace rawrbox {
 	Diligent::IBuffer* PostProcessPlugin::getBuffer() const { return this->_buffer; }
 	size_t PostProcessPlugin::count() const { return this->_postProcesses.size(); }
 
+	short PostProcessPlugin::getPriority() const { return 100; }
 	std::string PostProcessPlugin::getID() { return "PostProcess"; }
 	// ----
 } // namespace rawrbox
