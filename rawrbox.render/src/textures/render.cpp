@@ -156,10 +156,10 @@ namespace rawrbox {
 		RAWRBOX_CRITICAL("Render textures cannot be resized");
 	}
 
-	void TextureRender::upload(Diligent::TEXTURE_FORMAT format, bool /*dynamic*/) {
+	void TextureRender::upload(Diligent::TEXTURE_FORMAT format, uint32_t /*flags*/) {
 		if (format == Diligent::TEXTURE_FORMAT::TEX_FORMAT_UNKNOWN) RAWRBOX_CRITICAL("Invalid format");
 
-		auto view = this->addTexture(format);
+		const auto view = this->addTexture(format);
 		this->addView(view, Diligent::TEXTURE_VIEW_RENDER_TARGET);
 		this->addView(view, Diligent::TEXTURE_VIEW_SHADER_RESOURCE);
 

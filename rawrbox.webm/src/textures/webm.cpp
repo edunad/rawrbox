@@ -153,10 +153,10 @@ namespace rawrbox {
 	// ----
 
 	// RENDER ------
-	void TextureWEBM::upload(Diligent::TEXTURE_FORMAT /*format*/, bool /*dynamic*/) {
+	void TextureWEBM::upload(Diligent::TEXTURE_FORMAT /*format*/, uint32_t /*flags*/) {
 		if (this->_failedToLoad || this->_handle != nullptr) return;
 
-		rawrbox::TextureBase::upload(this->_sRGB ? Diligent::TEX_FORMAT_BGRA8_UNORM_SRGB : Diligent::TEX_FORMAT_BGRA8_UNORM, true);
+		rawrbox::TextureBase::upload(this->_sRGB ? Diligent::TEX_FORMAT_BGRA8_UNORM_SRGB : Diligent::TEX_FORMAT_BGRA8_UNORM, rawrbox::TextureFlags::DYNAMIC);
 		this->_transparent = this->_webm != nullptr && this->_webm->getInfo().alpha;
 	}
 	// --------------------

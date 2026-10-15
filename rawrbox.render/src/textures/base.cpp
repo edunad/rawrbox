@@ -6,13 +6,16 @@
 #include <rawrbox/render/textures/utils/utils.hpp>
 #include <rawrbox/render/utils/pipeline.hpp>
 
+#include <GraphicsAccessories.hpp>
+
 #include <fmt/format.h>
 
-#include <thread>
+#include <bit>
 
 namespace rawrbox {
 	// IMAGE DATA ---
 	bool ImageData::transparent() const {
+		if (this->encoded()) return this->channels == 4U;
 		if (this->channels != 4U || this->frames.empty()) return false;
 
 		for (const auto& frame : this->frames) {
@@ -57,7 +60,7 @@ namespace rawrbox {
 		if (this->_tex == nullptr) return;
 
 		Diligent::TextureDesc desc = this->_tex->GetDesc();
-		if (desc.MipLevels != 1U) RAWRBOX_CRITICAL("Cannot rebuild texture '{}' with {} mip levels", this->_name, desc.MipLevels);
+		if (this->_data.encoded()) RAWRBOX_CRITICAL("Cannot rebuild pre-encoded texture '{}'", this->_name);
 
 		// NOLINTBEGIN(cppcoreguidelines-pro-type-union-access)
 		if (desc.ArraySize != this->_data.total()) RAWRBOX_CRITICAL("Cannot rebuild texture '{}', slice count {} does not match image data {}", this->_name, desc.ArraySize, this->_data.total());
@@ -65,13 +68,11 @@ namespace rawrbox {
 
 		desc.Width = this->_data.size.x;
 		desc.Height = this->_data.size.y;
+		desc.MipLevels = desc.MipLevels > 1U ? static_cast<uint32_t>(std::bit_width(std::max(desc.Width, desc.Height))) : 1U;
 		desc.Name = this->_name.c_str();
 
-		std::vector<Diligent::TextureSubResData> subresData(this->_data.total());
-		for (size_t slice = 0; slice < subresData.size(); slice++) {
-			subresData[slice].pData = this->_data.frames[slice].pixels.data();
-			subresData[slice].Stride = desc.Width * this->_data.channels;
-		}
+		std::vector<std::vector<uint8_t>> generated = {};
+		auto subresData = this->getSubresources(desc, generated);
 
 		Diligent::TextureData data;
 		data.pSubResources = subresData.data();
@@ -185,17 +186,23 @@ namespace rawrbox {
 
 	void TextureBase::setSRGB(bool set) { this->_sRGB = set; }
 
+	void TextureBase::setColorData(bool color) { this->_colorData = color; }
+
 	void TextureBase::setSlice(uint32_t id) { this->_slice = id; }
 	uint32_t TextureBase::getSlice() const { return this->_slice; }
 	// ----
 
-	void TextureBase::upload(Diligent::TEXTURE_FORMAT format, bool dynamic) {
+	void TextureBase::upload(Diligent::TEXTURE_FORMAT format, uint32_t flags) {
 		if (this->_failedToLoad || this->_handle != nullptr) return; // Failed texture is already bound, so skip it
 		if (!this->_data.valid()) RAWRBOX_CRITICAL("Cannot upload invalid image data");
 		if (this->_data.total() > 2048U) RAWRBOX_CRITICAL("Cannot upload more than 2048 image frames");
 
 		// Try to determine texture format
-		this->tryGetFormatChannels(format, this->_data.channels);
+		if (this->_data.encoded()) {
+			format = this->_data.format;
+		} else {
+			this->tryGetFormatChannels(format, this->_data.channels);
+		}
 		// --------------------------------
 
 		if (this->_data.empty()) {
@@ -204,6 +211,8 @@ namespace rawrbox {
 			this->_transparent = this->_data.transparent();
 		}
 
+		const bool dynamic = (flags & rawrbox::TextureFlags::DYNAMIC) != 0U;
+
 		Diligent::TextureDesc desc;
 		desc.Type = Diligent::RESOURCE_DIM_TEX_2D_ARRAY;
 		desc.BindFlags = Diligent::BIND_SHADER_RESOURCE;
@@ -211,22 +220,24 @@ namespace rawrbox {
 		desc.CPUAccessFlags = Diligent::CPU_ACCESS_NONE;
 		desc.Width = this->_data.size.x;
 		desc.Height = this->_data.size.y;
-		desc.MipLevels = 1;
 		desc.Format = format;
 		desc.Name = this->_name.c_str();
 
-		std::vector<Diligent::TextureSubResData> subresData = {};
+		// Mips ---
+		desc.MipLevels = 1;
+		if (!this->_data.frames.front().mips.empty()) {
+			desc.MipLevels = static_cast<uint32_t>(this->_data.frames.front().mips.size()) + 1U;
+		} else if (!dynamic && (flags & rawrbox::TextureFlags::NO_MIPMAPS) == 0U && !this->_data.encoded()) {
+			desc.MipLevels = static_cast<uint32_t>(std::bit_width(std::max(desc.Width, desc.Height)));
+		}
+		// ----
+
 		// NOLINTBEGIN(cppcoreguidelines-pro-type-union-access)
 		desc.ArraySize = static_cast<uint32_t>(this->_data.total());
 		// NOLINTEND(cppcoreguidelines-pro-type-union-access)
 
-		subresData.resize(desc.ArraySize);
-		for (uint32_t slice = 0; slice < subresData.size(); slice++) {
-			auto& res = subresData[slice];
-
-			res.pData = this->_data.frames[slice].pixels.data();
-			res.Stride = desc.Width * this->_data.channels;
-		}
+		std::vector<std::vector<uint8_t>> generated = {};
+		auto subresData = this->getSubresources(desc, generated);
 
 		Diligent::TextureData data;
 		data.pSubResources = subresData.data();
@@ -245,10 +256,43 @@ namespace rawrbox {
 		});
 	}
 
+	std::vector<Diligent::TextureSubResData> TextureBase::getSubresources(const Diligent::TextureDesc& desc, std::vector<std::vector<uint8_t>>& generated) const {
+		// NOLINTBEGIN(cppcoreguidelines-pro-type-union-access)
+		const uint32_t slices = desc.ArraySize;
+		// NOLINTEND(cppcoreguidelines-pro-type-union-access)
+
+		const bool generate = desc.MipLevels > 1U && !this->_data.encoded() && this->_data.frames.front().mips.empty();
+		const bool color = this->_colorData && this->_type == rawrbox::TEXTURE_TYPE::PIXEL;
+
+		if (generate)
+			generated.reserve(static_cast<size_t>(slices) * (desc.MipLevels - 1U));
+
+		std::vector<Diligent::TextureSubResData> subres(static_cast<size_t>(slices) * desc.MipLevels);
+		for (uint32_t slice = 0; slice < slices; slice++) {
+			const auto& frame = this->_data.frames[slice];
+			const std::vector<uint8_t>* level = &frame.pixels;
+			rawrbox::Vector2u size = this->_data.size;
+
+			for (uint32_t mip = 0; mip < desc.MipLevels; mip++) {
+				if (mip > 0U) {
+					level = generate ? &generated.emplace_back(rawrbox::TextureUtils::downsample(*level, size, this->_data.channels, color)) : &frame.mips[mip - 1U];
+					size = {std::max(size.x / 2U, 1U), std::max(size.y / 2U, 1U)};
+				}
+
+				auto& res = subres[static_cast<size_t>(slice) * desc.MipLevels + mip];
+				res.pData = level->data();
+				res.Stride = Diligent::GetMipLevelProperties(desc, mip).RowSize;
+			}
+		}
+
+		return subres;
+	}
+
 	void TextureBase::resize(const rawrbox::Vector2u& size) {
 		if (this->_failedToLoad || this->_tex == nullptr) return;
 		if (size.x == 0U || size.y == 0U) RAWRBOX_CRITICAL("Invalid texture size {}x{} for '{}'", size.x, size.y, this->_name);
 		if (size == this->_data.size) return;
+		if (this->_data.encoded()) RAWRBOX_CRITICAL("Cannot resize pre-encoded texture '{}'", this->_name);
 
 		const size_t pixelCount = static_cast<size_t>(size.x) * size.y * this->_data.channels;
 		const bool hasSize = this->_data.size.x != 0U && this->_data.size.y != 0U;

@@ -75,8 +75,11 @@ namespace rawrbox {
 
 	enum class GLTFImageType : uint32_t {
 		WEBP = 0,
-		DDS = 1,
-		OTHER = 2
+		DDS,
+		KTX2,
+
+		OTHER,
+		COUNT
 	};
 
 	struct GLTFExtras {
