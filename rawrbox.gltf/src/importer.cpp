@@ -1,5 +1,6 @@
 #include <rawrbox/gltf/importer.hpp>
 #include <rawrbox/render/models/utils/optimization.hpp>
+#include <rawrbox/render/textures/ktx2.hpp>
 #include <rawrbox/render/textures/webp.hpp>
 #include <rawrbox/utils/file.hpp>
 
@@ -248,13 +249,23 @@ namespace rawrbox {
 		this->textures.resize(scene.textures.size());
 		this->_texturesMap.resize(scene.textures.size(), nullptr);
 
+		// DATA TEXTURES ---
+		std::unordered_set<size_t> dataTextures = {};
+
+		for (const auto& material : scene.materials) {
+			if (material.normalTexture.has_value()) dataTextures.insert(material.normalTexture->textureIndex);
+			if (material.occlusionTexture.has_value()) dataTextures.insert(material.occlusionTexture->textureIndex);
+			if (material.pbrData.metallicRoughnessTexture.has_value()) dataTextures.insert(material.pbrData.metallicRoughnessTexture->textureIndex);
+		}
+		// -----
+
 		for (size_t i = 0; i < scene.textures.size(); i++) {
 			const auto& gltfTexture = scene.textures[i];
 
 			std::optional<std::pair<size_t, rawrbox::GLTFImageType>> imgIndex = std::nullopt;
 
 			if (gltfTexture.basisuImageIndex.has_value()) {
-				imgIndex = {gltfTexture.basisuImageIndex.value(), rawrbox::GLTFImageType::OTHER};
+				imgIndex = {gltfTexture.basisuImageIndex.value(), rawrbox::GLTFImageType::KTX2};
 			} else if (gltfTexture.imageIndex.has_value()) {
 				imgIndex = {gltfTexture.imageIndex.value(), rawrbox::GLTFImageType::OTHER};
 			} else if (gltfTexture.webpImageIndex.has_value()) {
@@ -297,12 +308,16 @@ namespace rawrbox {
 				case GLTFImageType::DDS:
 					this->_logger->warn("Unsupported texture '{} -> {}'", i, name);
 					continue;
+				case GLTFImageType::KTX2:
+					texture = std::make_unique<rawrbox::TextureKTX2>(name, bah, imageData.bytes.size());
+					break;
 				case GLTFImageType::OTHER:
 					texture = std::make_unique<rawrbox::TextureImage>(bah, static_cast<int>(imageData.bytes.size()));
 					break;
 			}
 
 			texture->setName(name);
+			texture->setColorData(!dataTextures.contains(i));
 
 			if (gltfTexture.samplerIndex) {
 				texture->setSampler(this->convertSampler(scene.samplers.at(gltfTexture.samplerIndex.value())));

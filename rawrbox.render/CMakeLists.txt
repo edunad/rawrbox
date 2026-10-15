@@ -168,6 +168,30 @@ if (libwebp_ADDED)
     set_lib_runtime_mt(sharpyuv)
     set_lib_runtime_mt(xxhash)
 endif ()
+
+# Basis Universal (KTX2 transcoder) ---
+CPMAddPackage(
+        NAME
+        basisu
+        GITHUB_REPOSITORY
+        BinomialLLC/basis_universal
+        GIT_TAG
+        v2_50
+        DOWNLOAD_ONLY
+        YES)
+
+if (basisu_ADDED)
+    add_library(basisu_transcoder STATIC "${basisu_SOURCE_DIR}/transcoder/basisu_transcoder.cpp" "${basisu_SOURCE_DIR}/zstd/zstddeclib.c")
+
+    target_include_directories(basisu_transcoder PUBLIC "${basisu_SOURCE_DIR}/transcoder")
+    target_compile_definitions(basisu_transcoder PUBLIC BASISD_SUPPORT_KTX2=1 BASISD_SUPPORT_KTX2_ZSTD=1)
+
+    if (MSVC)
+        target_compile_options(basisu_transcoder PRIVATE /bigobj)
+    endif ()
+
+    set_lib_runtime_mt(basisu_transcoder)
+endif ()
 # ------------
 
 
@@ -233,6 +257,7 @@ target_link_libraries(
         webpdemux
         glfw
         meshoptimizer
+        basisu_transcoder
 )
 
 set_lib_runtime_mt(${output_target})

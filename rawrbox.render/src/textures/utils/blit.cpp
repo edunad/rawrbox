@@ -15,7 +15,7 @@ namespace rawrbox {
 		this->_callbacks.clear();
 	}
 
-	void TextureBLIT::upload(Diligent::TEXTURE_FORMAT /*format*/, bool /*dynamic*/) {
+	void TextureBLIT::upload(Diligent::TEXTURE_FORMAT /*format*/, uint32_t /*flags*/) {
 		if (this->_tex != nullptr) RAWRBOX_CRITICAL("Already uploaded");
 
 		Diligent::TextureDesc desc;

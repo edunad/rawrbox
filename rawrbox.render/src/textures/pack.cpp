@@ -146,9 +146,9 @@ namespace rawrbox {
 		RAWRBOX_CRITICAL("Texture packs cannot be resized");
 	}
 
-	void TexturePack::upload(Diligent::TEXTURE_FORMAT format, bool /*dynamic*/) {
+	void TexturePack::upload(Diligent::TEXTURE_FORMAT format, uint32_t /*flags*/) {
 		if (this->_failedToLoad || this->_handle != nullptr) return; // Failed texture is already bound, so skip it
-		rawrbox::TextureBase::upload(format, true);
+		rawrbox::TextureBase::upload(format, rawrbox::TextureFlags::DYNAMIC);
 	}
 
 	void TexturePack::update() {

@@ -6,7 +6,9 @@
 
 #include <magic_enum/magic_enum.hpp>
 
+#include <array>
 #include <bitset>
+#include <cmath>
 
 namespace rawrbox {
 	// PRIVATE ---
@@ -98,6 +100,93 @@ namespace rawrbox {
 		}
 
 		return resizedData;
+	}
+
+	float TextureUtils::srgbToLinear(uint8_t value) {
+		static const auto table = []() {
+			std::array<float, 256> result = {};
+			for (size_t i = 0; i < result.size(); i++) {
+				const float c = static_cast<float>(i) / 255.F;
+				result[i] = c <= 0.04045F ? c / 12.92F : std::pow((c + 0.055F) / 1.055F, 2.4F);
+			}
+
+			return result;
+		}();
+
+		return table[value];
+	}
+
+	uint8_t TextureUtils::linearToSRGB(float value) {
+		static const auto table = []() {
+			std::array<uint8_t, 4096> result = {};
+			for (size_t i = 0; i < result.size(); i++) {
+				const float c = static_cast<float>(i) / 4095.F;
+				const float s = c <= 0.0031308F ? c * 12.92F : 1.055F * std::pow(c, 1.F / 2.4F) - 0.055F;
+				result[i] = static_cast<uint8_t>(std::lround(std::clamp(s, 0.F, 1.F) * 255.F));
+			}
+
+			return result;
+		}();
+
+		return table[static_cast<size_t>(std::lround(std::clamp(value, 0.F, 1.F) * 4095.F))];
+	}
+
+	std::vector<uint8_t> TextureUtils::downsample(const std::vector<uint8_t>& data, const rawrbox::Vector2u& size, uint8_t channels, bool color) {
+		const rawrbox::Vector2u half = {std::max(size.x / 2U, 1U), std::max(size.y / 2U, 1U)};
+		const bool linear = color && channels >= 3U;
+		const bool alpha = channels == 4U;
+
+		std::vector<uint8_t> result(static_cast<size_t>(half.x) * half.y * channels);
+		for (uint32_t y = 0; y < half.y; y++) {
+			const uint32_t y0 = std::min(y * 2U, size.y - 1U);
+			const uint32_t y1 = std::min(y * 2U + 1U, size.y - 1U);
+
+			for (uint32_t x = 0; x < half.x; x++) {
+				const uint32_t x0 = std::min(x * 2U, size.x - 1U);
+				const uint32_t x1 = std::min(x * 2U + 1U, size.x - 1U);
+
+				const std::array<const uint8_t*, 4> taps = {
+				    &data[(static_cast<size_t>(y0) * size.x + x0) * channels],
+				    &data[(static_cast<size_t>(y0) * size.x + x1) * channels],
+				    &data[(static_cast<size_t>(y1) * size.x + x0) * channels],
+				    &data[(static_cast<size_t>(y1) * size.x + x1) * channels]};
+
+				uint8_t* out = &result[(static_cast<size_t>(y) * half.x + x) * channels];
+
+				if (!linear) {
+					for (uint8_t c = 0; c < channels; c++) {
+						out[c] = static_cast<uint8_t>((taps[0][c] + taps[1][c] + taps[2][c] + taps[3][c] + 2U) / 4U);
+					}
+
+					continue;
+				}
+
+				// ALPHA WEIGHTED ---
+				std::array<float, 3> weighted = {};
+				std::array<float, 3> plain = {};
+				float weight = 0.F;
+
+				for (const auto* tap : taps) {
+					const float a = alpha ? static_cast<float>(tap[3]) / 255.F : 1.F;
+					weight += a;
+
+					for (size_t c = 0; c < 3; c++) {
+						weighted[c] += rawrbox::TextureUtils::srgbToLinear(tap[c]) * a;
+						plain[c] += rawrbox::TextureUtils::srgbToLinear(tap[c]);
+					}
+				}
+
+				for (size_t c = 0; c < 3; c++) {
+					const float value = weight > 0.F ? weighted[c] / weight : plain[c] / 4.F;
+					out[c] = rawrbox::TextureUtils::linearToSRGB(value);
+				}
+				// -----
+
+				if (alpha) out[3] = static_cast<uint8_t>((taps[0][3] + taps[1][3] + taps[2][3] + taps[3][3] + 2U) / 4U);
+			}
+		}
+
+		return result;
 	}
 
 	rawrbox::ImageType TextureUtils::getImageType(const std::vector<uint8_t>& data) {

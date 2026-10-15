@@ -22,6 +22,6 @@ namespace rawrbox {
 
 		[[nodiscard]] uint32_t getTextureID() const override;
 
-		void upload(Diligent::TEXTURE_FORMAT format = Diligent::TEXTURE_FORMAT::TEX_FORMAT_UNKNOWN, bool dynamic = false) override;
+		void upload(Diligent::TEXTURE_FORMAT format = Diligent::TEXTURE_FORMAT::TEX_FORMAT_UNKNOWN, uint32_t flags = rawrbox::TextureFlags::NONE) override;
 	};
 } // namespace rawrbox

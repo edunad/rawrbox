@@ -27,7 +27,7 @@ namespace rawrbox {
 		TextureBLIT& operator=(const TextureBLIT&) = delete;
 		~TextureBLIT() override;
 
-		void upload(Diligent::TEXTURE_FORMAT format = Diligent::TEXTURE_FORMAT::TEX_FORMAT_UNKNOWN, bool dynamic = false) override;
+		void upload(Diligent::TEXTURE_FORMAT format = Diligent::TEXTURE_FORMAT::TEX_FORMAT_UNKNOWN, uint32_t flags = rawrbox::TextureFlags::NONE) override;
 
 		void copy(Diligent::ITexture* base, Diligent::Box* box, const std::function<void()>& callback);
 		void blit(Diligent::Box* box, const std::function<void(const uint8_t*, const uint64_t)>& callback);

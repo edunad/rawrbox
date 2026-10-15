@@ -80,7 +80,7 @@ namespace rawrbox {
 		return rawrbox::TextureBase::getTextureID();
 	}
 
-	void TextureStreaming::upload(Diligent::TEXTURE_FORMAT format, bool /*dynamic*/) {
-		rawrbox::TextureBase::upload(format, true);
+	void TextureStreaming::upload(Diligent::TEXTURE_FORMAT format, uint32_t /*flags*/) {
+		rawrbox::TextureBase::upload(format, rawrbox::TextureFlags::DYNAMIC);
 	}
 } // namespace rawrbox

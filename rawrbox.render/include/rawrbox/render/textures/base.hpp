@@ -1,6 +1,5 @@
 #pragma once
 
-#include <rawrbox/math/color.hpp>
 #include <rawrbox/math/vector2.hpp>
 #include <rawrbox/render/utils/pipeline.hpp>
 
@@ -19,14 +18,16 @@ namespace rawrbox {
 	};
 
 	struct ImageFrame {
-		float delay = 0.F; // User for animation
+		float delay = 0.F;
 		std::vector<uint8_t> pixels = {};
+		std::vector<std::vector<uint8_t>> mips = {};
 	};
 
 	struct ImageData {
 		rawrbox::Vector2u size = {};
 		uint8_t channels = 0U;
 
+		Diligent::TEXTURE_FORMAT format = Diligent::TEX_FORMAT_UNKNOWN;
 		std::vector<rawrbox::ImageFrame> frames = {};
 
 		void createFrame() {
@@ -44,11 +45,21 @@ namespace rawrbox {
 		void clearFrames() { this->frames.clear(); }
 
 		[[nodiscard]] bool valid() const { return channels != 0U && size > 0; }
+		[[nodiscard]] bool encoded() const { return this->format != Diligent::TEX_FORMAT_UNKNOWN; }
 		[[nodiscard]] bool empty() const { return this->frames.empty(); }
 
 		[[nodiscard]] size_t total() const { return this->frames.size(); }
 		[[nodiscard]] bool transparent() const;
 	};
+
+	// NOLINTBEGIN(unused-const-variable)
+	namespace TextureFlags {
+		const uint32_t NONE = 0;
+		
+		const uint32_t DYNAMIC = 1 << 1;
+		const uint32_t NO_MIPMAPS = 1 << 2;
+	}; // namespace TextureFlags
+	// NOLINTEND(unused-const-variable)
 
 	class TextureBase {
 	protected:
@@ -69,6 +80,7 @@ namespace rawrbox {
 		bool _transparent = false;
 		bool _sRGB = false;
 		bool _registered = false;
+		bool _colorData = true;
 
 		// LOGGER ------
 		std::unique_ptr<rawrbox::Logger> _logger = std::make_unique<rawrbox::Logger>("RawrBox-Texture");
@@ -77,9 +89,11 @@ namespace rawrbox {
 		std::string _name;
 		virtual void loadFallback();
 		virtual void updateSampler();
-		
+
 		virtual void rebuild();
 		virtual void tryGetFormatChannels(Diligent::TEXTURE_FORMAT& format, uint8_t& channels);
+
+		[[nodiscard]] virtual std::vector<Diligent::TextureSubResData> getSubresources(const Diligent::TextureDesc& desc, std::vector<std::vector<uint8_t>>& generated) const;
 
 	public:
 		TextureBase() = default;
@@ -122,12 +136,13 @@ namespace rawrbox {
 		virtual void setName(const std::string& name);
 
 		virtual void setSRGB(bool set);
+		virtual void setColorData(bool color);
 
 		virtual void setSlice(uint32_t id);
 		[[nodiscard]] virtual uint32_t getSlice() const;
 		// -----
 
-		virtual void upload(Diligent::TEXTURE_FORMAT format = Diligent::TEXTURE_FORMAT::TEX_FORMAT_UNKNOWN, bool dynamic = false);
+		virtual void upload(Diligent::TEXTURE_FORMAT format = Diligent::TEXTURE_FORMAT::TEX_FORMAT_UNKNOWN, uint32_t flags = rawrbox::TextureFlags::NONE);
 		virtual void resize(const rawrbox::Vector2u& size);
 
 		virtual void update();

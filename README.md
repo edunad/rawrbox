@@ -206,3 +206,4 @@ Matrix: [column-major](https://upload.wikimedia.org/wikipedia/commons/thumb/4/4d
 | meshoptimizer     | Used to optimize meshes                             | [MIT](https://github.com/zeux/meshoptimizer/blob/master/LICENSE.md)                            |
 | ozz-animation     | Used to animate skinned meshes                      | [MIT](https://github.com/guillaumeblanc/ozz-animation/blob/master/LICENSE.md)                  |
 | spdlog            | Used for logging                                    | [MIT](https://github.com/gabime/spdlog/blob/v1.x/LICENSE)                                      |
+| basis_universal   | Used for texture compression                        | [APACHE](https://github.com/BinomialLLC/basis_universal/tree/master?tab=Apache-2.0-1-ov-file)  |
