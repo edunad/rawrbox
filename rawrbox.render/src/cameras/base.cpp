@@ -177,17 +177,6 @@ namespace rawrbox {
 	bool CameraBase::isCullFrozen() const { return this->_cullFrozen; }
 #endif
 
-	const rawrbox::Matrix4x4& CameraBase::getModelTransform() const {
-		return this->_world;
-	}
-
-	void CameraBase::setModelTransform(const rawrbox::Matrix4x4& transform) {
-		if (this->_world == transform) return;
-
-		this->_world = transform;
-		this->updateBuffer();
-	}
-
 	rawrbox::Vector3f CameraBase::worldToScreen(const rawrbox::Vector3f& /*pos*/) const {
 		RAWRBOX_CRITICAL("Not implemented");
 	}
@@ -231,13 +220,11 @@ namespace rawrbox {
 		auto view = rawrbox::Matrix4x4::mtxTranspose(this->getViewMtx());
 		auto viewInv = rawrbox::Matrix4x4::mtxInverse(this->getViewMtx());
 		auto projection = rawrbox::Matrix4x4::mtxTranspose(this->getProjMtx());
-		auto world = rawrbox::Matrix4x4::mtxTranspose(this->_world);
 
 		rawrbox::CameraUniforms data = {};
 		data.gView = view;
 		data.gViewInv = viewInv;
-		data.gWorld = world;
-		data.gWorldViewProj = data.gWorld * data.gView * projection;
+		data.gViewProj = data.gView * projection;
 		data.gPos = this->getPos();
 		data.gDeltaTime = rawrbox::DELTA_TIME;
 

@@ -112,13 +112,15 @@ TransformedData applyPosTransforms(float4x4 proj, float4 a_position, float2 a_te
 	return data;
 }
 
+#ifdef INCLUDED_VERTEX_UNIFORMS
 TransformedData applyPosTransforms(float4 a_position, float2 a_texcoord0) {
-	return applyPosTransforms(Camera.worldViewProj, a_position, a_texcoord0);
+	return applyPosTransforms(mul(Constants.world, Camera.viewProj), a_position, a_texcoord0);
 }
 
 TransformedData applyPosTransforms(float3 a_position, float2 a_texcoord0) {
-	return applyPosTransforms(Camera.worldViewProj, float4(a_position, 1.0), a_texcoord0);
+	return applyPosTransforms(mul(Constants.world, Camera.viewProj), float4(a_position, 1.0), a_texcoord0);
 }
+#endif
 
 TransformedData applyPosTransforms(float4x4 proj, float3 a_position, float2 a_texcoord0) {
 	return applyPosTransforms(proj, float4(a_position, 1.0), a_texcoord0);

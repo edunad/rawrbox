@@ -85,7 +85,7 @@ void main(in VSInput VSIn, in uint instance : SV_InstanceID, out GSInput GSIn) {
 #endif
 
 	TransformedData transform = applyPosTransforms(pos, VSIn.UV);
-	float3 world = mul(transform.pos, Camera.world).xyz;
+	float3 world = mul(transform.pos, Constants.world).xyz;
 	uint slot = GetShadowViewSlot(view);
 
 	if (IsShadowClipmap(slot)) {

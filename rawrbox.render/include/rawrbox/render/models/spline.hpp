@@ -155,10 +155,8 @@ namespace rawrbox {
 			rawrbox::ModelBase<M>::draw();
 
 			// Bind materials uniforms & textures ----
-			rawrbox::RENDERER->getPassCamera()->setModelTransform(this->getMatrix());
-
 			this->_material->bindPipeline(*this->_mesh);
-			this->_material->bindVertexUniforms(*this->_mesh);
+			this->_material->bindVertexUniforms(*this->_mesh, this->getMatrix());
 			this->_material->bindPixelUniforms(*this->_mesh);
 			// -----------
 

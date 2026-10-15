@@ -46,13 +46,14 @@ namespace rawrbox {
 
 		template <typename T = rawrbox::VertexData>
 			requires(std::derived_from<T, rawrbox::VertexData>)
-		rawrbox::BindlessVertexBuffer bindBaseUniforms(const rawrbox::Mesh<T>& mesh) {
+		rawrbox::BindlessVertexBuffer bindBaseUniforms(const rawrbox::Mesh<T>& mesh, const rawrbox::Matrix4x4& world) {
 			auto* texture = mesh.getTexture();
 			auto* displacement = mesh.getDisplacementTexture();
 
 			return {
 			    {mesh.color.pack(), mesh.getSlice() + (texture == nullptr ? 0U : texture->getSlice()), mesh.getID(), mesh.data.billboard},
-			    {mesh.data.vertexSnapPower, displacement != nullptr ? static_cast<float>(displacement->getTextureID()) : 0.F, mesh.data.displacementPower}};
+			    {mesh.data.vertexSnapPower, displacement != nullptr ? static_cast<float>(displacement->getTextureID()) : 0.F, mesh.data.displacementPower},
+			    rawrbox::Matrix4x4::mtxTranspose(world)};
 		}
 
 		template <typename T = rawrbox::VertexData>
@@ -92,8 +93,8 @@ namespace rawrbox {
 
 		template <typename T = rawrbox::VertexData>
 			requires(std::derived_from<T, rawrbox::VertexData>)
-		bool bindVertexUniforms(const rawrbox::Mesh<T>& mesh) {
-			rawrbox::BindlessVertexBuffer buff = this->bindBaseUniforms<T>(mesh);
+		bool bindVertexUniforms(const rawrbox::Mesh<T>& mesh, const rawrbox::Matrix4x4& world) {
+			rawrbox::BindlessVertexBuffer buff = this->bindBaseUniforms<T>(mesh, world);
 			if (this->_lastVertexBuffer.has_value() && buff == this->_lastVertexBuffer.value()) return false;
 			this->_lastVertexBuffer = buff;
 

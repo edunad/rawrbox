@@ -14,6 +14,7 @@ ConstantBuffer<SkinnedConstantsStruct> SkinnedConstants;
 struct ConstantsStruct {
 	uint4 data;
 	float4 dataF;
+	float4x4 world;
 };
 
 ConstantBuffer<ConstantsStruct> Constants;

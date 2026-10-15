@@ -606,11 +606,9 @@ namespace rawrbox {
 			if (this->_material->shadow == nullptr) RAWRBOX_CRITICAL("Shadow not initialized!");
 			rawrbox::RENDERER->context()->SetPipelineState(this->_material->shadow);
 
-			this->_material->bindVertexUniforms(mesh);
+			this->_material->bindVertexUniforms(mesh, matrix);
 			this->_material->bindVertexSkinnedUniforms(mesh);
 			this->_material->bindPixelUniforms(mesh);
-
-			rawrbox::RENDERER->getPassCamera()->setModelTransform(matrix);
 		}
 
 		void drawShadow(const rawrbox::ShadowDraw& draw) override {

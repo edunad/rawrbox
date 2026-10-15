@@ -39,9 +39,7 @@ namespace rawrbox {
 	struct CameraUniforms {
 		rawrbox::Matrix4x4 gView = {};
 		rawrbox::Matrix4x4 gViewInv = {};
-
-		rawrbox::Matrix4x4 gWorld = {};
-		rawrbox::Matrix4x4 gWorldViewProj = {};
+		rawrbox::Matrix4x4 gViewProj = {};
 
 		// ----------
 		rawrbox::Vector3f gPos = {};
@@ -49,7 +47,7 @@ namespace rawrbox {
 		// ----------------
 
 		bool operator==(const CameraUniforms& other) const {
-			return this->gView == other.gView && this->gWorld == other.gWorld && this->gWorldViewProj == other.gWorldViewProj && this->gPos == other.gPos;
+			return this->gView == other.gView && this->gViewProj == other.gViewProj && this->gPos == other.gPos;
 		}
 
 		bool operator!=(const CameraUniforms& other) const { return !operator==(other); }
@@ -64,8 +62,6 @@ namespace rawrbox {
 
 		rawrbox::Matrix4x4 _view = {};
 		rawrbox::Matrix4x4 _projection = {};
-
-		rawrbox::Matrix4x4 _world = {};
 
 		// MOTION ----
 		static constexpr float TELEPORT_DISTANCE = 0.5F;
@@ -135,9 +131,6 @@ namespace rawrbox {
 		virtual void setCullFrozen(bool frozen);
 		[[nodiscard]] virtual bool isCullFrozen() const;
 #endif
-
-		[[nodiscard]] virtual const rawrbox::Matrix4x4& getModelTransform() const;
-		virtual void setModelTransform(const rawrbox::Matrix4x4& transform);
 
 		[[nodiscard]] virtual rawrbox::Vector3f worldToScreen(const rawrbox::Vector3f& pos) const;
 		[[nodiscard]] virtual rawrbox::Vector3f screenToWorld(const rawrbox::Vector2f& screen_pos, const rawrbox::Vector3f& origin = {0, 0, 0}) const;

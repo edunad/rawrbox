@@ -94,8 +94,6 @@ namespace rawrbox {
 			}
 
 			// BIND MATERIALS + TEXTURES ----
-			rawrbox::RENDERER->getPassCamera()->setModelTransform(this->getMatrix());
-
 			this->_material->bindPipeline(*this->_mesh);
 
 			rawrbox::BindlessManager::instanceBind->GetVariableByName(Diligent::SHADER_TYPE_VERTEX, "Instances")->Set(this->_dataBuffer->GetBuffer()->GetDefaultView(Diligent::BUFFER_VIEW_SHADER_RESOURCE));
@@ -103,7 +101,7 @@ namespace rawrbox {
 
 			this->_material->resetUniformBinds();
 
-			bool updated = this->_material->bindVertexUniforms(*this->_mesh);
+			bool updated = this->_material->bindVertexUniforms(*this->_mesh, this->getMatrix());
 			updated |= this->_material->bindVertexSkinnedUniforms(*this->_mesh);
 			updated |= this->_material->bindPixelUniforms(*this->_mesh);
 			// -----------

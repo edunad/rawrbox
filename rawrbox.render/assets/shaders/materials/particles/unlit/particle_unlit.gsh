@@ -45,7 +45,7 @@ struct GSOutput {
 		float3 rotatedOffset = mul(input[0].ROTATION, offsets[i]);
 		float4 billboardOffset = billboardTransform(float4(rotatedOffset, 1.0), EmitterConstants.billboard);
 
-		output.Position = mul(float4(input[0].POS.xyz + billboardOffset.xyz, 1.0f), Camera.worldViewProj);
+		output.Position = mul(float4(input[0].POS.xyz + billboardOffset.xyz, 1.0f), Camera.viewProj);
 		output.UV = float3(uvs[i], input[0].UV.z);
 
 		outputStream.Append(output);

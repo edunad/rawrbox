@@ -12,6 +12,6 @@ struct PSInput {
 };
 
 void main(in VSInput VSIn, out PSInput PSIn) {
-    PSIn.Pos = mul(float4(VSIn.Pos, 1.0), Camera.worldViewProj);
+    PSIn.Pos = mul(float4(VSIn.Pos, 1.0), Camera.viewProj);
     PSIn.Color = Unpack_RGBA8_UNORM(VSIn.Color);
 }

@@ -76,12 +76,12 @@ void main(in VSInput VSIn, out PSInput PSIn) {
 
 	TransformedData transform = applyPosTransforms(pos, VSIn.UV);
 
-	float3x3 world = (float3x3)Camera.world;
+	float3x3 world = (float3x3)Constants.world;
 	PSIn.Normal = normalize(mul(normal, world));
 	PSIn.Tangent = float4(normalize(mul(tangent.xyz, world)), tangent.w);
 
 	PSIn.Pos = transform.final;
-	PSIn.WorldPos = mul(transform.pos, Camera.world).xyz;
+	PSIn.WorldPos = mul(transform.pos, Constants.world).xyz;
 	PSIn.UV = VSIn.UV;
 
 #ifdef INSTANCED

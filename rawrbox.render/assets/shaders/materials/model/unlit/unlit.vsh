@@ -62,7 +62,7 @@ void main(in VSInput VSIn, out PSInput PSIn) {
 #endif
 
 	PSIn.Pos = transform.final;
-	PSIn.WorldPos = mul(transform.pos, Camera.world);
+	PSIn.WorldPos = mul(transform.pos, Constants.world);
 	PSIn.UV = VSIn.UV;
 
 #ifdef INSTANCED

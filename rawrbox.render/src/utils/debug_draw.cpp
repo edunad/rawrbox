@@ -152,8 +152,6 @@ namespace rawrbox {
 		}
 		// ---------------------------------
 
-		rawrbox::RENDERER->getPassCamera()->setModelTransform({});
-
 		const std::array<Diligent::IBuffer*, 1> buffers = {_buffer};
 		context->SetVertexBuffers(0, 1, buffers.data(), nullptr, Diligent::RESOURCE_STATE_TRANSITION_MODE_VERIFY, Diligent::SET_VERTEX_BUFFERS_FLAG_RESET);
 

@@ -807,11 +807,9 @@ namespace rawrbox {
 				// -------------------
 
 				// Update uniforms -----
-				bool buffersUpdated = this->_material->bindVertexUniforms(*mesh);
+				bool buffersUpdated = this->_material->bindVertexUniforms(*mesh, matrix);
 				buffersUpdated |= this->_material->bindVertexSkinnedUniforms(*mesh);
 				buffersUpdated |= this->_material->bindPixelUniforms(*mesh);
-
-				rawrbox::RENDERER->getPassCamera()->setModelTransform(matrix);
 				// -----------
 
 				// DRAW -------
