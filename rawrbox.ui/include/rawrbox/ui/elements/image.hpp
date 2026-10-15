@@ -1,5 +1,6 @@
 
 #pragma once
+#include <rawrbox/math/color.hpp>
 #include <rawrbox/render/textures/base.hpp>
 #include <rawrbox/ui/container.hpp>
 
@@ -13,9 +14,9 @@ namespace rawrbox {
 
 	public:
 		UIImage(rawrbox::UIRoot* root);
-		UIImage(const UIImage&) = default;
+		UIImage(const UIImage&) = delete;
 		UIImage(UIImage&&) = delete;
-		UIImage& operator=(const UIImage&) = default;
+		UIImage& operator=(const UIImage&) = delete;
 		UIImage& operator=(UIImage&&) = delete;
 		~UIImage() override;
 
