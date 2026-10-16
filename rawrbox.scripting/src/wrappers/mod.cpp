@@ -38,7 +38,19 @@ namespace rawrbox {
 
 	luabridge::LuaRef MODWrapper::getMetadata(lua_State* L) const {
 		if (this->_mod == nullptr) throw std::runtime_error("Invalid mod reference");
-		return rawrbox::LuaUtils::jsonToLua(L, this->_mod->getMetadata());
+		const auto& metadata = this->_mod->getMetadata();
+
+		auto table = luabridge::newTable(L);
+
+		table["name"] = metadata.name;
+		table["author"] = metadata.author;
+
+		if (metadata.description.has_value()) table["description"] = metadata.description.value();
+		if (metadata.repo.has_value()) table["repo"] = metadata.repo.value();
+
+		table["priority"] = metadata.priority;
+
+		return table;
 	}
 
 	void MODWrapper::registerLua(lua_State* L) {
