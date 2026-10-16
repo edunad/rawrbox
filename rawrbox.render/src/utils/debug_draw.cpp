@@ -31,8 +31,8 @@ namespace rawrbox {
 	void DebugDraw::init() {
 		rawrbox::PipeSettings settings;
 
-		settings.pVS = "debug_draw.vsh";
-		settings.pPS = "debug_draw.psh";
+		settings.pVS = "debug/debug_draw.vsh";
+		settings.pPS = "debug/debug_draw.psh";
 
 		settings.cull = Diligent::CULL_MODE_NONE;
 		settings.renderTargets = RB_RENDER_RENDER_TARGET_TARGETS;    // COLOR + GPUPick

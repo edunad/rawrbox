@@ -26,7 +26,7 @@ namespace rawrbox {
 		if (this->_depthReduceProgram != nullptr) RAWRBOX_CRITICAL("Occlusion already uploaded!");
 
 		rawrbox::PipeComputeSettings settings;
-		settings.pCS = "hiz.csh";
+		settings.pCS = "culling/hiz.csh";
 		settings.resourceType = Diligent::SHADER_RESOURCE_VARIABLE_TYPE_DYNAMIC;
 		settings.macros.AddShaderMacro("REDUCE_THREADS", RB_RENDER_OCCLUSION_THREADS);
 
@@ -42,7 +42,7 @@ namespace rawrbox {
 
 		// CULLING ---
 		rawrbox::PipeComputeSettings cull;
-		cull.pCS = "instance_cull.csh";
+		cull.pCS = "culling/instance_cull.csh";
 		cull.resourceType = Diligent::SHADER_RESOURCE_VARIABLE_TYPE_MUTABLE;
 		cull.resources = {
 		    {Diligent::SHADER_TYPE_COMPUTE, "CullConstants", Diligent::SHADER_RESOURCE_VARIABLE_TYPE_DYNAMIC, Diligent::SHADER_VARIABLE_FLAG_INLINE_CONSTANTS},

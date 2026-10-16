@@ -1,6 +1,7 @@
 #include <rawrbox/render/models/vertex.hpp>
 #include <rawrbox/render/static.hpp>
 #include <rawrbox/render/utils/pipeline.hpp>
+#include <rawrbox/utils/vfs.hpp>
 
 #include <magic_enum/magic_enum.hpp>
 
@@ -182,11 +183,13 @@ namespace rawrbox {
 		ShaderCI.GLSLExtensions = "#extension GL_EXT_nonuniform_qualifier : require\n";
 		ShaderCI.ShaderCompiler = Diligent::SHADER_COMPILER_DXC;
 
-		std::string shaderName = fmt::format("RawrBox::SHADER::{}::{}", name, entry);
+		const std::string shaderPath = rawrbox::VFS::normalize(name);
+		const std::string shaderName = fmt::format("RawrBox::SHADER::{}::{}", name, entry);
+		
 		ShaderCI.Desc.ShaderType = type;
 		ShaderCI.Desc.UseCombinedTextureSamplers = false;
 		ShaderCI.EntryPoint = entry.c_str();
-		ShaderCI.FilePath = name.c_str();
+		ShaderCI.FilePath = shaderPath.c_str();
 		ShaderCI.Desc.Name = shaderName.c_str();
 		ShaderCI.Macros = helper;
 

@@ -116,7 +116,7 @@ if (RAWRBOX_DEV_MODE)
 endif ()
 
 # OTHER SETTINGS ----
-set(RAWRBOX_CONTENT_FOLDER "assets" CACHE STRING "The assets folder (aka where models, textures, etc are)")
+set(RAWRBOX_CONTENT_FOLDER "assets" CACHE STRING "The folder assets are packed under inside the VPK (aka where models, textures, etc are)")
 set(RAWRBOX_LIBRARY_TYPE "STATIC" CACHE STRING "Linking type for library")
 # ----------------
 
@@ -221,35 +221,6 @@ endif ()
 
 CPMAddPackage("gh:stephenberry/glaze@6.4.1")
 
-# ---
-if (RAWRBOX_BUILD_RAWRBOX_NETWORK)
-    message(WARNING "RAWRBOX.NETWORK is enabled, adding zlib-ng package")
-
-    CPMFindPackage(
-            NAME
-            zlib
-            GITHUB_REPOSITORY
-            zlib-ng/zlib-ng
-            USE_CACHE
-            OFF
-            GIT_TAG
-            2.3.3
-            OPTIONS
-            "ZLIB_COMPAT ON"
-            "ZLIB_BUILD_EXAMPLES OFF"
-            "ZLIB_ENABLE_TESTS OFF"
-
-            "POSITION_INDEPENDENT_CODE ON"
-            "WITH_GTEST OFF"
-    )
-
-    if (zlib_ADDED)
-        include_directories(${zlib_SOURCE_DIR} ${zlib_BINARY_DIR})
-        set_lib_runtime_mt(zlib)
-    endif ()
-endif ()
-# --------------------
-
 add_subdirectory("rawrbox.math")
 add_subdirectory("rawrbox.utils")
 add_subdirectory("rawrbox.engine")
@@ -315,6 +286,10 @@ if (RAWRBOX_BUILD_RAWRBOX_3D_PHYSICS)
     add_subdirectory("rawrbox.physics_3d")
 endif ()
 # --------------------
+
+# TOOLS ---
+add_subdirectory("rawrbox.tools" EXCLUDE_FROM_ALL)
+# ----------
 
 # Shhhhh windows... shhhh....
 mute_dependencies_warnings(".*RAWRBOX.*")

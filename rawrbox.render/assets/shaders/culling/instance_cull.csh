@@ -1,4 +1,4 @@
-#include "instance.fxh"
+#include "include/instance.fxh"
 
 struct InstanceCullStruct {
 	float4 clip[4];

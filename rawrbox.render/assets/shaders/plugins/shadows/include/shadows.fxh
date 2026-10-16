@@ -3,7 +3,7 @@
 #ifndef INCLUDED_SHADOWS
 #define INCLUDED_SHADOWS
 
-#include "shadow_uniforms.fxh"
+#include "plugins/shadows/include/shadow_uniforms.fxh"
 
 StructuredBuffer<uint> ShadowPageTable;
 Texture2DArray<uint> ShadowPool;

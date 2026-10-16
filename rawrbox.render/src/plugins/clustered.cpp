@@ -233,7 +233,7 @@ namespace rawrbox {
 		settings.signatures = {this->_signature};
 
 		// TILE CULLING -----
-		settings.pCS = "tile_cull.csh";
+		settings.pCS = "plugins/clustered/tile_cull.csh";
 		this->_tileCullProgram = rawrbox::PipelineUtils::createComputePipeline("Cluster::TileCull", settings);
 		// ----
 	}

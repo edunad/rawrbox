@@ -75,6 +75,10 @@ namespace rawrbox {
 		static void compileAndLoadFile(lua_State* L, const std::string& chunkID, const std::filesystem::path& path);
 		static void compileAndLoadScript(lua_State* L, const std::string& chunkID, const std::string& script);
 
+		static std::string compile(const std::string& script);
+		static std::string precompile(const std::string& script); // Bytecode with the '\x1bLuau' header, loaded by compileAndLoadFile without compiling
+		static void loadBytecode(lua_State* L, const std::string& chunkID, const std::string& bytecode);
+
 		static void resume(lua_State* L, lua_State* from);
 		static void run(lua_State* L);
 		static void collect_garbage(lua_State* L);

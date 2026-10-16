@@ -70,7 +70,7 @@ endif ()
 add_library(${output_target} ${RAWRBOX_LIBRARY_TYPE} ${RAWRBOX_NETWORK_IMPORTS})
 
 if (RAWRBOX_BUILD_RAWRBOX_SCRIPTING)
-    copy_lua_libs(TARGET ${output_target})
+    add_resources(FOLDER lua)
 endif ()
 
 target_compile_definitions(${output_target} PRIVATE _CRT_SECURE_NO_WARNINGS NOMINMAX)
@@ -80,8 +80,6 @@ target_compile_features(${output_target} PUBLIC cxx_std_${CMAKE_CXX_STANDARD})
 
 target_link_libraries(${output_target}
         PUBLIC
-        zlib
-
         cpr::cpr
         ${RAWRBOX_EXTRA_LIBS}
 )

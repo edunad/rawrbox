@@ -4,6 +4,7 @@
 #include <rawrbox/render/static.hpp>
 #include <rawrbox/steamworks/sdk.hpp>
 #include <rawrbox/steamworks/utils.hpp>
+#include <rawrbox/utils/vfs.hpp>
 
 #include <steamworks/game.hpp>
 
@@ -51,6 +52,10 @@ namespace steamworks {
 		// --------------
 
 		if (!rawrbox::SteamSDK::init()) throw std::runtime_error("Failed to start steam sdk");
+
+		// Mount content
+		rawrbox::VFS::mount("pak01_dir.vpk");
+		// ----------
 
 		// Pre-compile shaders before content load
 		render->precompile<rawrbox::MaterialUnlit>();

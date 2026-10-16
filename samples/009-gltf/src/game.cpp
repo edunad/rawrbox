@@ -7,7 +7,7 @@
 #include <rawrbox/render/models/utils/mesh.hpp>
 #include <rawrbox/render/plugins/clustered.hpp>
 #include <rawrbox/resources/manager.hpp>
-#include <rawrbox/utils/threading.hpp>
+#include <rawrbox/utils/vfs.hpp>
 
 #include <gltf/game.hpp>
 
@@ -53,6 +53,10 @@ namespace gltf {
 		cam->canUseMouse([]() { return true; });
 		// --------------
 
+		// Mount content
+		rawrbox::VFS::mount("pak01_dir.vpk");
+		// ----------
+
 		// Add loaders
 		rawrbox::RESOURCES::addLoader<rawrbox::GLTFLoader>();
 		// --------------
@@ -64,7 +68,7 @@ namespace gltf {
 		// Pre-compile shaders before content load
 		render->precompile<rawrbox::MaterialUnlit, rawrbox::MaterialLit, rawrbox::MaterialSkinned, rawrbox::MaterialSkinnedLit, rawrbox::MaterialText3D>();
 		// ---------------------------------------
-		
+
 		render->init();
 	}
 

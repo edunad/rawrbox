@@ -1,7 +1,7 @@
-#include "camera.fxh"
-#include "math.fxh"
-#include "pixel_post_process_uniforms.fxh"
-#include "unpack.fxh"
+#include "include/camera.fxh"
+#include "include/math.fxh"
+#include "include/bindless/pixel_post_process_uniforms.fxh"
+#include "include/unpack.fxh"
 
 // ## MAPPING ----------------
 #define START_COLOR asuint(PostProcessConstants.data[0].x)

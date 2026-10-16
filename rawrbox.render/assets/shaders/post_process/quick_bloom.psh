@@ -1,4 +1,4 @@
-#include "pixel_post_process_uniforms.fxh"
+#include "include/bindless/pixel_post_process_uniforms.fxh"
 
 // ## MAPPING ----------------
 #define BloomIntensity PostProcessConstants.data[0].x

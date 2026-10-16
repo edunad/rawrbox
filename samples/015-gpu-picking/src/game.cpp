@@ -2,6 +2,7 @@
 #include <rawrbox/render/cameras/orbit.hpp>
 #include <rawrbox/render/models/utils/mesh.hpp>
 #include <rawrbox/render/static.hpp>
+#include <rawrbox/utils/vfs.hpp>
 
 #include <gpu/game.hpp>
 
@@ -48,10 +49,14 @@ namespace gpu {
 		cam->canUseMouse([]() { return true; });
 		// --------------
 
+		// Mount content
+		rawrbox::VFS::mount("pak01_dir.vpk");
+		// ----------
+
 		// Pre-compile shaders before content load
 		render->precompile<rawrbox::MaterialUnlit, rawrbox::MaterialInstanced, rawrbox::MaterialText3D>();
 		// ---------------------------------------
-		
+
 		render->init();
 
 		// BINDS ----

@@ -1,8 +1,8 @@
-#include "defines.fxh"
-#include "particles_uniforms.fxh"
+#include "include/defines.fxh"
+#include "materials/particles/include/particles_uniforms.fxh"
 
 #define READ_PARTICLES
-#include "particles.fxh"
+#include "plugins/particle_engine/include/particles.fxh"
 
 #define PARTICLE_ALPHACUTOFF 0.5
 

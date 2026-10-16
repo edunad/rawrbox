@@ -1,10 +1,10 @@
-#include "camera.fxh"
-#include "decal_uniforms.fxh"
-#include "light_uniforms.fxh"
-#include "math.fxh"
+#include "include/camera.fxh"
+#include "plugins/clustered/include/decal_uniforms.fxh"
+#include "plugins/clustered/include/light_uniforms.fxh"
+#include "include/math.fxh"
 
 #define WRITE_TILES
-#include "binning.fxh"
+#include "plugins/clustered/include/binning.fxh"
 
 struct TileFrustum {
 	float3 planes[4];

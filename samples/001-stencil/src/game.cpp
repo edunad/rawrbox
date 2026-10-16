@@ -8,6 +8,7 @@
 #include <rawrbox/render/resources/texture.hpp>
 #include <rawrbox/resources/manager.hpp>
 #include <rawrbox/utils/timer.hpp>
+#include <rawrbox/utils/vfs.hpp>
 
 #include <stencil/game.hpp>
 
@@ -52,6 +53,10 @@ namespace stencil {
 		cam->setPos({-2.F, 5.F, -3.5F});
 		cam->setAngle({0.F, rawrbox::MathUtils::toRad(-45), 0.F, 0.F});
 		// ---------------
+
+		// Mount content
+		rawrbox::VFS::mount("pak01_dir.vpk");
+		// ----------
 
 		// Add loaders
 		rawrbox::RESOURCES::addLoader<rawrbox::TextureLoader>();

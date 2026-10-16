@@ -143,6 +143,8 @@ namespace rawrbox {
 	const rawrbox::ImageData& TextureBase::getData() const { return this->_data; }
 	const std::vector<uint8_t>& TextureBase::getPixels(size_t index) const {
 		if (index > this->_data.frames.size()) RAWRBOX_CRITICAL("Pixel data from frame index {} not found", index);
+		if (this->_data.encoded()) RAWRBOX_CRITICAL("Texture '{}' is GPU encoded into 'KTX2'! Raw pixels are not available", this->_name);
+
 		return this->_data.frames[index].pixels;
 	}
 

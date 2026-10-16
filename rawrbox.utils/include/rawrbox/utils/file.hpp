@@ -1,9 +1,12 @@
 #pragma once
 
+#include <rawrbox/utils/vfs.hpp>
+
 #include <bit>
+#include <cstring>
 #include <filesystem>
 #include <fstream>
-#include <iostream>
+#include <type_traits>
 #include <vector>
 
 namespace rawrbox {
@@ -11,22 +14,18 @@ namespace rawrbox {
 	public:
 		template <typename T = uint8_t>
 		static std::vector<T> getRawData(const std::filesystem::path& filePath) {
-			if (!std::filesystem::exists(filePath)) return {};
+			if (!rawrbox::VFS::contains(filePath)) return {};
 
-			std::vector<T> file = {};
-			const auto iflags = std::ios::in | std::ios::binary | std::ios::ate;
-			if (auto ifs = std::ifstream(filePath.generic_string(), iflags)) {
-				const auto fileSize = ifs.tellg();
+			auto data = rawrbox::VFS::read(filePath);
 
-				if (fileSize > 0 && fileSize <= std::numeric_limits<std::streamsize>::max()) {
-					file.resize(static_cast<size_t>(fileSize));
-					ifs.seekg(0, std::ios::beg);
-					ifs.read(std::bit_cast<char*>(file.data()), static_cast<std::streamsize>(file.size()));
-				}
+			if constexpr (std::is_same_v<T, uint8_t>) {
+				data.push_back('\0'); // Add null terminator
+				return data;
+			} else {
+				std::vector<T> file((data.size() / sizeof(T)) + 1);
+				std::memcpy(file.data(), data.data(), (data.size() / sizeof(T)) * sizeof(T));
+				return file;
 			}
-
-			file.push_back(static_cast<T>('\0'));
-			return file;
 		}
 
 		template <typename T = uint8_t>

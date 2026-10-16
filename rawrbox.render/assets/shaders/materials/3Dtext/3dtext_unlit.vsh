@@ -1,9 +1,9 @@
-#include "camera.fxh"
-#include "unpack.fxh"
-#include "vertex_bindless_uniforms.fxh"
+#include "include/camera.fxh"
+#include "include/unpack.fxh"
+#include "include/bindless/vertex_bindless_uniforms.fxh"
 
 #define TRANSFORM_BILLBOARD
-#include "model_transforms.fxh"
+#include "materials/include/model_transforms.fxh"
 
 struct VSInput {
 	float3 Pos : ATTRIB0;

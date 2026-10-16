@@ -1,8 +1,15 @@
-﻿# Copy content - SAMPLES
-add_custom_target(
-        copy_resources_samples ALL COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_SOURCE_DIR}/assets
-        ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${RAWRBOX_CONTENT_FOLDER}
-        COMMENT "Copying SAMPLES assets into binary directory")
+﻿# Pack content - SAMPLES
+add_resources(
+        FOLDER assets
+        RAW # ATLAS + PIXEL READING
+        "textures/instance_test.png"
+        "textures/decals.png"
+        "textures/particles.png"
+        "textures/crate_hl1.png"
+        "textures/screem.png"
+)
+
+pack_assets(TARGET samples)
 # ------------------
 
 add_subdirectory("001-stencil")

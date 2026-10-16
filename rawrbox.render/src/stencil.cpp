@@ -53,8 +53,8 @@ namespace rawrbox {
 		rawrbox::PipeSettings settings;
 		settings.depth = Diligent::COMPARISON_FUNC_UNKNOWN;
 		settings.cull = Diligent::CULL_MODE_NONE;
-		settings.pVS = "stencil.vsh";
-		settings.pPS = "stencil.psh";
+		settings.pVS = "stencil/stencil.vsh";
+		settings.pPS = "stencil/stencil.psh";
 		settings.scissors = true;
 		settings.blending = {Diligent::BLEND_FACTOR_SRC_ALPHA, Diligent::BLEND_FACTOR_INV_SRC_ALPHA};
 		settings.layout = rawrbox::PosUVColorVertexData::vLayout();

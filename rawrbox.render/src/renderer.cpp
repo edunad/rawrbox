@@ -43,12 +43,12 @@
 #include <rawrbox/render/utils/debug_draw.hpp>
 #include <rawrbox/render/utils/render.hpp>
 #include <rawrbox/render/utils/swapchain.hpp>
-#include <rawrbox/utils/path.hpp>
 #include <rawrbox/utils/threading.hpp>
+#include <rawrbox/utils/vfs.hpp>
 
 #include <DXCompiler.hpp>
 
-#include <fmt/ranges.h>
+#include <ShaderSourceFactoryUtils.h>
 
 #include <utility>
 
@@ -267,17 +267,25 @@ namespace rawrbox {
 		// Setup shader pipeline if not exists
 		if (rawrbox::SHADER_FACTORY == nullptr) {
 			auto rootDir = this->getShadersDirectory();
-			if (!std::filesystem::exists(rootDir)) RAWRBOX_CRITICAL("Shaders directory '{}' not found!", rootDir.generic_string());
+			if (!rawrbox::VFS::contains(rootDir)) RAWRBOX_CRITICAL("Shaders directory '{}' not found!", rootDir.generic_string());
 
-			auto dirs = rawrbox::PathUtils::glob(rootDir, true);
-			auto paths = fmt::format("{}", fmt::join(dirs, ";"));
+			std::vector<std::string> names = {};
+			std::vector<std::string> sources = {};
 
-			this->_logger->debug("Initializing shader factory (using {}):", fmt::styled(rootDir.generic_string(), fmt::fg(fmt::color::coral)));
-			for (const auto& dir : dirs) {
-				this->_logger->debug("\t{}", dir);
+			for (const auto& file : rawrbox::VFS::list(rootDir, true)) {
+				const auto data = rawrbox::VFS::read(file);
+
+				names.push_back(rawrbox::VFS::normalize(file.lexically_relative(rootDir)));
+				sources.emplace_back(data.begin(), data.end());
 			}
 
-			this->_engineFactory->CreateDefaultShaderSourceStreamFactory(paths.c_str(), &rawrbox::SHADER_FACTORY);
+			std::vector<Diligent::MemoryShaderSourceFileInfo> files = {};
+			for (size_t i = 0; i < names.size(); i++) {
+				files.emplace_back(names[i].c_str(), sources[i].c_str(), static_cast<Diligent::Uint32>(sources[i].size()));
+			}
+
+			this->_logger->debug("Initializing shader factory (using {}, {} files)", fmt::styled(rootDir.generic_string(), fmt::fg(fmt::color::coral)), sources.size());
+			Diligent::CreateMemoryShaderSourceFactory({files.data(), static_cast<Diligent::Uint32>(files.size()), true}, &rawrbox::SHADER_FACTORY);
 		}
 		// -----------
 

@@ -1,5 +1,6 @@
 #include <rawrbox/render/textures/base.hpp>
 #include <rawrbox/render/textures/utils/gif.hpp>
+#include <rawrbox/utils/vfs.hpp>
 
 #include <stb/stb_gif.hpp>
 
@@ -38,17 +39,8 @@ namespace rawrbox {
 	}
 
 	rawrbox::ImageData GIF::decode(const std::filesystem::path& path) {
-		if (!std::filesystem::exists(path)) RAWRBOX_CRITICAL("Could not find file {}", path.generic_string());
-
-		int frames_n = 0;
-		int* delays = nullptr;
-		uint8_t* gifPixels = nullptr;
-
-		int width = 0;
-		int height = 0;
-
-		gifPixels = stbi_xload_file(path.generic_string().c_str(), &width, &height, &frames_n, &delays);
-		return internalLoad(width, height, frames_n, gifPixels, delays);
+		if (!rawrbox::VFS::contains(path)) RAWRBOX_CRITICAL("Could not find file {}", path.generic_string());
+		return decode(rawrbox::VFS::read(path));
 	}
 
 	rawrbox::ImageData GIF::decode(const std::vector<uint8_t>& data) {

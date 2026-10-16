@@ -1,4 +1,5 @@
 
+#include <rawrbox/utils/vfs.hpp>
 #include <rawrbox/webm/loader.hpp>
 
 #include <common/webmids.h>
@@ -9,6 +10,40 @@
 #include <utility>
 
 namespace rawrbox {
+	// READER ---
+	class WEBM::VFSReader : public mkvparser::IMkvReader {
+		std::unique_ptr<rawrbox::VFSStream> _stream = nullptr;
+
+	public:
+		explicit VFSReader(const std::filesystem::path& filePath) : _stream(rawrbox::VFS::open(filePath)) {
+			if (this->_stream == nullptr) RAWRBOX_CRITICAL("Failed to open '{}'", filePath.generic_string());
+		}
+
+		VFSReader(const VFSReader&) = delete;
+		VFSReader(VFSReader&&) = delete;
+		VFSReader& operator=(const VFSReader&) = delete;
+		VFSReader& operator=(VFSReader&&) = delete;
+		~VFSReader() override = default;
+
+		int Read(long long pos, long len, unsigned char* buf) override {
+			if (pos < 0 || len < 0) return -1;
+			if (len == 0) return 0;
+
+			return this->_stream->read(static_cast<uint64_t>(pos), buf, static_cast<size_t>(len)) == static_cast<size_t>(len) ? 0 : -1;
+		}
+
+		int Length(long long* total, long long* available) override {
+			const auto size = static_cast<long long>(this->_stream->size());
+
+			if (total != nullptr) *total = size;
+			if (available != nullptr) *available = size;
+
+			return 0;
+		}
+	};
+	// ----------
+
+	WEBM::WEBM() = default;
 	WEBM::~WEBM() {
 		this->_decoder.reset();
 		this->_video = nullptr;
@@ -421,9 +456,7 @@ namespace rawrbox {
 		this->_segment.reset();
 		this->_preloadedFrames.clear();
 
-		this->_reader = std::make_unique<mkvparser::MkvReader>();
-		if (this->_reader->Open(filePath.string().c_str()) != 0) RAWRBOX_CRITICAL("Failed to open '{}'", filePath.generic_string());
-
+		this->_reader = std::make_unique<VFSReader>(filePath);
 		this->internalLoad();
 	}
 

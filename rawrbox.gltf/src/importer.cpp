@@ -1,8 +1,10 @@
 #include <rawrbox/gltf/importer.hpp>
 #include <rawrbox/render/models/utils/optimization.hpp>
 #include <rawrbox/render/textures/ktx2.hpp>
+#include <rawrbox/render/textures/utils/utils.hpp>
 #include <rawrbox/render/textures/webp.hpp>
 #include <rawrbox/utils/file.hpp>
+#include <rawrbox/utils/vfs.hpp>
 
 #include <fastgltf/tools.hpp>
 #include <fastgltf/types.hpp>
@@ -16,24 +18,23 @@
 
 #include <algorithm>
 #include <cmath>
+#include <cstring>
 #include <variant>
 
 namespace rawrbox {
 	// PRIVATE -----
 	void GLTFImporter::internalLoad(fastgltf::GltfDataBuffer& data) {
 		auto extensions =
-		    fastgltf::Extensions::KHR_mesh_quantization;
+		    fastgltf::Extensions::KHR_mesh_quantization |
+		    fastgltf::Extensions::EXT_meshopt_compression |
+		    fastgltf::Extensions::KHR_meshopt_compression;
 
-		auto gltfOptions =
-		    fastgltf::Options::DecomposeNodeMatrices |
-		    fastgltf::Options::LoadExternalBuffers;
+		const auto gltfOptions = fastgltf::Options::DecomposeNodeMatrices;
 
 		if ((this->loadFlags & rawrbox::GLTFLoadFlags::IMPORT_TEXTURES) > 0) {
 			extensions |= fastgltf::Extensions::KHR_materials_unlit |
 				      fastgltf::Extensions::KHR_materials_specular | fastgltf::Extensions::KHR_texture_basisu |
 				      fastgltf::Extensions::EXT_texture_webp | fastgltf::Extensions::KHR_materials_emissive_strength;
-
-			gltfOptions |= fastgltf::Options::LoadExternalImages; // Handle loading for us
 		}
 
 		if ((this->loadFlags & rawrbox::GLTFLoadFlags::IMPORT_LIGHT) > 0) {
@@ -83,6 +84,9 @@ namespace rawrbox {
 		fastgltf::Asset& scene = asset.get();
 
 		// POST-LOAD ---
+		if (!this->postLoadExternalData(scene)) return;
+
+		this->postLoadMeshopt(scene);
 		this->postLoadFixSceneNames(scene);
 		for (const auto& index : extras.additiveAnimations) {
 			if (index < scene.animations.size())
@@ -115,6 +119,111 @@ namespace rawrbox {
 	}
 
 	// POST-LOAD ---
+	bool GLTFImporter::postLoadExternalData(fastgltf::Asset& scene) {
+		const bool importTextures = (this->loadFlags & rawrbox::GLTFLoadFlags::IMPORT_TEXTURES) > 0;
+
+		std::vector<fastgltf::DataSource*> sources = {};
+		for (auto& buffer : scene.buffers) {
+			sources.push_back(&buffer.data);
+		}
+
+		if (importTextures) {
+			for (auto& image : scene.images) {
+				sources.push_back(&image.data);
+			}
+		}
+
+		for (auto* source : sources) {
+			const auto* uri = std::get_if<fastgltf::sources::URI>(source);
+			if (uri == nullptr) continue;
+
+			if (!uri->uri.isLocalPath()) {
+				this->_logger->warn("Failed to load '{}' ──> Unsupported external uri '{}'\n  └── Loading fallback model!", this->filePath.generic_string(), uri->uri.c_str());
+				return false;
+			}
+
+			const auto path = this->filePath.parent_path() / uri->uri.fspath();
+			if (!rawrbox::VFS::contains(path)) {
+				this->_logger->warn("Failed to load '{}' ──> Missing external file '{}'\n  └── Loading fallback model!", this->filePath.generic_string(), path.generic_string());
+				return false;
+			}
+
+			const auto data = rawrbox::VFS::read(path);
+			if (data.size() < uri->fileByteOffset) {
+				this->_logger->warn("Failed to load '{}' ──> Invalid external file '{}'\n  └── Loading fallback model!", this->filePath.generic_string(), path.generic_string());
+				return false;
+			}
+
+			std::vector<std::byte> bytes(data.size() - uri->fileByteOffset);
+			std::memcpy(bytes.data(), data.data() + uri->fileByteOffset, bytes.size());
+
+			*source = fastgltf::sources::Vector{
+			    .bytes = std::move(bytes),
+			    .mimeType = uri->mimeType};
+		}
+
+		return true;
+	}
+
+	void GLTFImporter::postLoadMeshopt(fastgltf::Asset& scene) {
+		for (auto& view : scene.bufferViews) {
+			if (view.meshoptCompression == nullptr) continue;
+
+			const auto& compressed = *view.meshoptCompression;
+			const auto source = this->subspan(this->getSourceData(scene, scene.buffers.at(compressed.bufferIndex).data).bytes, compressed.byteOffset, compressed.byteLength);
+			const auto* input = std::bit_cast<const unsigned char*>(source.data());
+
+			std::vector<std::byte> decoded(compressed.count * compressed.byteStride);
+
+			// DECODE ---
+			int result = -1;
+			switch (compressed.mode) {
+				case fastgltf::MeshoptCompressionMode::Attributes:
+					result = meshopt_decodeVertexBuffer(decoded.data(), compressed.count, compressed.byteStride, input, source.size());
+					break;
+				case fastgltf::MeshoptCompressionMode::Triangles:
+					result = meshopt_decodeIndexBuffer(decoded.data(), compressed.count, compressed.byteStride, input, source.size());
+					break;
+				case fastgltf::MeshoptCompressionMode::Indices:
+					result = meshopt_decodeIndexSequence(decoded.data(), compressed.count, compressed.byteStride, input, source.size());
+					break;
+			}
+
+			if (result != 0) RAWRBOX_CRITICAL("Failed to decode meshopt buffer view on '{}'", this->filePath.generic_string());
+			// -----------
+
+			// FILTER ---
+			switch (compressed.filter) {
+				case fastgltf::MeshoptCompressionFilter::None:
+					break;
+				case fastgltf::MeshoptCompressionFilter::Octahedral:
+					meshopt_decodeFilterOct(decoded.data(), compressed.count, compressed.byteStride);
+					break;
+				case fastgltf::MeshoptCompressionFilter::Quaternion:
+					meshopt_decodeFilterQuat(decoded.data(), compressed.count, compressed.byteStride);
+					break;
+				case fastgltf::MeshoptCompressionFilter::Exponential:
+					meshopt_decodeFilterExp(decoded.data(), compressed.count, compressed.byteStride);
+					break;
+				case fastgltf::MeshoptCompressionFilter::Color:
+					meshopt_decodeFilterColor(decoded.data(), compressed.count, compressed.byteStride);
+					break;
+			}
+			// -----------
+
+			view.bufferIndex = scene.buffers.size();
+			view.byteOffset = 0;
+			view.byteLength = decoded.size();
+			view.meshoptCompression.reset();
+
+			fastgltf::Buffer buffer = {};
+			buffer.byteLength = decoded.size();
+			buffer.data = fastgltf::sources::Vector{std::move(decoded), fastgltf::MimeType::None};
+
+			scene.buffers.push_back(std::move(buffer));
+		}
+	}
+
 	void GLTFImporter::postLoadFixSceneNames(fastgltf::Asset& scene) {
 		const bool importAnims = (this->loadFlags & rawrbox::GLTFLoadFlags::IMPORT_ANIMATIONS) > 0;
 		const bool importTextures = (this->loadFlags & rawrbox::GLTFLoadFlags::IMPORT_TEXTURES) > 0;
@@ -301,6 +410,10 @@ namespace rawrbox {
 			const auto* bah = std::bit_cast<const uint8_t*>(imageData.bytes.data());
 			std::unique_ptr<rawrbox::TextureBase> texture = nullptr;
 
+			const auto imageType = rawrbox::TextureUtils::getImageType({bah, imageData.bytes.size()});
+			if (imageType == rawrbox::ImageType::IMAGE_KTX2) index.second = rawrbox::GLTFImageType::KTX2;
+			if (imageType == rawrbox::ImageType::IMAGE_WEBP) index.second = rawrbox::GLTFImageType::WEBP;
+
 			switch (index.second) {
 				case rawrbox::GLTFImageType::WEBP:
 					texture = std::make_unique<rawrbox::TextureWEBP>(name, bah, static_cast<int>(imageData.bytes.size()));
@@ -311,6 +424,7 @@ namespace rawrbox {
 				case GLTFImageType::KTX2:
 					texture = std::make_unique<rawrbox::TextureKTX2>(name, bah, imageData.bytes.size());
 					break;
+				default:
 				case GLTFImageType::OTHER:
 					texture = std::make_unique<rawrbox::TextureImage>(bah, static_cast<int>(imageData.bytes.size()));
 					break;
@@ -1302,40 +1416,35 @@ namespace rawrbox {
 	}
 
 	void GLTFImporter::load(const std::filesystem::path& path, const std::vector<uint8_t>& buffer) {
-		this->filePath = path;
-
-		auto b = buffer;
-		if (!b.empty()) {
-			const auto* bah = std::bit_cast<const std::byte*>(b.data());
-
-			if (path.extension() == ".gltf") {
-				this->load(path); // GLTF has external dependencies, not sure how to load them using file from memory
-			} else {
-				auto data = fastgltf::GltfDataBuffer::FromBytes(bah, static_cast<uint32_t>(b.size()));
-				if (data.error() != fastgltf::Error::None) {
-					this->_logger->warn("Failed to load '{}' ──> {}\n  └── Loading fallback model!", this->filePath.generic_string(), fastgltf::getErrorMessage(data.error()));
-					return;
-				}
-
-				this->internalLoad(data.get());
-			}
-		} else {
+		if (buffer.empty()) {
 			this->load(path);
+			return;
 		}
-	}
-
-	void GLTFImporter::load(const std::filesystem::path& path) {
-		if (!std::filesystem::exists(path)) RAWRBOX_CRITICAL("File '{}' does not exist!", path.generic_string());
 
 		this->filePath = path;
 
-		auto data = fastgltf::GltfDataBuffer::FromPath(path);
+		const bool binary = buffer.size() >= 4 && std::memcmp(buffer.data(), "glTF", 4) == 0;
+		const size_t size = !binary && buffer.back() == 0 ? buffer.size() - 1 : buffer.size(); // Strip null terminator
+
+		auto data = fastgltf::GltfDataBuffer::FromBytes(std::bit_cast<const std::byte*>(buffer.data()), size);
 		if (data.error() != fastgltf::Error::None) {
 			this->_logger->warn("Failed to load '{}' ──> {}\n  └── Loading fallback model!", this->filePath.generic_string(), fastgltf::getErrorMessage(data.error()));
 			return;
 		}
 
 		this->internalLoad(data.get());
+	}
+
+	void GLTFImporter::load(const std::filesystem::path& path) {
+		if (!rawrbox::VFS::contains(path)) RAWRBOX_CRITICAL("File '{}' does not exist!", path.generic_string());
+
+		const auto buffer = rawrbox::VFS::read(path);
+		if (buffer.empty()) {
+			this->_logger->warn("Failed to load '{}' ──> File is empty\n  └── Loading fallback model!", path.generic_string());
+			return;
+		}
+
+		this->load(path, buffer);
 	}
 	// ----------------
 

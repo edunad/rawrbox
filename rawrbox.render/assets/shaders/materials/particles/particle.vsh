@@ -1,7 +1,7 @@
-#include "unpack.fxh"
+#include "include/unpack.fxh"
 
 #define READ_PARTICLES
-#include "particles.fxh"
+#include "plugins/particle_engine/include/particles.fxh"
 
 struct VSInput {
 	uint VertexID : SV_VertexID;

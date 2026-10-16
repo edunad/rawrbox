@@ -1,5 +1,5 @@
-#include "pixel_bindless_uniforms.fxh"
-#include "shadow_uniforms.fxh"
+#include "include/bindless/pixel_bindless_uniforms.fxh"
+#include "plugins/shadows/include/shadow_uniforms.fxh"
 
 StructuredBuffer<uint> ShadowPageTable;
 

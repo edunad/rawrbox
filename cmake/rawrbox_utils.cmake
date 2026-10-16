@@ -26,58 +26,114 @@ function(remove_folder glob_sources folderName)
     set(CLEAN_SOURCES "${glob_sources}" PARENT_SCOPE)
 endfunction()
 
-function(copy_resources)
-    set(oneValueArgs TARGET SRC_DIR)
+function(add_resources) # Adds resources to the VPK packing
+    set(oneValueArgs SRC_DIR FOLDER PREFIX)
     set(options "")
-    set(multiValueArgs "")
+    set(multiValueArgs PRELOAD RAW DATA)
 
-    cmake_parse_arguments(COPY_RESOURCES "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
+    cmake_parse_arguments(ADD_RESOURCES "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
 
-    if (NOT DEFINED COPY_RESOURCES_SRC_DIR)
-        set(COPY_RESOURCES_SRC_DIR ${CMAKE_CURRENT_LIST_DIR})
+    if (NOT DEFINED ADD_RESOURCES_SRC_DIR)
+        set(ADD_RESOURCES_SRC_DIR ${CMAKE_CURRENT_LIST_DIR})
     endif ()
 
-    if (${CMAKE_VERSION} VERSION_LESS "3.26.0")
-        add_custom_target(
-                copy_resources_${COPY_RESOURCES_TARGET} ALL
-                COMMAND ${CMAKE_COMMAND} -E copy_directory ${COPY_RESOURCES_SRC_DIR}/assets
-                ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${RAWRBOX_CONTENT_FOLDER}
-                COMMENT "Copying ${COPY_RESOURCES_TARGET}'s assets into ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${RAWRBOX_CONTENT_FOLDER} directory")
-    else ()
-        add_custom_target(
-                copy_resources_${COPY_RESOURCES_TARGET} ALL
-                COMMAND ${CMAKE_COMMAND} -E copy_directory_if_different ${COPY_RESOURCES_SRC_DIR}/assets
-                ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${RAWRBOX_CONTENT_FOLDER}
-                COMMENT "Copying ${COPY_RESOURCES_TARGET}'s assets into ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${RAWRBOX_CONTENT_FOLDER} directory")
+    if (NOT DEFINED ADD_RESOURCES_FOLDER)
+        message(FATAL_ERROR "add_resources requires a FOLDER")
     endif ()
 
-    add_dependencies(${COPY_RESOURCES_TARGET} copy_resources_${COPY_RESOURCES_TARGET})
+    if (NOT DEFINED ADD_RESOURCES_PREFIX)
+        if (ADD_RESOURCES_FOLDER STREQUAL "assets")
+            set(ADD_RESOURCES_PREFIX ${RAWRBOX_CONTENT_FOLDER})
+        else ()
+            set(ADD_RESOURCES_PREFIX ${ADD_RESOURCES_FOLDER})
+        endif ()
+    endif ()
+
+    set(RESOURCES_FOLDER "${ADD_RESOURCES_SRC_DIR}/${ADD_RESOURCES_FOLDER}")
+    if (NOT EXISTS "${RESOURCES_FOLDER}")
+        message(FATAL_ERROR "Resources folder '${RESOURCES_FOLDER}' not found")
+    endif ()
+
+    set_property(GLOBAL APPEND PROPERTY RAWRBOX_PACK_INPUTS "${ADD_RESOURCES_PREFIX}=${RESOURCES_FOLDER}")
+
+    foreach (OPTION PRELOAD RAW DATA)
+        foreach (GLOB ${ADD_RESOURCES_${OPTION}})
+            if (ADD_RESOURCES_PREFIX)
+                set_property(GLOBAL APPEND PROPERTY RAWRBOX_PACK_${OPTION} ${ADD_RESOURCES_PREFIX}/${GLOB})
+            else ()
+                set_property(GLOBAL APPEND PROPERTY RAWRBOX_PACK_${OPTION} ${GLOB})
+            endif ()
+        endforeach ()
+    endforeach ()
 endfunction()
 
-function(copy_lua_libs)
-    set(oneValueArgs TARGET SRC_DIR)
-    set(options "")
+function(pack_assets)
+    set(oneValueArgs TARGET NAME)
+    set(options COMPRESS)
     set(multiValueArgs "")
 
-    cmake_parse_arguments(COPY_LUA_LIBS "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
+    cmake_parse_arguments(PACK_ASSETS "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
 
-    if (NOT DEFINED COPY_LUA_LIBS_SRC_DIR)
-        set(COPY_LUA_SRC_DIR ${CMAKE_CURRENT_LIST_DIR})
+    if (NOT TARGET rawrbox_vpk)
+        message(FATAL_ERROR "pack_assets requires the rawrbox_vpk tool")
     endif ()
 
-    if (${CMAKE_VERSION} VERSION_LESS "3.26.0")
-        add_custom_target(
-                copy_lua_libs_${COPY_LUA_LIBS_TARGET} ALL COMMAND ${CMAKE_COMMAND} -E copy_directory ${COPY_LUA_SRC_DIR}/lua
-                ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/lua
-                COMMENT "Copying ${COPY_LUA_LIBS_TARGET}'s LUA libs into ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/lua directory")
-    else ()
-        add_custom_target(
-                copy_lua_libs_${COPY_LUA_LIBS_TARGET} ALL COMMAND ${CMAKE_COMMAND} -E copy_directory_if_different ${COPY_LUA_SRC_DIR}/lua
-                ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/lua
-                COMMENT "Copying ${COPY_LUA_LIBS_TARGET}'s LUA libs into ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/lua directory")
+    if (NOT DEFINED PACK_ASSETS_NAME)
+        set(PACK_ASSETS_NAME pak01)
     endif ()
 
-    add_dependencies(${COPY_LUA_LIBS_TARGET} copy_lua_libs_${COPY_LUA_LIBS_TARGET})
+    # INPUTS ---
+    get_property(PACK_INPUTS GLOBAL PROPERTY RAWRBOX_PACK_INPUTS)
+    if (NOT PACK_INPUTS)
+        message(FATAL_ERROR "pack_assets is missing resources! call add_resources first")
+    endif ()
+
+    set(PACK_ARGS "")
+    set(PACK_DEPENDS "")
+
+    foreach (INPUT ${PACK_INPUTS})
+        list(APPEND PACK_ARGS --input ${INPUT})
+
+        string(FIND "${INPUT}" "=" INPUT_SPLIT)
+        math(EXPR INPUT_SPLIT "${INPUT_SPLIT} + 1")
+        string(SUBSTRING "${INPUT}" ${INPUT_SPLIT} -1 INPUT_FOLDER)
+
+        file(GLOB_RECURSE INPUT_FILES CONFIGURE_DEPENDS "${INPUT_FOLDER}/*")
+        list(APPEND PACK_DEPENDS ${INPUT_FILES})
+    endforeach ()
+    # ----------
+
+    # OPTIONS ---
+    if (PACK_ASSETS_COMPRESS)
+        list(APPEND PACK_ARGS --compress)
+    endif ()
+
+    foreach (OPTION PRELOAD RAW DATA)
+        string(TOLOWER ${OPTION} OPTION_NAME)
+        get_property(RULES GLOBAL PROPERTY RAWRBOX_PACK_${OPTION})
+
+        foreach (GLOB ${RULES})
+            list(APPEND PACK_ARGS --${OPTION_NAME} ${GLOB})
+        endforeach ()
+    endforeach ()
+
+    set(PACK_STAMP ${CMAKE_CURRENT_BINARY_DIR}/pack_${PACK_ASSETS_TARGET}.options)
+    file(WRITE ${PACK_STAMP}.tmp "${PACK_ARGS}\n${PACK_DEPENDS}")
+    configure_file(${PACK_STAMP}.tmp ${PACK_STAMP} COPYONLY)
+    # ----------
+
+    set(PACK_OUTPUT ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${PACK_ASSETS_NAME}_dir.vpk)
+    add_custom_command(
+            OUTPUT ${PACK_OUTPUT}
+            COMMAND $<TARGET_FILE:rawrbox_vpk> pack ${PACK_OUTPUT} --cache ${CMAKE_CURRENT_BINARY_DIR}/vpk_cache_${PACK_ASSETS_TARGET} ${PACK_ARGS}
+            DEPENDS rawrbox_vpk ${PACK_STAMP} ${PACK_DEPENDS}
+            COMMENT "Packing ${PACK_ASSETS_TARGET}'s resources into ${PACK_OUTPUT}"
+            VERBATIM)
+
+    add_custom_target(pack_${PACK_ASSETS_TARGET} DEPENDS ${PACK_OUTPUT})
+    if (TARGET ${PACK_ASSETS_TARGET})
+        add_dependencies(${PACK_ASSETS_TARGET} pack_${PACK_ASSETS_TARGET})
+    endif ()
 endfunction()
 
 function(mute_dependencies_warnings FILTER)
@@ -136,4 +192,3 @@ function(mute_dependencies_warnings FILTER)
         endforeach ()
     endif ()
 endfunction()
-

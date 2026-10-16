@@ -1,18 +1,18 @@
 // Based on : https://gdcvault.com/play/1023002/Low-Complexity-High-Fidelity-INSIDE
 
-#include "camera.fxh"
-#include "dither.fxh"
-#include "light_uniforms.fxh"
-#include "math.fxh"
-#include "noise.fxh"
+#include "include/camera.fxh"
+#include "include/dither.fxh"
+#include "plugins/clustered/include/light_uniforms.fxh"
+#include "include/math.fxh"
+#include "include/noise.fxh"
 
 #define READ_LIGHTS
 #define READ_TILES
-#include "binning.fxh"
+#include "plugins/clustered/include/binning.fxh"
 
 #ifdef SHADOW_PLUGIN
 	#define READ_SHADOWS
-	#include "shadows.fxh"
+	#include "plugins/shadows/include/shadows.fxh"
 #endif
 
 // UNIFORMS ---
@@ -52,7 +52,7 @@ float3 GetVolumetricRay(uint2 pixel, float depth) {
 Texture2DArray g_Textures[];
 SamplerState g_Sampler;
 
-#include "lighting.fxh"
+#include "plugins/clustered/include/lighting.fxh"
 
 struct PSInput {
 	float4 Pos : SV_POSITION;

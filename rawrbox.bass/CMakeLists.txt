@@ -48,9 +48,9 @@ if(WIN32)
     add_dependencies(${output_target} ${RAWRBOX_EXTRA_DEPS})
 endif()
 
-copy_resources(TARGET ${output_target})
+add_resources(FOLDER assets)
 if(RAWRBOX_BUILD_RAWRBOX_SCRIPTING)
-    copy_lua_libs(TARGET ${output_target})
+    add_resources(FOLDER lua)
 endif()
 
 target_compile_definitions(${output_target} PRIVATE _CRT_SECURE_NO_WARNINGS NOMINMAX)

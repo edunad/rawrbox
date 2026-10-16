@@ -1,6 +1,6 @@
-#include "camera.fxh"
-#include "dither.fxh"
-#include "pixel_post_process_uniforms.fxh"
+#include "include/camera.fxh"
+#include "include/dither.fxh"
+#include "include/bindless/pixel_post_process_uniforms.fxh"
 
 // ## MAPPING ----------------
 #define DitherMode       PostProcessConstants.data[0].x

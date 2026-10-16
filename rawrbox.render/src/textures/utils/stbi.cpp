@@ -1,5 +1,6 @@
 #include <rawrbox/render/textures/base.hpp>
 #include <rawrbox/render/textures/utils/stbi.hpp>
+#include <rawrbox/utils/vfs.hpp>
 
 // NOLINTBEGIN(clang-diagnostic-unknown-pragmas)
 #pragma warning(push)
@@ -41,16 +42,8 @@ namespace rawrbox {
 	}
 
 	rawrbox::ImageData STBI::decode(const std::filesystem::path& path) {
-		if (!std::filesystem::exists(path)) RAWRBOX_CRITICAL("Could not find file {}", path.generic_string());
-
-		int width = 0;
-		int height = 0;
-		int channels = 0;
-
-		uint8_t* image = stbi_load(path.generic_string().c_str(), &width, &height, &channels, 0);
-		if (image == nullptr) return {};
-
-		return internalLoad(width, height, channels, image);
+		if (!rawrbox::VFS::contains(path)) RAWRBOX_CRITICAL("Could not find file {}", path.generic_string());
+		return decode(rawrbox::VFS::read(path));
 	}
 
 	rawrbox::ImageData STBI::decode(const std::vector<uint8_t>& data) {

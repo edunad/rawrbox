@@ -1,5 +1,6 @@
 #include <rawrbox/utils/console.hpp>
 #include <rawrbox/utils/string.hpp>
+#include <rawrbox/utils/vfs.hpp>
 
 #include <fmt/ranges.h>
 
@@ -7,6 +8,7 @@
 #include <fstream>
 #include <iostream>
 #include <sstream>
+#include <vector>
 
 namespace rawrbox {
 	Console::Console() {
@@ -62,15 +64,17 @@ namespace rawrbox {
 	// CFG ----
 	bool Console::executeCFG(const std::string& id) {
 		auto p = std::filesystem::path(fmt::format("cfg/{}.cfg", id));
-		if (!std::filesystem::exists(p)) return false;
+		if (!rawrbox::VFS::contains(p)) return false;
 
 		// Load
-		std::ifstream filehandle(p.generic_string());
-		if (!filehandle.is_open())
+		std::vector<uint8_t> data = {};
+		try {
+			data = rawrbox::VFS::read(p);
+		} catch (const std::exception& /*err*/) {
 			throw std::runtime_error(fmt::format("[Console] Failed to find cfg 'cfg/{}.cfg'", id));
+		}
 
-		std::stringstream strCmds;
-		strCmds << filehandle.rdbuf();
+		std::stringstream strCmds(std::string(data.begin(), data.end()));
 
 		this->print(fmt::format("Executing CFG 'cfg/{}.cfg'", id));
 

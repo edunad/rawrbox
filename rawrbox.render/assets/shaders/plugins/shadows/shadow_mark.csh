@@ -1,12 +1,12 @@
-#include "camera.fxh"
-#include "light_uniforms.fxh"
-#include "math.fxh"
-#include "shadow_uniforms.fxh"
+#include "include/camera.fxh"
+#include "plugins/clustered/include/light_uniforms.fxh"
+#include "include/math.fxh"
+#include "plugins/shadows/include/shadow_uniforms.fxh"
 
 #define READ_LIGHTS
 #define READ_TILES
-#include "binning.fxh"
-#include "lighting.fxh"
+#include "plugins/clustered/include/binning.fxh"
+#include "plugins/clustered/include/lighting.fxh"
 
 Texture2DArray<float> CameraDepth;
 RWStructuredBuffer<uint> ShadowRequests;

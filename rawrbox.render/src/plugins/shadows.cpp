@@ -1166,9 +1166,9 @@ namespace rawrbox {
 		if (this->_casterSignature == nullptr) RAWRBOX_CRITICAL("Signature not initialized, did you call 'initialize'?");
 
 		rawrbox::PipeSettings settings;
-		settings.pVS = "shadow_caster.vsh";
-		settings.pGS = "shadow_caster.gsh";
-		settings.pPS = "shadow_caster.psh";
+		settings.pVS = "plugins/shadows/shadow_caster.vsh";
+		settings.pGS = "plugins/shadows/shadow_caster.gsh";
+		settings.pPS = "plugins/shadows/shadow_caster.psh";
 
 		settings.macros = this->getShadowMacros() + helper;
 		if (normals) settings.macros.AddShaderMacro("SHADOW_NORMALS", true);
@@ -1471,7 +1471,7 @@ namespace rawrbox {
 		settings.macros = cluster->getClusterMacros() + this->getShadowMacros();
 		settings.signatures = {this->_signature};
 
-		settings.pCS = "shadow_pages.csh";
+		settings.pCS = "plugins/shadows/shadow_pages.csh";
 
 		settings.entry = "Invalidate";
 		this->_invalidateProgram = rawrbox::PipelineUtils::createComputePipeline("Shadows::Invalidate", settings);
@@ -1506,15 +1506,15 @@ namespace rawrbox {
 		settings.entry = "Cull";
 		this->_cullProgram = rawrbox::PipelineUtils::createComputePipeline("Shadows::Cull", settings);
 
-		settings.pCS = "shadow_mark.csh";
+		settings.pCS = "plugins/shadows/shadow_mark.csh";
 		settings.entry = "main";
 		settings.signatures = {this->_markSignature};
 		this->_markProgram = rawrbox::PipelineUtils::createComputePipeline("Shadows::Mark", settings);
 
 #ifdef _DEBUG
 		rawrbox::PipeSettings debug;
-		debug.pVS = "quad.vsh";
-		debug.pPS = "shadow_debug.psh";
+		debug.pVS = "quad/quad.vsh";
+		debug.pPS = "plugins/shadows/shadow_debug.psh";
 		debug.topology = Diligent::PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP;
 		debug.cull = Diligent::CULL_MODE_NONE;
 		debug.depth = Diligent::COMPARISON_FUNC_UNKNOWN;

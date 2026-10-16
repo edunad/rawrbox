@@ -1,7 +1,7 @@
 #ifndef INCLUDED_LIGHT_UNIFORMS
 #define INCLUDED_LIGHT_UNIFORMS
 
-#include "unpack.fxh"
+#include "include/unpack.fxh"
 
 struct LightConstantsStruct {
 	// Light ---------

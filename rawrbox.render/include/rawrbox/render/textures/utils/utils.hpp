@@ -4,6 +4,7 @@
 #include <rawrbox/math/vector4.hpp>
 #include <rawrbox/utils/logger.hpp>
 
+#include <span>
 #include <vector>
 
 namespace rawrbox {
@@ -15,6 +16,7 @@ namespace rawrbox {
 		IMAGE_BMP,
 		IMAGE_WEBP,
 		IMAGE_TGA,
+		IMAGE_KTX2,
 		IMAGE_INVALID,
 
 		COUNT
@@ -36,7 +38,7 @@ namespace rawrbox {
 		static float srgbToLinear(uint8_t value);
 		static uint8_t linearToSRGB(float value);
 
-		static rawrbox::ImageType getImageType(const std::vector<uint8_t>& data);
+		static rawrbox::ImageType getImageType(std::span<const uint8_t> data);
 		static rawrbox::ImageData decodeImage(const std::vector<uint8_t>& data);
 	};
 } // namespace rawrbox
