@@ -266,4 +266,5 @@ captures/
 .docusaurus/
 .yarn/
 !rawrbox.steamworks/deps/
+!rawrbox.tools/deps/
 .idea
