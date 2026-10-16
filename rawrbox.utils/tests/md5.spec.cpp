@@ -22,6 +22,17 @@ TEST_CASE("MD5 should behave as expected", "[rawrbox::MD5]") {
 		REQUIRE(hash("12345678901234567890123456789012345678901234567890123456789012345678901234567890") == "57edf4a22be3c955ac49da2e2107b67a");
 	}
 
+	SECTION("rawrbox::MD5::calculate (padding)") {
+		REQUIRE(hash(std::string(55, 'a')) == "ef1772b6dff9a122358552954ad0df65");
+		REQUIRE(hash(std::string(56, 'a')) == "3b0c8ac703f828b04c6c197006d17218");
+		REQUIRE(hash(std::string(57, 'a')) == "652b906d60af96844ebd21b674f35e93");
+		REQUIRE(hash(std::string(63, 'a')) == "b06521f39153d618550606be297466d5");
+		REQUIRE(hash(std::string(64, 'a')) == "014842d480b571495a4a0363793f7367");
+		REQUIRE(hash(std::string(65, 'a')) == "c743a45e0d2e6a95cb859adae0248435");
+		REQUIRE(hash(std::string(119, 'a')) == "8a7bd0732ed6a28ce75f6dabc90e1613");
+		REQUIRE(hash(std::string(120, 'a')) == "5f61c0ccad4cac44c75ff505e1f1e537");
+	}
+
 	SECTION("rawrbox::MD5::update") {
 		rawrbox::MD5 md5 = {};
 

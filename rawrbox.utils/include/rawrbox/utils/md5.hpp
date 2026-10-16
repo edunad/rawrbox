@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <array>
 #include <bit>
+#include <cstddef>
 #include <cstdint>
 #include <cstring>
 #include <string>
@@ -111,20 +112,24 @@ namespace rawrbox {
 			const uint64_t bits = this->_size * 8;
 
 			// PADDING ---
-			const size_t used = this->_size % 64;
-			const size_t padding = used < 56 ? 56 - used : 120 - used;
+			size_t used = this->_size % 64;
+			this->_buffer[used++] = 0x80;
 
-			constexpr std::array<uint8_t, 64> pad = {0x80};
-			this->update(pad.data(), padding);
+			if (used > 56) {
+				std::fill(this->_buffer.begin() + static_cast<std::ptrdiff_t>(used), this->_buffer.end(), 0);
+				this->transform(this->_buffer.data());
+				used = 0;
+			}
+
+			std::fill(this->_buffer.begin() + static_cast<std::ptrdiff_t>(used), this->_buffer.begin() + 56, 0);
 			// -----------
 
 			// LENGTH ---
-			std::array<uint8_t, 8> length = {};
-			for (size_t i = 0; i < length.size(); i++) {
-				length[i] = static_cast<uint8_t>(bits >> (i * 8));
+			for (size_t i = 0; i < 8; i++) {
+				this->_buffer[56 + i] = static_cast<uint8_t>(bits >> (i * 8));
 			}
 
-			this->update(length.data(), length.size());
+			this->transform(this->_buffer.data());
 			// -----------
 
 			std::array<uint8_t, 16> hash = {};
