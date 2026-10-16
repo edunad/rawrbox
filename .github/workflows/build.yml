@@ -37,8 +37,8 @@ jobs:
         uses: hendrikmuhs/ccache-action@f09c25b45002a07be2955cbe52e8cee55643f89d
         with:
           append-timestamp: false
-          restore-keys: host-${{ runner.os }}-${{ hashFiles('./CMakeLists.txt', './rawrbox.gltf/CMakeLists.txt', './rawrbox.bass/CMakeLists.txt', './rawrbox.engine/CMakeLists.txt', './rawrbox.math/CMakeLists.txt', './rawrbox.network/CMakeLists.txt', './rawrbox.physics_2d/CMakeLists.txt', './rawrbox.physics_3d/CMakeLists.txt', './rawrbox.render/CMakeLists.txt', './rawrbox.resources/CMakeLists.txt', './rawrbox.scripting/CMakeLists.txt', './rawrbox.ui/CMakeLists.txt', './rawrbox.utils/CMakeLists.txt', './rawrbox.webm/CMakeLists.txt', './rawrbox.steamworks/CMakeLists.txt', './rawrbox.imgui/CMakeLists.txt') }}-
-          key: host-${{ runner.os }}-${{ hashFiles('./CMakeLists.txt', './rawrbox.gltf/CMakeLists.txt', './rawrbox.bass/CMakeLists.txt', './rawrbox.engine/CMakeLists.txt', './rawrbox.math/CMakeLists.txt', './rawrbox.network/CMakeLists.txt', './rawrbox.physics_2d/CMakeLists.txt', './rawrbox.physics_3d/CMakeLists.txt', './rawrbox.render/CMakeLists.txt', './rawrbox.resources/CMakeLists.txt', './rawrbox.scripting/CMakeLists.txt', './rawrbox.ui/CMakeLists.txt', './rawrbox.utils/CMakeLists.txt', './rawrbox.webm/CMakeLists.txt', './rawrbox.steamworks/CMakeLists.txt', './rawrbox.imgui/CMakeLists.txt') }}
+          restore-keys: host-${{ runner.os }}-${{ hashFiles('./CMakeLists.txt', './rawrbox.gltf/CMakeLists.txt', './rawrbox.bass/CMakeLists.txt', './rawrbox.engine/CMakeLists.txt', './rawrbox.math/CMakeLists.txt', './rawrbox.network/CMakeLists.txt', './rawrbox.physics_2d/CMakeLists.txt', './rawrbox.physics_3d/CMakeLists.txt', './rawrbox.render/CMakeLists.txt', './rawrbox.resources/CMakeLists.txt', './rawrbox.scripting/CMakeLists.txt', './rawrbox.ui/CMakeLists.txt', './rawrbox.utils/CMakeLists.txt', './rawrbox.webm/CMakeLists.txt', './rawrbox.steamworks/CMakeLists.txt', './rawrbox.imgui/CMakeLists.txt', './rawrbox.tools/CMakeLists.txt', './rawrbox.tools/deps/CMakeLists.txt') }}-
+          key: host-${{ runner.os }}-${{ hashFiles('./CMakeLists.txt', './rawrbox.gltf/CMakeLists.txt', './rawrbox.bass/CMakeLists.txt', './rawrbox.engine/CMakeLists.txt', './rawrbox.math/CMakeLists.txt', './rawrbox.network/CMakeLists.txt', './rawrbox.physics_2d/CMakeLists.txt', './rawrbox.physics_3d/CMakeLists.txt', './rawrbox.render/CMakeLists.txt', './rawrbox.resources/CMakeLists.txt', './rawrbox.scripting/CMakeLists.txt', './rawrbox.ui/CMakeLists.txt', './rawrbox.utils/CMakeLists.txt', './rawrbox.webm/CMakeLists.txt', './rawrbox.steamworks/CMakeLists.txt', './rawrbox.imgui/CMakeLists.txt', './rawrbox.tools/CMakeLists.txt', './rawrbox.tools/deps/CMakeLists.txt') }}
 
       - name: CMAKE Setup
         id: setup
@@ -62,6 +62,7 @@ jobs:
           ctest --test-dir ./rawrbox.resources --output-on-failure
           ctest --test-dir ./rawrbox.scripting --output-on-failure
           ctest --test-dir ./rawrbox.network --output-on-failure
+          ctest --test-dir ./rawrbox.tools --output-on-failure
 
       - name: Upload build artifacts
         if: github.ref == 'refs/heads/master' || contains(github.event.pull_request.labels.*.name, '⚠️ UPLOAD ⚠️')

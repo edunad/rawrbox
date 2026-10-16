@@ -20,6 +20,7 @@
 #include <rawrbox/ui/popup/manager.hpp>
 #include <rawrbox/ui/static.hpp>
 #include <rawrbox/utils/keys.hpp>
+#include <rawrbox/utils/vfs.hpp>
 
 #include <ui_test/game.hpp>
 
@@ -61,6 +62,10 @@ namespace ui_test {
 		cam->setPos({-2.F, 5.F, -3.5F});
 		cam->setAngle({0.F, rawrbox::MathUtils::toRad(-45), 0.F, 0.F});
 		// ---------------
+
+		// Mount content
+		rawrbox::VFS::mount("pak01_dir.vpk");
+		// ----------
 
 		// Add loaders
 		rawrbox::RESOURCES::addLoader<rawrbox::TextureLoader>();

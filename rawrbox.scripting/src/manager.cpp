@@ -25,6 +25,9 @@
 #include <fmt/format.h>
 #include <fmt/ranges.h>
 
+#include <algorithm>
+#include <vector>
+
 /*⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
 ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⣀⣠⣤⣤⣤⣄⣀⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
 ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⣤⣶⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣷⣤⣀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
@@ -350,12 +353,20 @@ namespace rawrbox {
 	std::unordered_map<std::filesystem::path, rawrbox::Mod*> SCRIPTING::loadMods(const std::filesystem::path& rootFolder) { // Load mods
 		if (!std::filesystem::exists(rootFolder)) RAWRBOX_CRITICAL("Failed to locate root folder '{}'", rootFolder.generic_string());
 
-		std::unordered_map<std::filesystem::path, rawrbox::Mod*> success = {};
+		// LOAD ORDER (higher priority first) ---
+		std::vector<std::pair<short, std::filesystem::path>> folders = {};
 		for (const auto& p : std::filesystem::directory_iterator(rootFolder)) {
 			if (!p.is_directory()) continue;
+			folders.emplace_back(loadMetadata(p.path()).priority, p.path());
+		}
 
-			auto* mod = loadMod(p.path().filename().generic_string(), p);
-			if (mod != nullptr) success[p] = mod;
+		std::ranges::stable_sort(folders, std::ranges::greater{}, &std::pair<short, std::filesystem::path>::first);
+		// ------------
+
+		std::unordered_map<std::filesystem::path, rawrbox::Mod*> success = {};
+		for (const auto& folder : folders) {
+			auto* mod = loadMod(folder.second.filename().generic_string(), folder.second);
+			if (mod != nullptr) success[folder.second] = mod;
 		}
 
 		return success;
@@ -370,17 +381,7 @@ namespace rawrbox {
 			return nullptr;
 		}
 
-		// LOAD METADATA ---
-		std::filesystem::path configPath = modFolder / "mod.json";
-		glz::generic metadataJSON = {};
-
-		if (std::filesystem::exists(configPath)) {
-			auto ec = glz::read_file_json(metadataJSON, configPath.generic_string(), std::string{});
-			if (ec) RAWRBOX_CRITICAL("Failed to load mod.json");
-		}
-		// -----------------
-
-		auto mod = std::make_unique<rawrbox::Mod>(id, modFolder, metadataJSON);
+		auto mod = std::make_unique<rawrbox::Mod>(id, modFolder, loadMetadata(modFolder));
 
 		// Prepare env ----------
 		loadLibraries(*mod);
@@ -407,6 +408,19 @@ namespace rawrbox {
 		_mods.emplace(id, std::move(mod));
 
 		return modPtr;
+	}
+
+	rawrbox::ModMetadata SCRIPTING::loadMetadata(const std::filesystem::path& modFolder) {
+		const auto configPath = fmt::format("{}/mod.json", modFolder.generic_string());
+
+		rawrbox::ModMetadata metadata = {};
+		if (!std::filesystem::exists(configPath)) return metadata;
+
+		std::string buffer = {};
+		auto meta = glz::read_file_json<glz::opts{.comments = 1U, .error_on_unknown_keys = 0U, .skip_null_members = 1U, .error_on_missing_keys = 0U}>(metadata, configPath, buffer);
+		if (meta) RAWRBOX_CRITICAL("Failed to load '{}' ──> {}", configPath, glz::format_error(meta, buffer));
+
+		return metadata;
 	}
 
 	bool SCRIPTING::unloadMod(const std::filesystem::path& modFolder) {

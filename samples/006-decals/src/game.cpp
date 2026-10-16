@@ -9,6 +9,7 @@
 #include <rawrbox/render/static.hpp>
 #include <rawrbox/resources/manager.hpp>
 #include <rawrbox/utils/keys.hpp>
+#include <rawrbox/utils/vfs.hpp>
 
 #include <decal_test/game.hpp>
 
@@ -57,6 +58,10 @@ namespace decal_test {
 		cam->canUseKeyboard([]() { return true; });
 		cam->canUseMouse([]() { return true; });
 		// --------------
+
+		// Mount content
+		rawrbox::VFS::mount("pak01_dir.vpk");
+		// ----------
 
 		// Add loaders
 		rawrbox::RESOURCES::addLoader<rawrbox::TextureLoader>();

@@ -5,7 +5,6 @@
 #include <rawrbox/webm/decoder.hpp>
 
 #include <mkvparser/mkvparser.h>
-#include <mkvparser/mkvreader.h>
 
 #include <filesystem>
 #include <string>
@@ -55,6 +54,8 @@ namespace rawrbox {
 
 	class WEBM {
 	private:
+		class VFSReader; // Reads through the VFS (loose or VPK), defined in loader.cpp
+
 		std::filesystem::path _filePath = {};
 		uint32_t _flags = 0;
 
@@ -80,7 +81,7 @@ namespace rawrbox {
 
 		std::vector<rawrbox::WEBMImage> _preloadedFrames = {};
 
-		std::unique_ptr<mkvparser::MkvReader> _reader = nullptr;
+		std::unique_ptr<VFSReader> _reader; // No initializer, VFSReader is incomplete here
 		std::unique_ptr<mkvparser::Segment> _segment = nullptr;
 		std::unique_ptr<rawrbox::WEBMDecoder> _decoder = nullptr;
 
@@ -116,7 +117,7 @@ namespace rawrbox {
 	public:
 		rawrbox::Event<> onEnd;
 
-		WEBM() = default;
+		WEBM();
 		WEBM(const WEBM&) = delete;
 		WEBM(WEBM&&) = delete;
 		WEBM& operator=(const WEBM&) = delete;

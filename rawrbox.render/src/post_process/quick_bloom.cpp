@@ -41,8 +41,8 @@ namespace rawrbox {
 		settings.blending = {.src = Diligent::BLEND_FACTOR_UNDEFINED, .dest = Diligent::BLEND_FACTOR_UNDEFINED};
 		settings.cull = Diligent::CULL_MODE_NONE;
 		settings.topology = Diligent::PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP;
-		settings.pVS = "quad.vsh";
-		settings.pPS = "quick_bloom.psh";
+		settings.pVS = "quad/quad.vsh";
+		settings.pPS = "post_process/quick_bloom.psh";
 		settings.signatures = {rawrbox::BindlessManager::signature};
 
 		settings.macros.Add("BLOOM_PREFILTER", true);

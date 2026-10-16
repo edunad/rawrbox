@@ -63,7 +63,7 @@ namespace rawrbox {
 		settings.signatures = {this->_signature};
 
 		// PROCESS -----
-		settings.pCS = "particles.csh";
+		settings.pCS = "plugins/particle_engine/particles.csh";
 		this->_updateProgram = rawrbox::PipelineUtils::createComputePipeline("ParticleEngine::Process", settings);
 		// ---------
 	}

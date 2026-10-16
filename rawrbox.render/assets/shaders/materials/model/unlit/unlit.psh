@@ -1,21 +1,21 @@
-#include "defines.fxh"
-#include "math.fxh"
-#include "pixel_bindless_uniforms.fxh"
+#include "include/defines.fxh"
+#include "include/math.fxh"
+#include "include/bindless/pixel_bindless_uniforms.fxh"
 
 #ifdef CLUSTER_PLUGIN
-	#include "camera.fxh"
-	#include "decal_uniforms.fxh"
+	#include "include/camera.fxh"
+	#include "plugins/clustered/include/decal_uniforms.fxh"
 
 	#define READ_DECALS
 	#define READ_TILES
-	#include "binning.fxh"
+	#include "plugins/clustered/include/binning.fxh"
 #endif
 
 Texture2DArray g_Textures[];
 SamplerState g_Sampler;
 
 #ifdef CLUSTER_PLUGIN
-	#include "decaling.fxh"
+	#include "plugins/clustered/include/decaling.fxh"
 #endif
 
 struct PSInput {

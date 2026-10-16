@@ -26,9 +26,9 @@ namespace rawrbox {
 		if (engine == nullptr) RAWRBOX_CRITICAL("This material requires the `ParticleEngine` renderer plugin");
 		// PIPELINE ----
 		rawrbox::PipeSettings settings;
-		settings.pVS = "particle.vsh";
-		settings.pPS = "particle_unlit.psh";
-		settings.pGS = "particle_unlit.gsh";
+		settings.pVS = "materials/particles/particle.vsh";
+		settings.pPS = "materials/particles/unlit/particle_unlit.psh";
+		settings.pGS = "materials/particles/unlit/particle_unlit.gsh";
 		settings.renderTargets = RB_RENDER_RENDER_TARGET_TARGETS;    // COLOR + GPUPick
 		settings.topology = Diligent::PRIMITIVE_TOPOLOGY_POINT_LIST; // Set topology
 		settings.cull = Diligent::CULL_MODE_NONE;

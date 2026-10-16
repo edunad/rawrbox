@@ -5,7 +5,7 @@
 #include <rawrbox/render/models/utils/mesh.hpp>
 #include <rawrbox/render/resources/font.hpp>
 #include <rawrbox/resources/manager.hpp>
-#include <rawrbox/utils/threading.hpp>
+#include <rawrbox/utils/vfs.hpp>
 
 #include <bass_test/game.hpp>
 
@@ -51,6 +51,10 @@ namespace bass_test {
 		cam->canUseMouse([]() { return true; });
 		// --------------
 
+		// Mount content
+		rawrbox::VFS::mount("pak01_dir.vpk");
+		// ----------
+
 		// Add loaders
 		rawrbox::RESOURCES::addLoader<rawrbox::FontLoader>();
 		rawrbox::RESOURCES::addLoader<rawrbox::BASSLoader>();
@@ -59,7 +63,7 @@ namespace bass_test {
 		// Pre-compile shaders before content load
 		render->precompile<rawrbox::MaterialUnlit, rawrbox::MaterialText3D>();
 		// ---------------------------------------
-		
+
 		render->init();
 	}
 

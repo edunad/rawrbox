@@ -23,6 +23,7 @@
 #include <rawrbox/resources/manager.hpp>
 #include <rawrbox/scripting/manager.hpp>
 #include <rawrbox/utils/timer.hpp>
+#include <rawrbox/utils/vfs.hpp>
 
 #include <scripting_test/game.hpp>
 #include <scripting_test/wrapper_test.hpp>
@@ -67,6 +68,10 @@ namespace scripting_test {
 		cam->canUseKeyboard([]() { return true; });
 		cam->canUseMouse([]() { return true; });
 		// --------------
+
+		// Mount content
+		rawrbox::VFS::mount("pak01_dir.vpk");
+		// ----------
 
 		// Add loaders
 		rawrbox::RESOURCES::addLoader<rawrbox::TextureLoader>();
@@ -125,7 +130,7 @@ namespace scripting_test {
 		// Pre-compile shaders before content load
 		render->precompile<rawrbox::MaterialUnlit, rawrbox::MaterialInstanced>();
 		// ---------------------------------------
-		
+
 		render->init();
 	}
 

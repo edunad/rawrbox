@@ -1,6 +1,6 @@
-#include "camera.fxh"
-#include "unpack.fxh"
-#include "vertex_bindless_uniforms.fxh"
+#include "include/camera.fxh"
+#include "include/unpack.fxh"
+#include "include/bindless/vertex_bindless_uniforms.fxh"
 
 #define TRANSFORM_DISPLACEMENT
 #ifdef SKINNED
@@ -9,16 +9,16 @@
 
 StructuredBuffer<uint> ShadowViews;
 
-#include "shadow_uniforms.fxh"
+#include "plugins/shadows/include/shadow_uniforms.fxh"
 
 #ifdef INSTANCED
-	#include "instance.fxh"
+	#include "include/instance.fxh"
 #endif
 
 Texture2DArray g_Textures[];
 SamplerState g_Sampler;
 
-#include "model_transforms.fxh"
+#include "materials/include/model_transforms.fxh"
 
 struct ShadowDrawStruct {
 	uint4 data;

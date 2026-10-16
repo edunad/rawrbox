@@ -1,5 +1,6 @@
 #include <rawrbox/render/textures/base.hpp>
 #include <rawrbox/render/textures/utils/gif.hpp>
+#include <rawrbox/render/textures/utils/ktx2.hpp>
 #include <rawrbox/render/textures/utils/stbi.hpp>
 #include <rawrbox/render/textures/utils/utils.hpp>
 #include <rawrbox/render/textures/utils/webp.hpp>
@@ -189,7 +190,7 @@ namespace rawrbox {
 		return result;
 	}
 
-	rawrbox::ImageType TextureUtils::getImageType(const std::vector<uint8_t>& data) {
+	rawrbox::ImageType TextureUtils::getImageType(std::span<const uint8_t> data) {
 		if (data.empty() || data.size() < 16) return rawrbox::ImageType::IMAGE_INVALID;
 
 		// Check for JPEG
@@ -223,8 +224,13 @@ namespace rawrbox {
 			return rawrbox::ImageType::IMAGE_WEBP;
 		}
 
+		// Check for KTX2
+		if (data[0] == 0xAB && data[1] == 'K' && data[2] == 'T' && data[3] == 'X' && data[4] == ' ' && data[5] == '2' && data[6] == '0' && data[7] == 0xBB && data[8] == 0x0D && data[9] == 0x0A && data[10] == 0x1A && data[11] == 0x0A) {
+			return rawrbox::ImageType::IMAGE_KTX2;
+		}
+
 		// Check for TGA
-		if (data[2] == 0x02 && data[16] == 0x20 && data[17] == 0x20 && data[18] == 0x20 && data[19] == 0x20) {
+		if (data.size() >= 20 && data[2] == 0x02 && data[16] == 0x20 && data[17] == 0x20 && data[18] == 0x20 && data[19] == 0x20) {
 			return rawrbox::ImageType::IMAGE_TGA;
 		}
 
@@ -243,6 +249,8 @@ namespace rawrbox {
 				return rawrbox::GIF::decode(data);
 			case IMAGE_WEBP:
 				return rawrbox::WEBP::decode(data);
+			case IMAGE_KTX2:
+				return rawrbox::KTX2::decode(data.data(), data.size());
 			default:
 			case IMAGE_INVALID:
 				RAWRBOX_CRITICAL("Invalid image type!");

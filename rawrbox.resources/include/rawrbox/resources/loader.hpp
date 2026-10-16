@@ -1,19 +1,20 @@
 #pragma once
 #include <rawrbox/resources/resource.hpp>
 #include <rawrbox/utils/logger.hpp>
-#include <rawrbox/utils/path.hpp>
-
-#include <fmt/printf.h>
+#include <rawrbox/utils/vfs.hpp>
 
 #include <memory>
 #include <mutex>
+#include <string>
+#include <unordered_map>
 #include <vector>
 
 namespace rawrbox {
 	class Loader {
 	protected:
-		std::mutex _threadLock;
-		std::vector<std::unique_ptr<rawrbox::Resource>> _files = {};
+		mutable std::mutex _threadLock;
+
+		std::unordered_map<std::string, std::unique_ptr<rawrbox::Resource>> _files = {};
 		std::vector<std::pair<std::filesystem::path, uint32_t>> _preLoadFiles = {};
 
 		// LOGGER ------
@@ -36,9 +37,8 @@ namespace rawrbox {
 		}
 
 		[[nodiscard]] virtual bool hasFile(const std::filesystem::path& filePath) const {
-			return std::ranges::any_of(this->_files, [&filePath](const auto& file) {
-				return rawrbox::PathUtils::isSame(filePath, file->filePath);
-			});
+			const std::lock_guard<std::mutex> mutexGuard(_threadLock);
+			return this->_files.contains(rawrbox::VFS::normalize(filePath));
 		}
 		// ----------
 
@@ -46,12 +46,11 @@ namespace rawrbox {
 		template <class T>
 		T* getFile(const std::filesystem::path& filePath) {
 			const std::lock_guard<std::mutex> mutexGuard(_threadLock);
-			for (auto& file : this->_files) {
-				if (!rawrbox::PathUtils::isSame(filePath, file->filePath)) continue;
-				return dynamic_cast<T*>(file.get());
-			}
 
-			return nullptr;
+			const auto file = this->_files.find(rawrbox::VFS::normalize(filePath));
+			if (file == this->_files.end()) return nullptr;
+
+			return dynamic_cast<T*>(file->second.get());
 		}
 
 		template <class T>
@@ -60,15 +59,13 @@ namespace rawrbox {
 			obj->status = rawrbox::LoadStatus::UNLOADED;
 			obj->filePath = filePath;
 
-			// store pointer so we can return it
-			auto* ptr = obj.get();
+			auto* ptr = dynamic_cast<T*>(obj.get());
+			if (ptr == nullptr) return nullptr;
 
-			{
-				const std::lock_guard<std::mutex> mutexGuard(_threadLock);
-				this->_files.push_back(std::move(obj));
-			}
+			const std::lock_guard<std::mutex> mutexGuard(_threadLock);
+			if (!this->_files.try_emplace(rawrbox::VFS::normalize(filePath), std::move(obj)).second) return nullptr;
 
-			return dynamic_cast<T*>(ptr);
+			return ptr;
 		}
 		// -----------
 

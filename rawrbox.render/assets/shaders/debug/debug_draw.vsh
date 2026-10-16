@@ -1,5 +1,5 @@
-#include "camera.fxh"
-#include "unpack.fxh"
+#include "include/camera.fxh"
+#include "include/unpack.fxh"
 
 struct VSInput {
     float3 Pos : ATTRIB0;

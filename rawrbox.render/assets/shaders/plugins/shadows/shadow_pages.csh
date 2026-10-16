@@ -1,5 +1,5 @@
-#include "instance.fxh"
-#include "shadow_uniforms.fxh"
+#include "include/instance.fxh"
+#include "plugins/shadows/include/shadow_uniforms.fxh"
 
 StructuredBuffer<uint2> ShadowInvalidations;
 StructuredBuffer<uint> ShadowBatchRects;

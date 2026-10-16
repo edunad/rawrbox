@@ -6,8 +6,19 @@
 
 #include <filesystem>
 #include <memory>
+#include <optional>
+#include <string>
 
 namespace rawrbox {
+	struct ModMetadata {
+		std::string name = {};
+		std::string author = {};
+		std::optional<std::string> description = std::nullopt;
+		std::optional<std::string> repo = std::nullopt;
+
+		short priority = 0;
+	};
+
 	class Mod {
 		// LUA ----
 		lua_State* _L = nullptr;
@@ -32,10 +43,10 @@ namespace rawrbox {
 		// -----------
 
 		// OTHER ----
-		glz::generic _metadata = {};
+		rawrbox::ModMetadata _metadata = {};
 		// --------
 	public:
-		Mod(std::string id, std::filesystem::path folderPath, glz::generic metadata);
+		Mod(std::string id, std::filesystem::path folderPath, rawrbox::ModMetadata metadata);
 		Mod(const Mod&) = delete;
 		Mod(Mod&&) = delete;
 		Mod& operator=(const Mod&) = delete;
@@ -59,7 +70,7 @@ namespace rawrbox {
 		[[nodiscard]] virtual std::string getEntryFilePath() const;
 		[[nodiscard]] virtual const std::filesystem::path& getFolder() const;
 
-		[[nodiscard]] virtual const glz::generic& getMetadata() const;
+		[[nodiscard]] virtual const rawrbox::ModMetadata& getMetadata() const;
 
 		[[nodiscard]] virtual lua_State* getEnvironment();
 

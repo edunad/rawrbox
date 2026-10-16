@@ -7,6 +7,7 @@
 #include <rawrbox/resources/manager.hpp>
 #include <rawrbox/utils/keys.hpp>
 #include <rawrbox/utils/timer.hpp>
+#include <rawrbox/utils/vfs.hpp>
 
 #include <model/game.hpp>
 
@@ -60,6 +61,10 @@ namespace model {
 		};
 		// -----
 
+		// Mount content
+		rawrbox::VFS::mount("pak01_dir.vpk");
+		// ----------
+
 		// Add loaders
 		rawrbox::RESOURCES::addLoader<rawrbox::TextureLoader>();
 		// --------------
@@ -67,7 +72,7 @@ namespace model {
 		// Pre-compile shaders before content load
 		render->precompile<rawrbox::MaterialUnlit, rawrbox::MaterialText3D>();
 		// ---------------------------------------
-		
+
 		render->init();
 	}
 

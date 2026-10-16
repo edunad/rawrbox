@@ -27,8 +27,8 @@ namespace rawrbox {
 
 		// PIPELINE ----
 		rawrbox::PipeSettings settings;
-		settings.pVS = "lit.vsh";
-		settings.pPS = "lit.psh";
+		settings.pVS = "materials/model/lit/lit.vsh";
+		settings.pPS = "materials/model/lit/lit.psh";
 		settings.renderTargets = RB_RENDER_RENDER_TARGET_TARGETS; // COLOR + GPUPick
 		settings.cull = Diligent::CULL_MODE_FRONT;
 		settings.macros = cluster->getClusterMacros() + helper;

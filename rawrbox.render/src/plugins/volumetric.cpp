@@ -123,7 +123,7 @@ namespace rawrbox {
 
 		// PIPELINES ---
 		rawrbox::PipeSettings settings;
-		settings.pVS = "quad.vsh";
+		settings.pVS = "quad/quad.vsh";
 		settings.topology = Diligent::PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP;
 		settings.cull = Diligent::CULL_MODE_NONE;
 		settings.depth = Diligent::COMPARISON_FUNC_UNKNOWN;
@@ -142,7 +142,7 @@ namespace rawrbox {
 		settings.macros.AddShaderMacro("VOLUMETRIC_LEVELS", this->_settings.levels);
 		settings.macros.AddShaderMacro("VOLUMETRIC_BLEND", this->_settings.blend);
 
-		settings.pPS = "volumetric.psh";
+		settings.pPS = "plugins/volumetric/volumetric.psh";
 		settings.psEntry = "March";
 		settings.renderTargetFormat = Diligent::TEX_FORMAT_R11G11B10_FLOAT;
 		this->_marchProgram = rawrbox::PipelineUtils::createPipeline("Volumetric::March", settings);

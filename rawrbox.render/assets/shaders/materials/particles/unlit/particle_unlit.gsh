@@ -1,6 +1,6 @@
-#include "camera.fxh"
-#include "model_transforms.fxh"
-#include "particles_uniforms.fxh"
+#include "include/camera.fxh"
+#include "materials/include/model_transforms.fxh"
+#include "materials/particles/include/particles_uniforms.fxh"
 
 struct GSInput {
 	float4 POS : SV_POSITION;

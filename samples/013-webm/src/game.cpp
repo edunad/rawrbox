@@ -4,6 +4,7 @@
 #include <rawrbox/render/resources/texture.hpp>
 #include <rawrbox/render/static.hpp>
 #include <rawrbox/resources/manager.hpp>
+#include <rawrbox/utils/vfs.hpp>
 #include <rawrbox/webm/resources/webm.hpp>
 #include <rawrbox/webm/textures/webm.hpp>
 
@@ -51,6 +52,10 @@ namespace webm_test {
 		cam->canUseKeyboard([]() { return true; });
 		cam->canUseMouse([]() { return true; });
 		// --------------
+		
+		// Mount content
+		rawrbox::VFS::mount("pak01_dir.vpk");
+		// ----------
 
 		// Setup loaders
 		rawrbox::RESOURCES::addLoader<rawrbox::TextureLoader>();
@@ -60,7 +65,7 @@ namespace webm_test {
 		// Pre-compile shaders before content load
 		render->precompile<rawrbox::MaterialUnlit>();
 		// ---------------------------------------
-		
+
 		render->init();
 	}
 

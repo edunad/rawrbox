@@ -4,6 +4,7 @@
 #include <rawrbox/render/resources/texture.hpp>
 #include <rawrbox/render/static.hpp>
 #include <rawrbox/resources/manager.hpp>
+#include <rawrbox/utils/vfs.hpp>
 
 #include <camera/game.hpp>
 
@@ -57,6 +58,10 @@ namespace camera {
 		this->_camera->setLayers(rawrbox::CameraLayers::LAYER_1); // Only draw objects on layer 1 (the name can be changed on the render_config.hpp file)
 		// --------------
 
+		// Mount content
+		rawrbox::VFS::mount("pak01_dir.vpk");
+		// ----------
+
 		// Add loaders
 		rawrbox::RESOURCES::addLoader<rawrbox::TextureLoader>();
 		// --------------
@@ -71,7 +76,7 @@ namespace camera {
 		// Pre-compile shaders before content load
 		render->precompile<rawrbox::MaterialUnlit, rawrbox::MaterialText3D>();
 		// ---------------------------------------
-		
+
 		render->init();
 	}
 

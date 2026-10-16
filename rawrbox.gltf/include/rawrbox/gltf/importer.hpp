@@ -230,8 +230,13 @@ namespace rawrbox {
 		virtual void internalLoad(fastgltf::GltfDataBuffer& data);
 
 		// POST-LOAD ---
+		virtual bool postLoadExternalData(fastgltf::Asset& scene);
+		virtual void postLoadMeshopt(fastgltf::Asset& scene);
 		virtual void postLoadFixSceneNames(fastgltf::Asset& scene);
+
 		virtual bool buildHierarchy(const fastgltf::Asset& scene);
+		//-----------
+
 
 		[[nodiscard]] static rawrbox::Matrix4x4 getLocalMatrix(const fastgltf::Node& node);
 		//-----------

@@ -5,6 +5,7 @@
 #include <rawrbox/render/resources/texture.hpp>
 #include <rawrbox/render/static.hpp>
 #include <rawrbox/resources/manager.hpp>
+#include <rawrbox/utils/vfs.hpp>
 
 #include <particle_system/game.hpp>
 
@@ -51,6 +52,10 @@ namespace particle_system {
 		cam->canUseKeyboard([]() { return true; });
 		cam->canUseMouse([]() { return true; });
 		// --------------
+
+		// Mount content
+		rawrbox::VFS::mount("pak01_dir.vpk");
+		// ----------
 
 		// Add loaders
 		rawrbox::RESOURCES::addLoader<rawrbox::TextureLoader>();

@@ -10,6 +10,7 @@
 #include <rawrbox/render/resources/texture.hpp>
 #include <rawrbox/resources/manager.hpp>
 #include <rawrbox/utils/keys.hpp>
+#include <rawrbox/utils/vfs.hpp>
 
 #include <post_process/game.hpp>
 
@@ -93,6 +94,10 @@ namespace post_process {
 		};
 		// -----
 
+		// Mount content
+		rawrbox::VFS::mount("pak01_dir.vpk");
+		// ----------
+
 		// Add loaders
 		rawrbox::RESOURCES::addLoader<rawrbox::TextureLoader>();
 		// --------------
@@ -100,7 +105,7 @@ namespace post_process {
 		// Pre-compile shaders before content load
 		render->precompile<rawrbox::MaterialUnlit>();
 		// ---------------------------------------
-		
+
 		render->init();
 	}
 

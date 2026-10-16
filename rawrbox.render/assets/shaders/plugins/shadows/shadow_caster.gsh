@@ -1,5 +1,5 @@
 // TODO: Replace with MeshShaders
-#include "shadow_uniforms.fxh"
+#include "plugins/shadows/include/shadow_uniforms.fxh"
 
 StructuredBuffer<uint> ShadowPages;
 StructuredBuffer<uint> ShadowRects;

@@ -1,6 +1,6 @@
 #ifndef INCLUDED_PARTICLES
 #define INCLUDED_PARTICLES
-#include "math.fxh"
+#include "include/math.fxh"
 
 struct Particle {
 	float3 position; // 12 bytes

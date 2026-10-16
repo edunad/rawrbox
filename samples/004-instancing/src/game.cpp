@@ -7,6 +7,7 @@
 #include <rawrbox/render/static.hpp>
 #include <rawrbox/resources/manager.hpp>
 #include <rawrbox/utils/timer.hpp>
+#include <rawrbox/utils/vfs.hpp>
 
 #include <instance_test/game.hpp>
 
@@ -63,6 +64,10 @@ namespace instance_test {
 		};
 		// --------------
 
+		// Mount content
+		rawrbox::VFS::mount("pak01_dir.vpk");
+		// ----------
+
 		// Add loaders
 		rawrbox::RESOURCES::addLoader<rawrbox::TextureLoader>();
 		// --------------
@@ -70,7 +75,7 @@ namespace instance_test {
 		// Pre-compile shaders before content load
 		render->precompile<rawrbox::MaterialInstanced>();
 		// ---------------------------------------
-		
+
 		render->init();
 	}
 

@@ -3,6 +3,7 @@
 #include <rawrbox/bass/sound/instance.hpp>
 #include <rawrbox/bass/utils/bass.hpp>
 #include <rawrbox/engine/static.hpp>
+#include <rawrbox/utils/vfs.hpp>
 
 #include <bass.h>
 #include <bass_fx.h>
@@ -70,6 +71,45 @@ namespace rawrbox {
 	}
 	// ----------------
 
+	// BASS FILE STREAM SUPPORT ------
+	struct BASSFileStream {
+		std::unique_ptr<rawrbox::VFSStream> stream = nullptr;
+		uint64_t position = 0;
+	};
+
+	void CALLBACK streamClose(void* user) {
+		std::unique_ptr<BASSFileStream> file(static_cast<BASSFileStream*>(user));
+	}
+
+	QWORD CALLBACK streamLength(void* user) {
+		return static_cast<BASSFileStream*>(user)->stream->size();
+	}
+
+	DWORD CALLBACK streamRead(void* buffer, DWORD length, void* user) {
+		auto* file = static_cast<BASSFileStream*>(user);
+
+		const auto read = file->stream->read(file->position, static_cast<uint8_t*>(buffer), length);
+		file->position += read;
+
+		return static_cast<DWORD>(read);
+	}
+
+	BOOL CALLBACK streamSeek(QWORD offset, void* user) {
+		auto* file = static_cast<BASSFileStream*>(user);
+		if (offset > file->stream->size()) return FALSE;
+
+		file->position = offset;
+		return TRUE;
+	}
+
+	constexpr BASS_FILEPROCS STREAM_PROCS = {
+        .close = &streamClose,
+        .length = &streamLength,
+        .read = &streamRead,
+        .seek = &streamSeek
+	};
+	// ----------------
+
 	void BASS::initialize() {
 		auto fxVersion = HIWORD(BASS_FX_GetVersion());
 		if (fxVersion != BASSVERSION) RAWRBOX_CRITICAL("BASS Version missmatch! FX [{}] | BASS [{}]", fxVersion, BASSVERSION);
@@ -104,23 +144,31 @@ namespace rawrbox {
 		std::string pth = path.generic_string();
 
 		if (sounds.find(pth) != sounds.end()) return sounds[pth].get();
-		if (!std::filesystem::exists(path)) RAWRBOX_CRITICAL("File '{}' not found!", pth);
 
-		auto size = std::filesystem::file_size(path);
+		auto stream = rawrbox::VFS::open(path);
+		if (stream == nullptr) RAWRBOX_CRITICAL("File '{}' not found!", pth);
+
+		const auto size = stream->size();
 		if (path.generic_string().rfind(".3D") != std::string::npos) flags |= SoundFlags::SOUND_3D;
 
-		bool is3D = (flags & SoundFlags::SOUND_3D) > 0;
-		bool beatDetection = (flags & SoundFlags::BEAT_DETECTION) > 0;
-		bool bpmDetection = (flags & SoundFlags::BPM_DETECTION) > 0;
+		const bool is3D = (flags & SoundFlags::SOUND_3D) > 0;
+		const bool beatDetection = (flags & SoundFlags::BEAT_DETECTION) > 0;
+		const bool bpmDetection = (flags & SoundFlags::BPM_DETECTION) > 0;
 		bool shouldStream = size > RB_BASS_MAX_LOCAL_SIZE;
 
 		HSAMPLE sample = 0;
-		auto bassFlags = is3D ? BASS_SAMPLE_3D | BASS_SAMPLE_MONO | BASS_SAMPLE_OVER_DIST | BASS_SAMPLE_MUTEMAX : BASS_SAMPLE_OVER_POS;
+		const auto bassFlags = is3D ? BASS_SAMPLE_3D | BASS_SAMPLE_MONO | BASS_SAMPLE_OVER_DIST | BASS_SAMPLE_MUTEMAX : BASS_SAMPLE_OVER_POS;
 
 		if (shouldStream) {
-			sample = BASS_StreamCreateFile(0, path.generic_string().c_str(), 0, 0, bassFlags);
+			auto file = std::make_unique<BASSFileStream>();
+			file->stream = std::move(stream);
+
+			sample = BASS_StreamCreateFileUser(STREAMFILE_NOBUFFER, bassFlags, &STREAM_PROCS, file.release());
 		} else {
-			sample = BASS_SampleLoad(0, path.generic_string().c_str(), 0, 0, RB_BASS_MAX_SOUND_INSTANCES, bassFlags);
+			std::vector<uint8_t> data(size);
+			if (stream->read(0, data.data(), data.size()) != data.size()) RAWRBOX_CRITICAL("Failed to read '{}'", pth);
+
+			sample = BASS_SampleLoad(TRUE, data.data(), 0, static_cast<DWORD>(data.size()), RB_BASS_MAX_SOUND_INSTANCES, bassFlags);
 		}
 
 		if (sample == 0) rawrbox::BASSUtils::checkBASSError();

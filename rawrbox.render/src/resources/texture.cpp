@@ -4,6 +4,7 @@
 #include <rawrbox/render/textures/gif.hpp>
 #include <rawrbox/render/textures/image.hpp>
 #include <rawrbox/render/textures/ktx2.hpp>
+#include <rawrbox/render/textures/utils/utils.hpp>
 #include <rawrbox/render/textures/webp.hpp>
 
 namespace rawrbox {
@@ -12,14 +13,15 @@ namespace rawrbox {
 
 	bool ResourceTexture::load(const std::vector<uint8_t>& buffer) {
 		const rawrbox::TEXTURE_TYPE type = this->filePath.generic_string().rfind(".vertex.") != std::string::npos ? rawrbox::TEXTURE_TYPE::VERTEX : rawrbox::TEXTURE_TYPE::PIXEL;
-		const auto extension = this->filePath.extension();
+		const auto imageType = rawrbox::TextureUtils::getImageType(buffer);
 		const uint32_t spriteSize = this->flags & ~(rawrbox::TextureFlags::DYNAMIC | rawrbox::TextureFlags::NO_MIPMAPS);
 
-		if (extension == ".gif") {
+		if (imageType == rawrbox::ImageType::IMAGE_GIF) {
 			this->_texture = std::make_unique<rawrbox::TextureGIF>(this->filePath, buffer);
-		} else if (extension == ".webp") {
+		} else if (imageType == rawrbox::ImageType::IMAGE_WEBP) {
 			this->_texture = std::make_unique<rawrbox::TextureWEBP>(this->filePath, buffer);
-		} else if (extension == ".ktx2") {
+		} else if (imageType == rawrbox::ImageType::IMAGE_KTX2) {
+			if (spriteSize != 0U) RAWRBOX_CRITICAL("Atlas '{}' cannot be KTX2", this->filePath.generic_string());
 			this->_texture = std::make_unique<rawrbox::TextureKTX2>(this->filePath, buffer);
 		} else if (spriteSize != 0U) {
 			this->_texture = std::make_unique<rawrbox::TextureAtlas>(this->filePath, buffer, spriteSize);

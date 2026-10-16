@@ -1,4 +1,4 @@
-#include "defines.fxh"
+#include "include/defines.fxh"
 
 Texture2DArray g_Textures[];
 SamplerState g_Sampler;

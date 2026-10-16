@@ -11,6 +11,7 @@
 #include <rawrbox/render/resources/texture.hpp>
 #include <rawrbox/resources/manager.hpp>
 #include <rawrbox/utils/keys.hpp>
+#include <rawrbox/utils/vfs.hpp>
 
 #include <light/game.hpp>
 #include <magic_enum/magic_enum.hpp>
@@ -109,6 +110,10 @@ namespace light {
 		// -----
 
 		this->setRoom(0);
+
+		// Mount content
+		rawrbox::VFS::mount("pak01_dir.vpk");
+		// ----------
 
 		// Add loaders ----
 		rawrbox::RESOURCES::addLoader<rawrbox::FontLoader>();

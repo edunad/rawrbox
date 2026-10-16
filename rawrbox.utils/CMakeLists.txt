@@ -90,6 +90,28 @@ CPMAddPackage(
 if (spdlog_ADDED)
     set_lib_runtime_mt(spdlog)
 endif ()
+
+CPMAddPackage(
+        NAME
+        zstd
+        GITHUB_REPOSITORY
+        facebook/zstd
+        VERSION
+        1.5.7
+        SOURCE_SUBDIR
+        build/cmake
+        OPTIONS
+        "ZSTD_BUILD_PROGRAMS OFF"
+        "ZSTD_BUILD_SHARED OFF"
+        "ZSTD_BUILD_STATIC ON"
+        "ZSTD_BUILD_TESTS OFF"
+        "ZSTD_LEGACY_SUPPORT OFF"
+        "ZSTD_MULTITHREAD_SUPPORT OFF"
+)
+
+if (zstd_ADDED)
+    set_lib_runtime_mt(libzstd_static)
+endif ()
 # ----
 
 # LIB ----
@@ -104,6 +126,7 @@ target_link_libraries(${output_target} PUBLIC
 
         thread-pool
         spdlog
+        libzstd_static
         fmt::fmt
         glaze::glaze
         magic_enum::magic_enum

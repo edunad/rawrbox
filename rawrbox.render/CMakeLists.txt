@@ -181,7 +181,8 @@ CPMAddPackage(
         YES)
 
 if (basisu_ADDED)
-    add_library(basisu_transcoder STATIC "${basisu_SOURCE_DIR}/transcoder/basisu_transcoder.cpp" "${basisu_SOURCE_DIR}/zstd/zstddeclib.c")
+    add_library(basisu_transcoder STATIC "${basisu_SOURCE_DIR}/transcoder/basisu_transcoder.cpp")
+    target_link_libraries(basisu_transcoder PUBLIC libzstd_static)
 
     target_include_directories(basisu_transcoder PUBLIC "${basisu_SOURCE_DIR}/transcoder")
     target_compile_definitions(basisu_transcoder PUBLIC BASISD_SUPPORT_KTX2=1 BASISD_SUPPORT_KTX2_ZSTD=1)
@@ -218,9 +219,17 @@ endif ()
 # Project setup
 add_library(${output_target} ${RAWRBOX_LIBRARY_TYPE} ${RAWRBOX_RENDER_SOURCES})
 
-copy_resources(TARGET ${output_target})
+add_resources(
+        FOLDER assets
+        PRELOAD
+        "shaders/**"
+        "fonts/sourcecodepro-*.ttf"
+        "textures/rawrbox.webp"
+        RAW
+        "textures/dither/**" # Skip compression
+)
 if (RAWRBOX_BUILD_RAWRBOX_SCRIPTING)
-    copy_lua_libs(TARGET ${output_target})
+    add_resources(FOLDER lua)
 endif ()
 
 target_compile_options(${output_target} PRIVATE -DENGINE_DLL)

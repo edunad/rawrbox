@@ -74,11 +74,11 @@ namespace rawrbox {
 
 		// Check our own content
 		auto pth = filename;
-		if (!std::filesystem::exists(pth)) {
+		if (!rawrbox::VFS::contains(pth)) {
 			pth = getFontInSystem(pth);
 
 			// Not found on content & system? Load fallback
-			if (!std::filesystem::exists(pth)) {
+			if (!rawrbox::VFS::contains(pth)) {
 				_logger->warn("Failed to load '{}' ──> File not found\n  └── Loading fallback font!", filename.generic_string());
 				return rawrbox::DEBUG_FONT_REGULAR;
 			}

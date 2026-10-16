@@ -1,5 +1,6 @@
 
 #include <rawrbox/utils/i18n.hpp>
+#include <rawrbox/utils/vfs.hpp>
 
 #include <glaze/glaze.hpp>
 
@@ -37,15 +38,11 @@ namespace rawrbox {
 	void I18N::loadLanguagePack(const std::string& id, const std::filesystem::path& path) {
 		_logger->info("Loading i18n for id {}", fmt::styled(id, fmt::fg(fmt::color::coral)));
 
-		for (const auto& p : std::filesystem::directory_iterator(path)) {
-			if (p.is_directory()) continue;
+		for (const auto& filePath : rawrbox::VFS::list(path)) {
+			auto fileCleanName = filePath.stem().string();
 
-			auto fileName = p.path().filename().string();
-			auto fileCleanName = p.path().stem().string();
-			auto filePath = path / fileName;
-
-			std::ifstream langRaw(filePath);
-			std::string langRawStr((std::istreambuf_iterator<char>(langRaw)), std::istreambuf_iterator<char>());
+			const auto data = rawrbox::VFS::read(filePath);
+			std::string langRawStr(data.begin(), data.end());
 			if (langRawStr.empty()) continue;
 
 			try {

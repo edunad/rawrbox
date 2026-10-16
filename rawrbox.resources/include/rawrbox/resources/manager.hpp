@@ -4,12 +4,14 @@
 #include <rawrbox/utils/crc.hpp>
 #include <rawrbox/utils/file.hpp>
 #include <rawrbox/utils/threading.hpp>
+#include <rawrbox/utils/vfs.hpp>
 
 #include <fmt/format.h>
 
 #include <filesystem>
 #include <functional>
 #include <string>
+#include <unordered_set>
 #include <utility>
 #include <vector>
 
@@ -17,7 +19,7 @@ namespace rawrbox {
 	class RESOURCES {
 	protected:
 		static std::mutex _threadLock;
-		static std::vector<std::filesystem::path> _loadedFiles;
+		static std::unordered_set<std::string> _loadedFiles;
 		static std::vector<std::unique_ptr<rawrbox::Loader>> _loaders;
 
 		static std::atomic<size_t> _loadingFiles;
@@ -55,11 +57,14 @@ namespace rawrbox {
 
 			// load file
 			auto ext = filePath.extension().generic_string();
-			for (auto& loader : _loaders) {
+			for (const auto& loader : _loaders) {
 				if (!loader->canLoad(ext)) continue;
 
 				auto ret = loader->createResource<T>(filePath, loadFlags);
-				if (ret == nullptr) continue;
+				if (ret == nullptr) {
+					if (loader->hasFile(filePath)) return loader->getFile<T>(filePath); // Blocked
+					continue;
+				}
 
 				ret->extention = ext;
 				ret->flags = loadFlags;
@@ -84,7 +89,7 @@ namespace rawrbox {
 				// Add to the list for later on easy access
 				{
 					const std::lock_guard<std::mutex> mutexGuard(_threadLock);
-					_loadedFiles.push_back(filePath);
+					_loadedFiles.insert(rawrbox::VFS::normalize(filePath));
 				}
 				// ---
 
@@ -106,9 +111,8 @@ namespace rawrbox {
 
 		// LOADING ---
 		static void loadFolder(const std::filesystem::path& folderPath, const std::function<void(std::string)>& startLoad = nullptr, const std::function<void(std::string)>& endLoad = nullptr) {
-			for (const auto& p : std::filesystem::recursive_directory_iterator(folderPath)) {
-				if (!p.is_regular_file()) continue;
-				auto file = p.path().generic_string();
+			for (const auto& p : rawrbox::VFS::list(folderPath, true)) {
+				const auto file = p.generic_string();
 
 				if (startLoad != nullptr) startLoad(file);
 				loadFile(p, 0U);
@@ -117,9 +121,8 @@ namespace rawrbox {
 		}
 
 		static void loadFolderAsync(const std::filesystem::path& folderPath, const std::function<void(std::string)>& startLoad = nullptr, const std::function<void(std::string)>& endLoad = nullptr) {
-			for (const auto& p : std::filesystem::recursive_directory_iterator(folderPath)) {
-				if (!p.is_regular_file()) continue;
-				auto file = p.path().generic_string();
+			for (const auto& p : rawrbox::VFS::list(folderPath, true)) {
+				const auto file = p.generic_string();
 
 				rawrbox::ASYNC::run([startLoad, endLoad, file, p]() {
 					if (startLoad != nullptr) startLoad(file);
@@ -177,8 +180,7 @@ namespace rawrbox {
 		}
 
 		static void preLoadFolder(const std::filesystem::path& folderPath) {
-			for (const auto& p : std::filesystem::recursive_directory_iterator(folderPath)) {
-				if (!p.is_regular_file()) continue;
+			for (const auto& p : rawrbox::VFS::list(folderPath, true)) {
 				preLoadFile(p);
 			}
 		}
@@ -230,11 +232,13 @@ namespace rawrbox {
 		}
 
 		static size_t filesLoaded() {
+			const std::lock_guard<std::mutex> mutexGuard(_threadLock);
 			return _loadedFiles.size();
 		}
 
 		static bool isLoaded(const std::filesystem::path& filePath) {
-			return std::find(_loadedFiles.begin(), _loadedFiles.end(), filePath) != _loadedFiles.end();
+			const std::lock_guard<std::mutex> mutexGuard(_threadLock);
+			return _loadedFiles.contains(rawrbox::VFS::normalize(filePath));
 		}
 
 		// -----

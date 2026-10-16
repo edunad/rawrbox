@@ -1,4 +1,4 @@
-#include "camera.fxh"
+#include "include/camera.fxh"
 
 struct VSInput {
 	uint TextureID : ATTRIB0;

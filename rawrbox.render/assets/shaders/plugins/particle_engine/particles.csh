@@ -1,11 +1,11 @@
-#include "camera.fxh"
-#include "hash.fxh"
-#include "math.fxh"
-#include "particles_uniforms.fxh"
-#include "unpack.fxh"
+#include "include/camera.fxh"
+#include "include/hash.fxh"
+#include "include/math.fxh"
+#include "materials/particles/include/particles_uniforms.fxh"
+#include "include/unpack.fxh"
 
 #define WRITE_PARTICLES
-#include "particles.fxh"
+#include "plugins/particle_engine/include/particles.fxh"
 
 float3 CalculateVelocity(uint hash) {
 	float3 randomVelocity;

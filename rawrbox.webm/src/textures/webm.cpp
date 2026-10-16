@@ -2,10 +2,14 @@
 #include <rawrbox/engine/static.hpp>
 #include <rawrbox/render/static.hpp>
 #include <rawrbox/render/utils/barrier.hpp>
+#include <rawrbox/utils/vfs.hpp>
 #include <rawrbox/webm/textures/webm.hpp>
 
 namespace rawrbox {
-	TextureWEBM::TextureWEBM(const std::filesystem::path& filePath, uint32_t flags, bool useFallback) : rawrbox::TextureAnimatedBase(filePath, useFallback), _flags(flags) { this->internalLoad({}, useFallback); }
+	TextureWEBM::TextureWEBM(const std::filesystem::path& filePath, uint32_t flags, bool useFallback) : rawrbox::TextureAnimatedBase(filePath, useFallback), _flags(flags) {
+		this->internalLoad({}, useFallback);
+	}
+	
 	TextureWEBM::~TextureWEBM() {
 		this->_webm.reset();
 	}
@@ -15,7 +19,7 @@ namespace rawrbox {
 		this->_name = "RawrBox::Texture::WEBM";
 
 		try {
-			if (!std::filesystem::exists(this->_filePath)) RAWRBOX_CRITICAL("Video not found!");
+			if (!rawrbox::VFS::contains(this->_filePath)) RAWRBOX_CRITICAL("Video not found!");
 
 			this->_webm = std::make_unique<rawrbox::WEBM>();
 			this->_webm->load(this->_filePath, this->_flags);

@@ -1,20 +1,20 @@
 // BASED ON https://ktstephano.github.io/rendering/stratusgfx/svsm DEBUG
-#include "camera.fxh"
-#include "colormap.fxh"
-#include "light_uniforms.fxh"
-#include "math.fxh"
+#include "include/camera.fxh"
+#include "include/colormap.fxh"
+#include "plugins/clustered/include/light_uniforms.fxh"
+#include "include/math.fxh"
 
 #define READ_LIGHTS
 #define READ_TILES
-#include "binning.fxh"
+#include "plugins/clustered/include/binning.fxh"
 
 #define READ_SHADOWS
-#include "shadows.fxh"
+#include "plugins/shadows/include/shadows.fxh"
 
 Texture2DArray g_Textures[];
 SamplerState g_Sampler;
 
-#include "lighting.fxh"
+#include "plugins/clustered/include/lighting.fxh"
 
 #define DEBUG_MIPS   1u
 #define DEBUG_PAGES  2u
