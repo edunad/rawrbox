@@ -100,10 +100,8 @@ namespace rawrbox {
 		// ---------------
 
 		// LOAD MATERIALS ---
-		if ((this->loadFlags & rawrbox::GLTFLoadFlags::IMPORT_TEXTURES) > 0) {
-			this->loadTextures(scene);
-			this->loadMaterials(scene);
-		}
+		if ((this->loadFlags & rawrbox::GLTFLoadFlags::IMPORT_TEXTURES) > 0) this->loadTextures(scene);
+		this->loadMaterials(scene);
 		// --------------
 
 		// LOAD SCENE ---
@@ -447,6 +445,7 @@ namespace rawrbox {
 	}
 
 	void GLTFImporter::loadMaterials(const fastgltf::Asset& scene) {
+		const bool importTextures = (this->loadFlags & rawrbox::GLTFLoadFlags::IMPORT_TEXTURES) > 0;
 		this->materials.reserve(scene.materials.size());
 
 		for (const auto& material : scene.materials) {
@@ -471,7 +470,7 @@ namespace rawrbox {
 
 			// BASE ---
 			float alpha = material.pbrData.baseColorFactor.w();
-			if (material.pbrData.baseColorTexture.has_value()) {
+			if (importTextures && material.pbrData.baseColorTexture.has_value()) {
 				const auto& texture = this->_texturesMap[material.pbrData.baseColorTexture->textureIndex];
 				mat->diffuse = texture == nullptr ? rawrbox::MISSING_TEXTURE.get() : texture;
 			} else {
@@ -482,7 +481,7 @@ namespace rawrbox {
 			// ----
 
 			// METALIC ---
-			if (material.pbrData.metallicRoughnessTexture.has_value()) {
+			if (importTextures && material.pbrData.metallicRoughnessTexture.has_value()) {
 				const auto& texture = this->_texturesMap[material.pbrData.metallicRoughnessTexture->textureIndex];
 				mat->metalRough = texture == nullptr ? rawrbox::NORMAL_TEXTURE.get() : texture;
 			}
@@ -492,14 +491,14 @@ namespace rawrbox {
 			// --------------------
 
 			// NORMAL ---
-			if (material.normalTexture.has_value()) {
+			if (importTextures && material.normalTexture.has_value()) {
 				const auto& texture = this->_texturesMap[material.normalTexture->textureIndex];
 				mat->normal = texture == nullptr ? rawrbox::NORMAL_TEXTURE.get() : texture;
 			}
 			// --------------------
 
 			// EMISSION ---
-			if (material.emissiveTexture) {
+			if (importTextures && material.emissiveTexture) {
 				const auto& texture = this->_texturesMap[material.emissiveTexture->textureIndex];
 				mat->emissive = texture == nullptr ? rawrbox::BLACK_TEXTURE.get() : texture;
 			}
@@ -510,7 +509,7 @@ namespace rawrbox {
 
 			// SPECULAR ---
 			if (material.specular != nullptr) {
-				if (material.specular->specularTexture) {
+				if (importTextures && material.specular->specularTexture) {
 					const auto& texture = this->_texturesMap[material.specular->specularTexture->textureIndex];
 					mat->specular = texture == nullptr ? rawrbox::MISSING_TEXTURE.get() : texture;
 				}
