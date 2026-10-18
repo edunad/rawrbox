@@ -2,6 +2,7 @@
 
 #include <rawrbox/scripting/mod.hpp>
 #include <rawrbox/scripting/plugin.hpp>
+#include <rawrbox/scripting/utils/checker.hpp>
 #include <rawrbox/utils/console.hpp>
 #include <rawrbox/utils/event.hpp>
 #include <rawrbox/utils/file_watcher.hpp>
@@ -9,6 +10,13 @@
 #include <rawrbox/utils/string.hpp>
 
 namespace rawrbox {
+	struct ScriptingSettings {
+		uint32_t hotReloadMs = 0; // 0 = disabled
+		bool typeCheck = false;
+
+		std::vector<std::filesystem::path> definitions = {}; // Luau definition files, aka .d.lua
+	};
+
 	class SCRIPTING {
 	protected:
 		static std::unordered_map<std::string, std::unique_ptr<rawrbox::Mod>> _mods;
@@ -16,6 +24,7 @@ namespace rawrbox {
 
 		static std::vector<std::unique_ptr<rawrbox::ScriptingPlugin>> _plugins;
 		static std::unique_ptr<rawrbox::FileWatcher> _watcher;
+		static std::unique_ptr<rawrbox::LuaChecker> _checker;
 
 		// LOGGER ------
 		static std::unique_ptr<rawrbox::Logger> _logger;
@@ -57,7 +66,7 @@ namespace rawrbox {
 			requires(std::derived_from<T, rawrbox::ScriptingPlugin>)
 		static void registerPlugin(CallbackArgs&&... args) {
 			auto plugin = std::make_unique<T>(std::forward<CallbackArgs>(args)...);
-			auto pluginName = rawrbox::StrUtils::replace(typeid(T).name(), "class ", "");
+			const auto pluginName = rawrbox::StrUtils::replace(typeid(T).name(), "class ", "");
 
 			_logger->info("Registered lua plugin '{}'", fmt::styled(pluginName, fmt::fg(fmt::color::coral)));
 			_plugins.push_back(std::move(plugin));
@@ -71,7 +80,7 @@ namespace rawrbox {
 			}
 		}
 
-		static void init(int hotReloadMs = 0);
+		static void init(const rawrbox::ScriptingSettings& settings = {});
 
 		// LOADING ----
 		static std::unordered_map<std::filesystem::path, rawrbox::Mod*> loadMods(const std::filesystem::path& rootFolder);

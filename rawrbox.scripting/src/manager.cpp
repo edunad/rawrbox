@@ -67,6 +67,7 @@ namespace rawrbox {
 	std::unordered_map<std::string, std::vector<std::filesystem::path>> SCRIPTING::_loadedLuaFiles = {};
 
 	std::unique_ptr<rawrbox::FileWatcher> SCRIPTING::_watcher = nullptr;
+	std::unique_ptr<rawrbox::LuaChecker> SCRIPTING::_checker = nullptr;
 	std::vector<std::unique_ptr<rawrbox::ScriptingPlugin>> SCRIPTING::_plugins = {};
 
 	// LOGGER ------
@@ -310,12 +311,17 @@ namespace rawrbox {
 	void SCRIPTING::hotReload(const std::filesystem::path& filePath) {
 		// Find the owner
 		for (auto& pt : _loadedLuaFiles) {
-			auto fnd = std::find(pt.second.begin(), pt.second.end(), filePath) != pt.second.end();
+			const auto fnd = std::ranges::find(pt.second, filePath) != pt.second.end();
 			if (!fnd) continue;
 
-			auto md = _mods.find(pt.first);
+			const auto md = _mods.find(pt.first);
 			if (md == _mods.end()) return;
+
 			_logger->warn("Hot-reloading lua file '{}'", filePath.generic_string());
+			if (_checker != nullptr && !_checker->check(filePath).empty()) {
+				_logger->error("Hot-reload of '{}' skipped, fix the type errors above", filePath.generic_string());
+				return;
+			}
 
 			// Cleanup and load -----
 			md->second->gc(); // Cleanup
@@ -334,18 +340,28 @@ namespace rawrbox {
 	// -------------
 	// ----------
 
-	void SCRIPTING::init(int hotReloadMs) {
-		_hotReloadEnabled = hotReloadMs > 0;
+	void SCRIPTING::init(const rawrbox::ScriptingSettings& settings) {
+		_hotReloadEnabled = settings.hotReloadMs > 0;
 		if (_hotReloadEnabled) {
-			_logger->info("Enabled lua hot-reloading\n  └── Delay: {}ms", fmt::styled(hotReloadMs, fmt::fg(fmt::color::gold)));
+			_logger->info("Enabled lua hot-reloading\n  └── Delay: {}ms", fmt::styled(settings.hotReloadMs, fmt::fg(fmt::color::gold)));
 
 			_watcher = std::make_unique<rawrbox::FileWatcher>(
 			    [](const std::string& pth, rawrbox::FileStatus status) {
 				    if (status != rawrbox::FileStatus::modified) return;
 				    rawrbox::runOnRenderThread([pth]() { hotReload(pth); });
 			    },
-			    std::chrono::milliseconds(hotReloadMs));
+			    std::chrono::milliseconds(settings.hotReloadMs));
 			_watcher->start();
+		}
+
+		if (settings.typeCheck) {
+			try {
+				_checker = std::make_unique<rawrbox::LuaChecker>(settings.definitions);
+			} catch (const std::runtime_error& err) {
+				RAWRBOX_CRITICAL("{}", err.what());
+			}
+
+			_logger->info("Enabled lua type checking\n  └── Definitions: {}", fmt::styled(settings.definitions.size(), fmt::fg(fmt::color::gold)));
 		}
 
 		// Setup  --
@@ -380,8 +396,13 @@ namespace rawrbox {
 		if (id.empty()) RAWRBOX_CRITICAL("Mod ID cannot be empty");
 		if (!std::filesystem::exists(modFolder)) RAWRBOX_CRITICAL("Failed to locate mod folder '{}'", modFolder.generic_string());
 
-		if (_mods.find(id) != _mods.end()) {
+		if (_mods.contains(id)) {
 			_logger->warn("Mod {} already loaded! Mod name conflict?", id);
+			return nullptr;
+		}
+
+		if (_checker != nullptr && !_checker->checkFolder(modFolder).empty()) {
+			_logger->error("Mod '{}' failed to load, fix the type errors above", id);
 			return nullptr;
 		}
 
@@ -421,7 +442,7 @@ namespace rawrbox {
 		if (!std::filesystem::exists(configPath)) return metadata;
 
 		std::string buffer = {};
-		auto meta = glz::read_file_json<glz::opts{.comments = 1U, .error_on_unknown_keys = 0U, .skip_null_members = 1U, .error_on_missing_keys = 0U}>(metadata, configPath, buffer);
+		const auto meta = glz::read_file_json<glz::opts{.comments = 1U, .error_on_unknown_keys = 0U, .skip_null_members = 1U, .error_on_missing_keys = 0U}>(metadata, configPath, buffer);
 		if (meta) RAWRBOX_CRITICAL("Failed to load '{}' ──> {}", configPath, glz::format_error(meta, buffer));
 
 		return metadata;
@@ -432,10 +453,10 @@ namespace rawrbox {
 	}
 
 	bool SCRIPTING::unloadMod(const std::string& modId) {
-		auto fnd = _mods.find(modId);
+		const auto fnd = _mods.find(modId);
 		if (fnd == _mods.end()) return false;
 
-		auto fndLua = _loadedLuaFiles.find(modId);
+		const auto fndLua = _loadedLuaFiles.find(modId);
 		if (fndLua != _loadedLuaFiles.end()) {
 			if (_watcher != nullptr) {
 				for (auto& pt : fndLua->second) {
@@ -458,13 +479,14 @@ namespace rawrbox {
 
 	void SCRIPTING::shutdown() {
 		// Shutdown mods ---
-		for (auto& mod : _mods) {
+		for (const auto& mod : _mods) {
 			mod.second->shutdown();
 		}
 		// ----------------
 
 		_console = nullptr;
 		_watcher.reset();
+		_checker.reset();
 
 		_loadedLuaFiles.clear();
 		_mods.clear();
@@ -479,7 +501,7 @@ namespace rawrbox {
 	}
 
 	rawrbox::Mod* SCRIPTING::getMod(const std::string& id) {
-		auto fnd = _mods.find(id);
+		const auto fnd = _mods.find(id);
 		if (fnd == _mods.end()) return nullptr;
 
 		return fnd->second.get();
@@ -489,7 +511,7 @@ namespace rawrbox {
 	std::vector<std::string> SCRIPTING::getModsIds() {
 		std::vector<std::string> modNames = {};
 		modNames.reserve(_mods.size());
-		for (auto& mod : _mods) {
+		for (const auto& mod : _mods) {
 			modNames.push_back(mod.second->getID());
 		}
 
@@ -499,7 +521,7 @@ namespace rawrbox {
 	bool SCRIPTING::hotReloadEnabled() { return _hotReloadEnabled; }
 	bool SCRIPTING::isLuaFileMounted(const std::string& path) {
 		for (auto& pt : _loadedLuaFiles) {
-			auto fnd = std::find(pt.second.begin(), pt.second.end(), path) != pt.second.end();
+			const auto fnd = std::ranges::find(pt.second, path) != pt.second.end();
 			if (fnd) return true;
 		};
 
