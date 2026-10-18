@@ -1,5 +1,9 @@
 #include <rawrbox/utils/file_watcher.hpp>
 
+#include <system_error>
+#include <utility>
+#include <vector>
+
 namespace rawrbox {
 	FileWatcher::FileWatcher(const std::function<void(std::string, rawrbox::FileStatus)>& action, std::chrono::duration<int, std::milli> delay) : _delay{delay}, _action(action) {}
 	FileWatcher::~FileWatcher() { this->stop(); }
@@ -17,11 +21,16 @@ namespace rawrbox {
 	}
 
 	void FileWatcher::watchFile(const std::filesystem::path& path) {
-		this->_files[path.generic_string()] = std::filesystem::last_write_time(path);
+		const auto writeTime = std::filesystem::last_write_time(path);
+
+		const std::scoped_lock lock(this->_filesLock);
+		this->_files[path.generic_string()] = writeTime;
 	}
 
 	void FileWatcher::unwatchFile(const std::filesystem::path& path) {
-		auto fnd = this->_files.find(path.generic_string());
+		const std::scoped_lock lock(this->_filesLock);
+
+		const auto fnd = this->_files.find(path.generic_string());
 		if (fnd == this->_files.end()) return;
 
 		this->_files.erase(fnd);
@@ -33,23 +42,37 @@ namespace rawrbox {
 			while (!this->_stopThread) {
 				// Wait for "delay" milliseconds
 				std::this_thread::sleep_for(this->_delay);
-				if (this->_files.empty()) continue;
 
-				auto it = this->_files.begin();
-				while (it != this->_files.end()) {
-					if (!std::filesystem::exists(it->first)) {
-						if (this->_action != nullptr) this->_action(it->first, FileStatus::erased);
-						it = this->_files.erase(it);
-					} else {
-						auto current_file_last_write_time = std::filesystem::last_write_time((*it).first);
+				std::vector<std::pair<std::string, rawrbox::FileStatus>> changes = {};
 
-						if ((*it).second != current_file_last_write_time) {
-							(*it).second = current_file_last_write_time;
-							if (this->_action != nullptr) this->_action((*it).first, FileStatus::modified);
+				// THREAD LOCK ---
+				{
+					const std::scoped_lock lock(this->_filesLock);
+
+					auto it = this->_files.begin();
+					while (it != this->_files.end()) {
+						std::error_code error = {};
+						const auto current_file_last_write_time = std::filesystem::last_write_time(it->first, error);
+
+						if (error) {
+							changes.emplace_back(it->first, FileStatus::erased);
+							it = this->_files.erase(it);
+							continue;
 						}
 
-						it++;
+						if (it->second != current_file_last_write_time) {
+							it->second = current_file_last_write_time;
+							changes.emplace_back(it->first, FileStatus::modified);
+						}
+
+						++it;
 					}
+				}
+				// ----------------
+
+				if (this->_action == nullptr) continue;
+				for (const auto& [file, status] : changes) {
+					this->_action(file, status);
 				}
 			}
 		});
