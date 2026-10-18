@@ -116,7 +116,7 @@ namespace scripting_test {
 		// ----
 
 		rawrbox::SCRIPTING::setConsole(this->_console.get());
-		rawrbox::SCRIPTING::init(2000); // Check files every 2 seconds
+		rawrbox::SCRIPTING::init({.hotReloadMs = 2000}); // Check files every 2 seconds
 
 		// Load lua mods
 		if (!std::filesystem::exists("./mods")) {
