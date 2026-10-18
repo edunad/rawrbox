@@ -53,10 +53,18 @@ add_library(${output_target} ${RAWRBOX_LIBRARY_TYPE} ${RAWRBOX_SCRIPTING_IMPORTS
 add_resources(FOLDER lua)
 
 target_compile_definitions(${output_target} PRIVATE _CRT_SECURE_NO_WARNINGS NOMINMAX)
-target_compile_definitions(${output_target} PUBLIC RAWRBOX_SCRIPTING RAWRBOX_SCRIPTING_WORKSHOP_MODDING=${RAWRBOX_SCRIPTING_WORKSHOP_MODDING} RAWRBOX_SCRIPTING_EXCEPTION=${RAWRBOX_SCRIPTING_EXCEPTION} LUAU=1)
+target_compile_definitions(${output_target} PUBLIC RAWRBOX_SCRIPTING LUAU=1)
+
+if(RAWRBOX_SCRIPTING_WORKSHOP_MODDING)
+    target_compile_definitions(${output_target} PUBLIC RAWRBOX_SCRIPTING_WORKSHOP_MODDING)
+endif()
 
 if(RAWRBOX_SCRIPTING_UNSAFE)
     target_compile_definitions(${output_target} PUBLIC RAWRBOX_SCRIPTING_UNSAFE)
+endif()
+
+if(RAWRBOX_SCRIPTING_EXCEPTION)
+    target_compile_definitions(${output_target} PUBLIC RAWRBOX_SCRIPTING_EXCEPTION)
 endif()
 
 
