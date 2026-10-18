@@ -187,19 +187,16 @@ namespace rawrbox {
 
 			    _logger->info("{}", fmt::join(args, " "));
 		    })
-		    .addFunction("include", [](lua_State* state) {
+		    .addFunction("include", [&mod](lua_State* state) {
 			    if (lua_type(state, 1) != LUA_TSTRING) throw std::runtime_error("Invalid param, string expected");
 			    const auto* path = lua_tostring(state, 1);
 
-			    auto modID = rawrbox::LuaUtils::getLuaENVVar<std::string>(state, "__mod_id");
-			    auto modFolder = rawrbox::LuaUtils::getLuaENVVar<std::string>(state, "__mod_folder");
-
-			    auto fixedPath = LuaUtils::getContent(path, modFolder);
+			    auto fixedPath = LuaUtils::getContent(path, mod.getFolder().generic_string());
 			    if (!fixedPath.first.empty()) throw std::runtime_error("External mod lua loading not supported");
-			    rawrbox::LuaUtils::compileAndLoadFile(state, modID, fixedPath.second);
+			    loadFile(mod, state, fixedPath.second);
 
 			    // Register file for hot-reloading
-			    registerLoadedFile(modID, fixedPath.second);
+			    registerLoadedFile(mod.getID(), fixedPath.second);
 			    // ----
 		    });
 		// ---------
@@ -302,6 +299,14 @@ namespace rawrbox {
 		}
 	}
 
+	void SCRIPTING::loadFile(rawrbox::Mod& mod, lua_State* L, const std::filesystem::path& filePath) {
+		for (auto& p : _plugins) {
+			if (p->loadFile(mod, L, filePath)) return;
+		}
+
+		rawrbox::LuaUtils::compileAndLoadFile(L, mod.getID(), filePath);
+	}
+
 	void SCRIPTING::hotReload(const std::filesystem::path& filePath) {
 		// Find the owner
 		for (auto& pt : _loadedLuaFiles) {
@@ -313,11 +318,10 @@ namespace rawrbox {
 			_logger->warn("Hot-reloading lua file '{}'", filePath.generic_string());
 
 			// Cleanup and load -----
-			auto* env = md->second->getEnvironment();
 			md->second->gc(); // Cleanup
 
 			try {
-				rawrbox::LuaUtils::compileAndLoadFile(env, md->first, filePath);
+				loadFile(*md->second, md->second->getEnvironment(), filePath);
 			} catch (const std::exception& err) {
 				_logger->error("{}", err.what());
 			}

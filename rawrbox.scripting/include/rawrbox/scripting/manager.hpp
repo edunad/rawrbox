@@ -36,7 +36,7 @@ namespace rawrbox {
 		// ------------
 
 		// HOT RELOAD ---
-		static void registerLoadedFile(const std::string& modId, const std::filesystem::path& filePath);
+		static void loadFile(rawrbox::Mod& mod, lua_State* L, const std::filesystem::path& filePath);
 		static void hotReload(const std::filesystem::path& filePath);
 		// -------------
 
@@ -76,6 +76,7 @@ namespace rawrbox {
 		// LOADING ----
 		static std::unordered_map<std::filesystem::path, rawrbox::Mod*> loadMods(const std::filesystem::path& rootFolder);
 		static rawrbox::Mod* loadMod(const std::string& id, const std::filesystem::path& modFolder);
+		static void registerLoadedFile(const std::string& modId, const std::filesystem::path& filePath);
 		[[nodiscard]] static rawrbox::ModMetadata loadMetadata(const std::filesystem::path& modFolder);
 
 		static bool unloadMod(const std::filesystem::path& modFolder);
