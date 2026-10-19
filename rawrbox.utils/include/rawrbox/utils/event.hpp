@@ -2,7 +2,8 @@
 
 #include <algorithm>
 #include <functional>
-
+#include <type_traits>
+#include <vector>
 
 namespace rawrbox {
 	template <typename... CallbackArgs>
@@ -28,8 +29,27 @@ namespace rawrbox {
 		bool empty() { return calls.empty(); }
 		void clear() { calls.clear(); }
 
-		Event& operator-=(Func callback) {
-			calls.erase(std::remove_if(calls.begin(), calls.end(), [&](const Func& func) { return func.target_type() == callback.target_type(); }), calls.end());
+		template <typename F>
+		Event& operator-=(F&& callback) {
+			using Decayed = std::decay_t<F>;
+
+			if constexpr (std::is_pointer_v<Decayed> && std::is_function_v<std::remove_pointer_t<Decayed>>) {
+				this->removePointer(callback);
+			} else {
+				Func func = std::forward<F>(callback);
+
+				const FuncPtr* ptr = func.template target<FuncPtr>();
+				if (ptr != nullptr) {
+					this->removePointer(*ptr);
+					return *this;
+				}
+
+				this->calls.erase(std::remove_if(this->calls.begin(), this->calls.end(), [&](const Func& call) {
+					return call.target_type() == func.target_type();
+				}),
+				    this->calls.end());
+			}
+
 			return *this;
 		}
 
@@ -42,6 +62,17 @@ namespace rawrbox {
 		}
 
 	private:
+		using FuncPtr = void (*)(CallbackArgs...);
+
 		std::vector<Func> calls = {};
+
+		template <typename Ptr>
+		void removePointer(Ptr ptr) {
+			this->calls.erase(std::remove_if(this->calls.begin(), this->calls.end(), [&](const Func& call) {
+				const Ptr* target = call.template target<Ptr>();
+				return target != nullptr && *target == ptr;
+			}),
+			    this->calls.end());
+		}
 	};
 } // namespace rawrbox
