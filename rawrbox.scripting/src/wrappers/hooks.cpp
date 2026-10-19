@@ -14,7 +14,7 @@ namespace rawrbox {
 	void Hooks::callLua(const std::string& id, const luabridge::LuaRef& args) {
 		const auto fnd = _hooks.find(id);
 		if (fnd == _hooks.end()) return;
-		e const auto data = rawrbox::LuaUtils::luaToJsonObject(args);
+		const auto data = rawrbox::LuaUtils::luaToJsonObject(args);
 		const auto hooks = fnd->second;
 
 		for (const auto& hook : hooks) {
