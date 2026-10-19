@@ -328,11 +328,11 @@ namespace rawrbox {
 	rawrbox::WEBMColorHint WEBM::getColorHint() const {
 		rawrbox::WEBMColorHint hint = {};
 
-		const mkvparser::Colour* colour = this->_video->GetColour();
-		if (colour == nullptr) return hint;
+		const mkvparser::Colour* color = this->_video->GetColour();
+		if (color == nullptr) return hint;
 
 		// Horrible i know
-		switch (colour->matrix_coefficients) {
+		switch (color->matrix_coefficients) {
 			case 0:
 				hint.space = rawrbox::YUVColorSpace::RGB;
 				break;
@@ -354,7 +354,7 @@ namespace rawrbox {
 				break;
 		}
 
-		switch (colour->range) {
+		switch (color->range) {
 			case 1:
 				hint.scale = rawrbox::YUVLuminanceScale::ITU;
 				break;
