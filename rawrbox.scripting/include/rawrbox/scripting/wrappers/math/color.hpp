@@ -2,8 +2,17 @@
 #include <rawrbox/math/color.hpp>
 #include <rawrbox/scripting/utils/lua.hpp>
 
+#include <cstdint>
+#include <limits>
+#include <stdexcept>
+
 namespace rawrbox {
 	class ColorWrapper {
+		static uint32_t toHEX(double hex) {
+			if (!(hex >= 0 && hex <= std::numeric_limits<uint32_t>::max())) throw std::runtime_error("Invalid HEX color");
+			return static_cast<uint32_t>(hex);
+		}
+
 		template <typename T = int>
 			requires(std::is_integral_v<T> || std::is_floating_point_v<T>)
 		static void registerTemplate(lua_State* L, const std::string& name) {
@@ -38,6 +47,9 @@ namespace rawrbox {
 			    .addFunction("__eq", &CL::operator==)
 			    .addFunction("__ne", &CL::operator!=)
 			    .addFunction("__unm", [](CL& color) { return -color; })
+
+			    .addStaticFunction("RGBHex", [](double hex) { return CL::RGBHex(toHEX(hex)); })
+			    .addStaticFunction("RGBAHex", [](double hex) { return CL::RGBAHex(toHEX(hex)); })
 
 			    .addStaticFunction("black", &CLS::Black)
 			    .addStaticFunction("white", &CLS::White)
