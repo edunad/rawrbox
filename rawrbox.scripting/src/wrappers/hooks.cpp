@@ -1,35 +1,67 @@
 #include <rawrbox/scripting/wrappers/hooks.hpp>
 
+#include <algorithm>
+
 namespace rawrbox {
 	// PRIVATE -----
 	std::unordered_map<std::string, std::vector<rawrbox::Hook>> Hooks::_hooks = {};
 	// -------------
 
-	void Hooks::call(const std::string& id, const luabridge::LuaRef& args) {
-		for (auto& hook : _hooks[id]) {
-			auto result = rawrbox::LuaUtils::call(hook.func, args);
-			if (result.hasFailed()) fmt::print("Lua error\n  └── {}\n", result.errorMessage());
+	// LOGGER ------
+	std::unique_ptr<rawrbox::Logger> Hooks::_logger = std::make_unique<rawrbox::Logger>("RawrBox-Hooks");
+	// -------------
+
+	void Hooks::callLua(const std::string& id, const luabridge::LuaRef& args) {
+		const auto fnd = _hooks.find(id);
+		if (fnd == _hooks.end()) return;
+		e const auto data = rawrbox::LuaUtils::luaToJsonObject(args);
+		const auto hooks = fnd->second;
+
+		for (const auto& hook : hooks) {
+			auto result = rawrbox::LuaUtils::call(hook.func, rawrbox::LuaUtils::jsonToLua(hook.func.state(), data));
+			if (result.hasFailed()) _logger->error("Hook '{}' handler '{}' failed\n  └── {}", id, hook.name, result.errorMessage());
 		}
 	}
 
 	void Hooks::add(const std::string& id, const std::string& name, const luabridge::LuaRef& func) {
 		if (!func.isCallable()) throw std::runtime_error("Invalid callback");
-		_hooks[id].emplace_back(name, func);
+
+		auto& arr = _hooks[id];
+		const auto hook = std::ranges::lower_bound(arr, name, {}, &rawrbox::Hook::name);
+		if (hook != arr.end() && hook->name == name) {
+			hook->func = func;
+			return;
+		}
+
+		arr.emplace(hook, name, func);
 	}
 
-	void Hooks::remove(const std::string& id, const std::string& name) {
-		auto nameMap = _hooks.find(id);
+	void Hooks::destroy(const std::string& id, const std::string& name) {
+		const auto nameMap = _hooks.find(id);
 		if (nameMap == _hooks.end()) return;
 
 		auto& arr = nameMap->second;
-		auto hook = std::find_if(arr.begin(), arr.end(), [&](auto& elem) {
+		std::erase_if(arr, [&name](const auto& elem) { return elem.name == name; });
+		if (arr.empty()) _hooks.erase(nameMap);
+	}
+
+	bool Hooks::exists(const std::string& id, const std::string& name) {
+		const auto nameMap = _hooks.find(id);
+		return nameMap != _hooks.end() && std::ranges::any_of(nameMap->second, [&name](const auto& elem) {
 			return elem.name == name;
 		});
+	}
 
-		if (hook == arr.end()) return;
-		arr.erase(hook);
+	void Hooks::clear(lua_State* L) {
+		if (L == nullptr) {
+			_hooks.clear();
+			return;
+		}
 
-		if (arr.empty()) _hooks.erase(id);
+		for (auto it = _hooks.begin(); it != _hooks.end();) {
+			std::erase_if(it->second, [L](const auto& elem) { return lua_mainthread(elem.func.state()) == lua_mainthread(L); });
+			it = it->second.empty() ? _hooks.erase(it) : std::next(it);
+		}
 	}
 
 	// Utils ---
@@ -40,9 +72,10 @@ namespace rawrbox {
 	void Hooks::registerLua(lua_State* L) {
 		luabridge::getGlobalNamespace(L)
 		    .beginNamespace("hooks", {})
-		    .addFunction("call", &rawrbox::Hooks::call)
+		    .addFunction("call", &rawrbox::Hooks::callLua)
 		    .addFunction("add", &rawrbox::Hooks::add)
-		    .addFunction("remove", &rawrbox::Hooks::remove)
+		    .addFunction("destroy", &rawrbox::Hooks::destroy)
+		    .addFunction("exists", &rawrbox::Hooks::exists)
 		    .endNamespace();
 	}
 } // namespace rawrbox

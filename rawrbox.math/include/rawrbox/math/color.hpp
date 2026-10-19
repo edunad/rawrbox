@@ -28,10 +28,10 @@ namespace rawrbox {
 				    ((x)&0xFF) / 255.0F};
 			} else {
 				return {
-				    ((x >> 24) & 0xFF),
-				    ((x >> 16) & 0xFF),
-				    ((x >> 8) & 0xFF),
-				    ((x)&0xFF)};
+				    static_cast<NumberType>(((x >> 24) & 0xFF)),
+				    static_cast<NumberType>(((x >> 16) & 0xFF)),
+				    static_cast<NumberType>(((x >> 8) & 0xFF)),
+				    static_cast<NumberType>(((x)&0xFF))};
 			}
 		}
 

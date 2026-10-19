@@ -468,6 +468,7 @@ namespace rawrbox {
 		}
 
 		onModUnload(*fnd->second);
+		rawrbox::Hooks::clear(fnd->second->getEnvironment());
 
 		fnd->second->shutdown();
 		_mods.erase(fnd);
@@ -478,6 +479,8 @@ namespace rawrbox {
 	// -----------
 
 	void SCRIPTING::shutdown() {
+		rawrbox::Hooks::clear();
+
 		// Shutdown mods ---
 		for (const auto& mod : _mods) {
 			mod.second->shutdown();
