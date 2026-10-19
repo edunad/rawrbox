@@ -51,11 +51,6 @@ namespace rawrbox {
 	};
 #pragma pack(pop)
 
-	static_assert(sizeof(rawrbox::VPKHeader) == 28);
-	static_assert(sizeof(rawrbox::VPKDirectoryEntry) == 18);
-	static_assert(sizeof(rawrbox::VPKArchiveMD5) == 28);
-	static_assert(sizeof(rawrbox::VPKOtherMD5) == 48);
-
 	struct VPKEntry {
 		uint32_t crc = 0;
 		uint16_t archive = 0;

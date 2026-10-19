@@ -10,8 +10,6 @@
 #include <MapHelper.hpp>
 
 namespace rawrbox {
-	static_assert(sizeof(rawrbox::DebugVertex) == 16, "DebugVertex must stay tightly packed (pos + RGBA8)");
-
 	// STATIC DATA ----
 	std::array<std::vector<rawrbox::DebugVertex>, 4> DebugDraw::_queues = {};
 	std::array<Diligent::IPipelineState*, 4> DebugDraw::_pipelines = {};

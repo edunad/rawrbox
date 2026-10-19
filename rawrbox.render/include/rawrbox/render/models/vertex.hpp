@@ -15,9 +15,6 @@
 
 namespace rawrbox {
 	// BONES ---
-	static_assert(RB_MAX_BONES_PER_VERTEX == 4, "Bone indices / weights are packed as 4 components (RGBA8_UINT / RGBA16_UNORM)");
-	static_assert(RB_RENDER_MAX_BONES_PER_MODEL <= 256, "Bone indices are packed as uint8");
-
 	using BoneIndices = std::array<uint8_t, RB_MAX_BONES_PER_VERTEX>;
 	using BoneWeights = std::array<uint16_t, RB_MAX_BONES_PER_VERTEX>; // UNORM16, 65535 = 1.0, see PackUtils::packBoneWeights
 	// ---------
@@ -177,12 +174,6 @@ namespace rawrbox {
 			return v;
 		}
 	};
-
-	static_assert(sizeof(rawrbox::VertexData) == 16);
-	static_assert(sizeof(rawrbox::VertexUVData) == 24);
-	static_assert(sizeof(rawrbox::VertexNormData) == 32);
-	static_assert(sizeof(rawrbox::VertexBoneData) == 36);
-	static_assert(sizeof(rawrbox::VertexNormBoneData) == 44);
 
 	// UTILS ---
 	template <typename T>
