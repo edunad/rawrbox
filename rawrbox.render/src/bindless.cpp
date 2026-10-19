@@ -307,7 +307,7 @@ namespace rawrbox {
 	}
 
 	void BindlessManager::unregisterTexture(rawrbox::TextureBase& texture) {
-		if (signature == nullptr) return;
+		if (signature == nullptr || !texture.isRegistered()) return;
 
 		const bool isVertex = texture.getType() == rawrbox::TEXTURE_TYPE::VERTEX;
 		auto& handler = isVertex ? _vertexTextureHandles : _textureHandles;
@@ -316,7 +316,7 @@ namespace rawrbox {
 		const auto depthId = texture.getDepthTextureID();
 
 		if (id >= handler.size()) RAWRBOX_CRITICAL("Index '{}' not found!", id);
-		if (depthId >= handler.size()) RAWRBOX_CRITICAL("Depth index '{}' not found!", id);
+		if (depthId >= handler.size()) RAWRBOX_CRITICAL("Depth index '{}' not found!", depthId);
 
 		// Cleanup  ----
 		unregisterUpdateTexture(texture);

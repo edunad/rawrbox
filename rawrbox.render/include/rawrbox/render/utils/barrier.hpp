@@ -6,20 +6,15 @@
 #include <DeviceContext.h>
 #include <DeviceObject.h>
 
-#include <unordered_map>
+#include <vector>
 
 namespace rawrbox {
 	class BarrierUtils {
 	protected:
-		// BARRIER -------------
-		static std::unordered_map<Diligent::IDeviceObject*, Diligent::StateTransitionDesc> _barrierCache;
-		//  -------------------------
-
 		static std::unique_ptr<rawrbox::Logger> _logger;
 
 	public:
 		static void barrier(const std::vector<Diligent::StateTransitionDesc>& resources);
-		static void clearBarrierCache();
 		// ----------------
 	};
 } // namespace rawrbox

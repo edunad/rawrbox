@@ -39,7 +39,6 @@
 #include <rawrbox/render/text/engine.hpp>
 #include <rawrbox/render/textures/utils/utils.hpp>
 #include <rawrbox/render/textures/webp.hpp>
-#include <rawrbox/render/utils/barrier.hpp>
 #include <rawrbox/render/utils/debug_draw.hpp>
 #include <rawrbox/render/utils/render.hpp>
 #include <rawrbox/render/utils/swapchain.hpp>
@@ -616,10 +615,6 @@ namespace rawrbox {
 		}
 
 		this->_context->ClearDepthStencil(pDSV, Diligent::CLEAR_DEPTH_FLAG, 1.F, 0, Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
-
-		// Clear barrier cache ---
-		rawrbox::BarrierUtils::clearBarrierCache();
-		// -----------
 	}
 
 	void RendererBase::frame() {
