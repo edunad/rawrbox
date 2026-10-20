@@ -523,8 +523,10 @@ namespace rawrbox {
 
 	bool SCRIPTING::hotReloadEnabled() { return _hotReloadEnabled; }
 	bool SCRIPTING::isLuaFileMounted(const std::string& path) {
+		const std::filesystem::path filePath = path;
+
 		for (auto& pt : _loadedLuaFiles) {
-			const auto fnd = std::ranges::find(pt.second, path) != pt.second.end();
+			const auto fnd = std::ranges::find(pt.second, filePath) != pt.second.end();
 			if (fnd) return true;
 		};
 

@@ -20,8 +20,8 @@ namespace rawrbox {
 			return *this;
 		}
 
-		bool operator==(Event& right) { return calls == right.calls; }
-		bool operator!=(Event& right) { return !(this == &right); }
+		bool operator==(const Event& right) const { return this == &right; }
+		bool operator!=(const Event& right) const { return !(*this == right); }
 
 		Func& operator[](int i) { return calls[i]; }
 

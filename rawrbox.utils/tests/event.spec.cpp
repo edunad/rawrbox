@@ -104,4 +104,18 @@ TEST_CASE("Event should behave as expected", "[rawrbox::Event]") {
 		a(1);
 		REQUIRE(calls == 10);
 	}
+
+	SECTION("rawrbox::Event::==") {
+		rawrbox::Event<int> a;
+		rawrbox::Event<int> b;
+
+		a += first;
+		b += first;
+
+		REQUIRE(a == a);
+		REQUIRE_FALSE(a != a);
+
+		REQUIRE(a != b);
+		REQUIRE_FALSE(a == b);
+	}
 }
