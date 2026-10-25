@@ -7,6 +7,7 @@
 namespace rawrbox {
 	Diligent::RefCntAutoPtr<Diligent::IBuffer> CameraBase::staticUniforms;
 	Diligent::RefCntAutoPtr<Diligent::IBuffer> CameraBase::uniforms;
+	rawrbox::CameraStaticUniforms CameraBase::_uploadedStatic = {};
 
 	CameraBase::CameraBase(const rawrbox::Vector2u& renderSize, bool depth) {
 		this->_renderTarget = std::make_unique<rawrbox::TextureRender>(renderSize, depth);
@@ -35,9 +36,9 @@ namespace rawrbox {
 		auto* device = rawrbox::RENDERER->device();
 		if (device == nullptr) RAWRBOX_CRITICAL("Device not initialized!");
 
-		// These are shared across all the cameras. For performance reasons, we won't support different cameras (for now)
+		// Shared across all the cameras
 		if (staticUniforms != nullptr || uniforms != nullptr) RAWRBOX_CRITICAL("Camera buffers already initialized!");
-		auto staticData = this->getStaticData();
+		_uploadedStatic = this->getStaticData();
 
 		// STATIC BUFFER ---
 		Diligent::BufferDesc StaticDesc;
@@ -48,7 +49,7 @@ namespace rawrbox {
 
 		Diligent::BufferData sData;
 		sData.DataSize = StaticDesc.Size;
-		sData.pData = &staticData;
+		sData.pData = &_uploadedStatic;
 
 		device->CreateBuffer(StaticDesc, &sData, &staticUniforms);
 		// ------------
@@ -75,7 +76,10 @@ namespace rawrbox {
 
 	void CameraBase::updateStatic() {
 		if (staticUniforms == nullptr) return;
-		rawrbox::CameraStaticUniforms data = this->getStaticData();
+
+		const auto data = this->getStaticData();
+		if (data == _uploadedStatic) return; // Shared across all the cameras
+		_uploadedStatic = data;
 
 		rawrbox::BarrierUtils::barrier({{staticUniforms, Diligent::RESOURCE_STATE_CONSTANT_BUFFER, Diligent::RESOURCE_STATE_COPY_DEST, Diligent::STATE_TRANSITION_FLAG_UPDATE_STATE}});
 		rawrbox::RENDERER->context()->UpdateBuffer(staticUniforms, 0, sizeof(rawrbox::CameraStaticUniforms), &data, Diligent::RESOURCE_STATE_TRANSITION_MODE_VERIFY);
@@ -83,12 +87,12 @@ namespace rawrbox {
 	}
 
 	rawrbox::CameraStaticUniforms CameraBase::getStaticData() {
-		auto screenSize = rawrbox::RENDERER->getSize().cast<float>();
+		const auto targetSize = this->_renderTarget->getSize().cast<float>();
 
 		rawrbox::CameraStaticUniforms data = {};
 		data.gProjection = rawrbox::Matrix4x4::mtxTranspose(this->getProjMtx());
 		data.gProjectionInv = rawrbox::Matrix4x4::mtxInverse(data.gProjection);
-		data.gViewport = {this->getZNear(), this->getZFar(), screenSize.x, screenSize.y}; // TODO: Support screen re-scaling, make this dynamic buffer then
+		data.gViewport = {this->getZNear(), this->getZFar(), targetSize.x, targetSize.y};
 
 		return data;
 	}
@@ -208,10 +212,40 @@ namespace rawrbox {
 		this->_renderTarget->stopRecord();
 	}
 
+	void CameraBase::resize(const rawrbox::Vector2u& size) {
+		if (this->_renderTarget == nullptr) RAWRBOX_CRITICAL("Render target not initialized!");
+		if (size == this->_renderTarget->getSize()) return;
+
+		this->_renderTarget->resize(size);
+		if (rawrbox::RENDERER != nullptr) rawrbox::RENDERER->resizeCamera(*this);
+	}
+
 	Diligent::ITextureView* CameraBase::getDepth() const { return this->_renderTarget->getDepth(); }
 	Diligent::ITextureView* CameraBase::getColor(bool rt) const { return rt ? this->_renderTarget->getRT() : this->_renderTarget->getHandle(); }
 
 	rawrbox::TextureRender* CameraBase::getRenderTarget() const { return this->_renderTarget.get(); }
+	// ----------------
+
+	// PRESENT ----
+	void CameraBase::setPresent(const rawrbox::Vector2i& offset, uint32_t scale) {
+		this->_presentOffset = offset;
+		this->_presentScale = scale;
+	}
+
+	rawrbox::AABBf CameraBase::getPresentRect() const {
+		if (this->_presentScale == 0U) return {{}, rawrbox::RENDERER->getSize().cast<float>()};
+		return {this->_presentOffset.cast<float>(), (this->_renderTarget->getSize() * this->_presentScale).cast<float>()};
+	}
+
+	rawrbox::Vector2f CameraBase::windowToTarget(const rawrbox::Vector2f& windowPos) const {
+		const auto rect = this->getPresentRect();
+		return (windowPos + rawrbox::Vector2f{0.5F, 0.5F} - rect.pos) * this->_renderTarget->getSize().cast<float>() / rect.size;
+	}
+
+	rawrbox::Vector2f CameraBase::targetToWindow(const rawrbox::Vector2f& targetPos) const {
+		const auto rect = this->getPresentRect();
+		return (targetPos * rect.size / this->_renderTarget->getSize().cast<float>()) + rect.pos - rawrbox::Vector2f{0.5F, 0.5F};
+	}
 	// ----------------
 
 	void CameraBase::updateBuffer() {

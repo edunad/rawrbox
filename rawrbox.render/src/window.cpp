@@ -281,6 +281,8 @@ namespace rawrbox {
 		if (glfwHandle == nullptr) RAWRBOX_CRITICAL("Failed to initialize window [{} - {}x{}]", this->_settings.title, width, height);
 
 		this->_handle = glfwHandle;
+		this->_hasFocus = glfwGetWindowAttrib(glfwHandle, GLFW_FOCUSED) == GLFW_TRUE;
+		
 		glfwSetWindowUserPointer(glfwHandle, this);
 
 		// Create cursor
@@ -595,10 +597,11 @@ namespace rawrbox {
 
 	void Window::callbacks_focus(GLFWwindow* whandle, int focus) {
 		auto& window = glfwHandleToRenderer(whandle);
-		window._hasFocus = (focus == 1);
+		const bool focused = focus == GLFW_TRUE;
+		window._hasFocus = focused;
 
-		rawrbox::runOnRenderThread([&window]() {
-			window.onFocus(window, window._hasFocus);
+		rawrbox::runOnRenderThread([&window, focused]() {
+			window.onFocus(window, focused);
 		});
 	}
 

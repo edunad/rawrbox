@@ -332,19 +332,6 @@ namespace rawrbox {
 		rawrbox::BindlessManager::init();
 		// -----------------
 
-		// Init cameras ---
-		this->setActiveCamera(this->_cameras.front().get());
-		for (auto& camera : this->_cameras) {
-			camera->initialize();
-		}
-
-		rawrbox::MAIN_CAMERA->upload();
-		// -----------------
-
-		// Bind signatures ---
-		rawrbox::BindlessManager::bindSignatures();
-		// -------
-
 		// Init default textures ---
 		this->_logger->info("Initializing default textures");
 
@@ -383,6 +370,19 @@ namespace rawrbox {
 		}
 
 		// -------------------------
+
+		// Init cameras ---
+		this->setActiveCamera(this->_cameras.front().get());
+		for (auto& camera : this->_cameras) {
+			camera->initialize();
+		}
+
+		rawrbox::MAIN_CAMERA->upload();
+		// -----------------
+
+		// Bind signatures ---
+		rawrbox::BindlessManager::bindSignatures();
+		// -------
 
 		// Init default fonts ------
 		this->_logger->info("Loading default fonts");
@@ -519,6 +519,7 @@ namespace rawrbox {
 
 		// Pipelines still compiling, show intros only ---
 		if (rawrbox::PipelineUtils::isCompiling()) {
+			rawrbox::MAIN_CAMERA->updateStatic();
 			rawrbox::MAIN_CAMERA->updateBuffer();
 			this->_context->CommitShaderResources(rawrbox::BindlessManager::signatureBind, Diligent::RESOURCE_STATE_TRANSITION_MODE_VERIFY);
 
@@ -547,7 +548,8 @@ namespace rawrbox {
 			if (!camera->isEnabled()) continue;
 			this->_passCamera = camera.get();
 
-			// Update camera buffer --
+			// Update camera buffers --
+			camera->updateStatic();
 			camera->updateBuffer();
 			// -----------
 
@@ -584,7 +586,12 @@ namespace rawrbox {
 		this->_passCamera = nullptr;
 
 		// Render main camera ----
+		const auto present = rawrbox::MAIN_CAMERA->getPresentRect();
+		Diligent::Viewport viewport = {present.pos.x, present.pos.y, present.size.x, present.size.y};
+
+		this->_context->SetViewports(1, &viewport, this->_size.x, this->_size.y);
 		rawrbox::RenderUtils::renderQUAD(*rawrbox::MAIN_CAMERA->getRenderTarget());
+		this->_context->SetViewports(1, nullptr, 0, 0);
 		// ------------------
 
 		// Perform overlay, only MAIN camera does it --
@@ -788,6 +795,15 @@ namespace rawrbox {
 		// --------------------
 	}
 
+	void RendererBase::resizeCamera(const rawrbox::CameraBase& camera) {
+		if (&camera == rawrbox::MAIN_CAMERA && this->_occlusion != nullptr) this->_occlusion->resize(camera.getRenderTarget()->getSize());
+
+		for (auto& plugin : this->_renderPlugins) {
+			if (plugin.second == nullptr) continue;
+			plugin.second->resizeCamera(camera);
+		}
+	}
+
 	rawrbox::CameraBase* RendererBase::getActiveCamera() const { return rawrbox::MAIN_CAMERA; }
 	rawrbox::CameraBase* RendererBase::getPassCamera() const { return this->_passCamera != nullptr ? this->_passCamera : rawrbox::MAIN_CAMERA; }
 
@@ -837,12 +853,12 @@ namespace rawrbox {
 		this->_transparent = transparent;
 	}
 
-	void RendererBase::gpuPick(const rawrbox::Vector2i& pos, const std::function<void(uint32_t)>& callback) {
+	void RendererBase::gpuPick(const rawrbox::Vector2i& windowPos, const std::function<void(uint32_t)>& callback) {
 		if (rawrbox::MAIN_CAMERA == nullptr) RAWRBOX_CRITICAL("Main camera not initialized");
 		if (callback == nullptr) RAWRBOX_CRITICAL("Invalid callback");
 
-		auto size = this->_size.cast<int>();
-		if (pos.x < 0 || pos.y < 0 || pos.x >= size.x || pos.y >= size.y) RAWRBOX_CRITICAL("Outside of window range");
+		const auto max = MAIN_CAMERA->getRenderTarget()->getSize().cast<int>() - static_cast<int>(RB_RENDER_GPU_PICK_SAMPLE_SIZE);
+		const auto pos = MAIN_CAMERA->windowToTarget(windowPos.cast<float>()).cast<int>().clamp({}, max);
 
 		Diligent::Box MapRegion;
 		MapRegion.MinX = pos.x;
@@ -879,7 +895,7 @@ namespace rawrbox {
 					}
 				}
 
-				callback(id);
+				callback(id >> 8U);
 			});
 		});
 	}

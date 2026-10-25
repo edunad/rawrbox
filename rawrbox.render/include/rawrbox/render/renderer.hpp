@@ -194,6 +194,7 @@ namespace rawrbox {
 		}
 
 		virtual void setActiveCamera(rawrbox::CameraBase* camera) const;
+		virtual void resizeCamera(const rawrbox::CameraBase& camera);
 		[[nodiscard]] virtual rawrbox::CameraBase* getActiveCamera() const;
 		[[nodiscard]] virtual rawrbox::CameraBase* getPassCamera() const;
 
@@ -227,8 +228,8 @@ namespace rawrbox {
 
 		[[nodiscard]] virtual bool isTransparent() const;
 		virtual void setTransparent(bool transparent);
-
-		virtual void gpuPick(const rawrbox::Vector2i& pos, const std::function<void(uint32_t)>& callback);
+		
+		virtual void gpuPick(const rawrbox::Vector2i& windowPos, const std::function<void(uint32_t)>& callback);
 		//  ------
 	};
 } // namespace rawrbox

@@ -1,4 +1,5 @@
 #pragma once
+#include <rawrbox/math/aabb.hpp>
 #include <rawrbox/math/matrix4x4.hpp>
 #include <rawrbox/math/vector2.hpp>
 #include <rawrbox/math/vector3.hpp>
@@ -77,6 +78,11 @@ namespace rawrbox {
 		std::unique_ptr<rawrbox::TextureRender> _renderTarget = nullptr;
 		// --------------------------
 
+		// PRESENT ----
+		rawrbox::Vector2i _presentOffset = {};
+		uint32_t _presentScale = 0; // 0 = stretched over the window
+		// -----------
+
 		float _z_near = 0.01F;
 		float _z_far = 100.F;
 
@@ -93,6 +99,8 @@ namespace rawrbox {
 
 		virtual void updateMtx();
 		virtual rawrbox::CameraStaticUniforms getStaticData();
+
+		static rawrbox::CameraStaticUniforms _uploadedStatic;
 
 	public:
 		static Diligent::RefCntAutoPtr<Diligent::IBuffer> staticUniforms;
@@ -148,9 +156,19 @@ namespace rawrbox {
 		virtual void begin();
 		virtual void end();
 
+		virtual void resize(const rawrbox::Vector2u& size);
+
 		[[nodiscard]] virtual Diligent::ITextureView* getDepth() const;
 		[[nodiscard]] virtual Diligent::ITextureView* getColor(bool rt = false) const;
 		[[nodiscard]] virtual rawrbox::TextureRender* getRenderTarget() const;
+		// ------------
+
+		// PRESENT ----
+		virtual void setPresent(const rawrbox::Vector2i& offset, uint32_t scale);
+		[[nodiscard]] virtual rawrbox::AABBf getPresentRect() const;
+
+		[[nodiscard]] virtual rawrbox::Vector2f windowToTarget(const rawrbox::Vector2f& windowPos) const;
+		[[nodiscard]] virtual rawrbox::Vector2f targetToWindow(const rawrbox::Vector2f& targetPos) const;
 		// ------------
 
 		virtual void initialize();

@@ -263,7 +263,7 @@ namespace rawrbox {
 		}
 
 		// Ok, now do normal
-		registerTexture(dynamic_cast<rawrbox::TextureBase&>(texture)); // Normal register, horrible i know.
+		registerTexture(static_cast<rawrbox::TextureBase&>(texture));
 	}
 
 	void BindlessManager::registerTexture(rawrbox::TextureBase& texture) {
@@ -304,6 +304,20 @@ namespace rawrbox {
 		}
 
 		BindlessManager::_logger->debug("Updated bindless '{}' texture handle on slot '{}'", isVertex ? "vertex" : "pixel", fmt::styled(std::to_string(id), fmt::fg(fmt::color::violet)));
+	}
+
+	void BindlessManager::updateTextureHandle(rawrbox::TextureRender& texture) {
+		auto* depth = texture.getDepth();
+		const auto depthId = texture.getDepthTextureID();
+
+		if (depth != nullptr && depthId != 0) {
+			if (depthId >= _textureHandles.size()) RAWRBOX_CRITICAL("Depth index '{}' not found!", depthId);
+
+			_textureHandles[depthId] = depth;
+			_updatePixelSignature = true;
+		}
+
+		updateTextureHandle(static_cast<rawrbox::TextureBase&>(texture));
 	}
 
 	void BindlessManager::unregisterTexture(rawrbox::TextureBase& texture) {

@@ -27,17 +27,6 @@ namespace rawrbox {
 	void PostProcessFog::init() {
 		rawrbox::PostProcessBase::init();
 
-		rawrbox::PipeSettings settings;
-		settings.depth = Diligent::COMPARISON_FUNC_UNKNOWN;
-		settings.depthWrite = false;
-		settings.depthFormat = false;
-		settings.blending = {.src = Diligent::BLEND_FACTOR_UNDEFINED, .dest = Diligent::BLEND_FACTOR_UNDEFINED};
-		settings.cull = Diligent::CULL_MODE_NONE;
-		settings.topology = Diligent::PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP;
-		settings.pVS = "quad/quad.vsh";
-		settings.pPS = "post_process/fog.psh";
-		settings.signatures = {rawrbox::BindlessManager::signature};
-
-		this->_pipeline = rawrbox::PipelineUtils::createPipeline("PostProcess::Fog", settings);
+		this->_pipeline = createPipeline("PostProcess::Fog", "post_process/fog.psh");
 	}
 } // namespace rawrbox

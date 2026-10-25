@@ -15,6 +15,8 @@ namespace rawrbox {
 
 	class Engine {
 	protected:
+		static constexpr float MAX_FRAME_TIME = 0.25F; // Prevent infinite death loop
+
 		std::atomic<rawrbox::ENGINE_THREADS> _shutdown = ENGINE_THREADS::NONE;
 		float _deltaTimeAccumulator = 0;
 

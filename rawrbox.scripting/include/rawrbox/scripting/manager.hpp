@@ -9,17 +9,22 @@
 #include <rawrbox/utils/logger.hpp>
 #include <rawrbox/utils/string.hpp>
 
+#include <expected>
+#include <string>
+#include <vector>
+
 namespace rawrbox {
 	struct ScriptingSettings {
 		uint32_t hotReloadMs = 0; // 0 = disabled
 		bool typeCheck = false;
+		bool safeEnv = true; // Luau safeenv
 
 		std::vector<std::filesystem::path> definitions = {}; // Luau definition files, aka .d.lua
 	};
 
 	class SCRIPTING {
 	protected:
-		static std::unordered_map<std::string, std::unique_ptr<rawrbox::Mod>> _mods;
+		static std::vector<std::unique_ptr<rawrbox::Mod>> _mods;
 		static std::unordered_map<std::string, std::vector<std::filesystem::path>> _loadedLuaFiles;
 
 		static std::vector<std::unique_ptr<rawrbox::ScriptingPlugin>> _plugins;
@@ -32,6 +37,7 @@ namespace rawrbox {
 
 		static rawrbox::Console* _console;
 		static bool _hotReloadEnabled;
+		static bool _safeEnv;
 
 		// LOAD ----
 		static void loadLibraries(rawrbox::Mod& mod);
@@ -42,6 +48,7 @@ namespace rawrbox {
 
 		// MOD LOAD ---
 		static void loadI18N(const rawrbox::Mod& mod);
+		[[nodiscard]] static bool rankBefore(const rawrbox::Mod& a, const rawrbox::Mod& b);
 		// ------------
 
 		// HOT RELOAD ---
@@ -76,17 +83,17 @@ namespace rawrbox {
 		template <typename... CallbackArgs>
 		static void call(const std::string& hookName, CallbackArgs&&... args) {
 			for (auto& mod : _mods) {
-				mod.second->call(hookName, std::forward<CallbackArgs>(args)...);
+				mod->call(hookName, args...);
 			}
 		}
 
 		static void init(const rawrbox::ScriptingSettings& settings = {});
 
 		// LOADING ----
-		static std::unordered_map<std::filesystem::path, rawrbox::Mod*> loadMods(const std::filesystem::path& rootFolder);
+		static std::vector<rawrbox::Mod*> loadMods(const std::filesystem::path& rootFolder);
 		static rawrbox::Mod* loadMod(const std::string& id, const std::filesystem::path& modFolder);
 		static void registerLoadedFile(const std::string& modId, const std::filesystem::path& filePath);
-		[[nodiscard]] static rawrbox::ModMetadata loadMetadata(const std::filesystem::path& modFolder);
+		[[nodiscard]] static std::expected<rawrbox::ModMetadata, std::string> loadMetadata(const std::filesystem::path& modFolder);
 
 		static bool unloadMod(const std::filesystem::path& modFolder);
 		static bool unloadMod(const std::string& modId);
@@ -101,7 +108,7 @@ namespace rawrbox {
 		[[nodiscard]] static rawrbox::Mod* getMod(lua_State* L);
 		[[nodiscard]] static bool hasMod(const std::string& id);
 
-		[[nodiscard]] static const std::unordered_map<std::string, std::unique_ptr<rawrbox::Mod>>& getMods();
+		[[nodiscard]] static const std::vector<std::unique_ptr<rawrbox::Mod>>& getMods();
 		[[nodiscard]] static std::vector<std::string> getModsIds();
 		[[nodiscard]] static bool hotReloadEnabled();
 		[[nodiscard]] static bool isLuaFileMounted(const std::string& path);

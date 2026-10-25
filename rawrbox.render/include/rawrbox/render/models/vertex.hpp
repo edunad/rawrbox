@@ -31,7 +31,7 @@ namespace rawrbox {
 		static std::vector<Diligent::LayoutElement> vLayout(bool instanced = false) {
 			std::vector<Diligent::LayoutElement> v = {
 			    // Attribute 0 - Position (xyz) + Slice (w)
-			    Diligent::LayoutElement{0, 0, 4, Diligent::VT_FLOAT32, false}};
+			    Diligent::LayoutElement{0, 0, 4, Diligent::VT_FLOAT32, false, Diligent::LAYOUT_ELEMENT_AUTO_OFFSET, sizeof(VertexData)}};
 
 			if (instanced) {
 				v.emplace_back(1, 1, 1, Diligent::VT_UINT32, false, Diligent::INPUT_ELEMENT_FREQUENCY_PER_INSTANCE); // Instance index
@@ -58,9 +58,9 @@ namespace rawrbox {
 		static std::vector<Diligent::LayoutElement> vLayout(bool instanced = false) {
 			std::vector<Diligent::LayoutElement> v = {
 			    // Attribute 0 - Position (xyz) + Slice (w)
-			    Diligent::LayoutElement{0, 0, 4, Diligent::VT_FLOAT32, false},
+			    Diligent::LayoutElement{0, 0, 4, Diligent::VT_FLOAT32, false, Diligent::LAYOUT_ELEMENT_AUTO_OFFSET, sizeof(VertexUVData)},
 			    // Attribute 1 - UV
-			    Diligent::LayoutElement{1, 0, 2, Diligent::VT_FLOAT32, false}};
+			    Diligent::LayoutElement{1, 0, 2, Diligent::VT_FLOAT32, false, Diligent::LAYOUT_ELEMENT_AUTO_OFFSET, sizeof(VertexUVData)}};
 
 			if (instanced) {
 				v.emplace_back(2, 1, 1, Diligent::VT_UINT32, false, Diligent::INPUT_ELEMENT_FREQUENCY_PER_INSTANCE); // Instance index
@@ -86,13 +86,13 @@ namespace rawrbox {
 		static std::vector<Diligent::LayoutElement> vLayout(bool instanced = false) {
 			std::vector<Diligent::LayoutElement> v = {
 			    // Attribute 0 - Position (xyz) + Slice (w)
-			    Diligent::LayoutElement{0, 0, 4, Diligent::VT_FLOAT32, false},
+			    Diligent::LayoutElement{0, 0, 4, Diligent::VT_FLOAT32, false, Diligent::LAYOUT_ELEMENT_AUTO_OFFSET, sizeof(VertexNormData)},
 			    // Attribute 1 - UV
-			    Diligent::LayoutElement{1, 0, 2, Diligent::VT_FLOAT32, false},
+			    Diligent::LayoutElement{1, 0, 2, Diligent::VT_FLOAT32, false, Diligent::LAYOUT_ELEMENT_AUTO_OFFSET, sizeof(VertexNormData)},
 			    // Attribute 2 - Normal
-			    Diligent::LayoutElement{2, 0, 2, Diligent::VT_UINT16, true},
+			    Diligent::LayoutElement{2, 0, 2, Diligent::VT_UINT16, true, Diligent::LAYOUT_ELEMENT_AUTO_OFFSET, sizeof(VertexNormData)},
 			    // Attribute 3 - Tangent
-			    Diligent::LayoutElement{3, 0, 2, Diligent::VT_UINT16, false},
+			    Diligent::LayoutElement{3, 0, 2, Diligent::VT_UINT16, false, Diligent::LAYOUT_ELEMENT_AUTO_OFFSET, sizeof(VertexNormData)},
 			};
 
 			if (instanced) {
@@ -120,13 +120,13 @@ namespace rawrbox {
 		static std::vector<Diligent::LayoutElement> vLayout(bool instanced = false) {
 			std::vector<Diligent::LayoutElement> v = {
 			    // Attribute 0 - Position (xyz) + Slice (w)
-			    Diligent::LayoutElement{0, 0, 4, Diligent::VT_FLOAT32, false},
+			    Diligent::LayoutElement{0, 0, 4, Diligent::VT_FLOAT32, false, Diligent::LAYOUT_ELEMENT_AUTO_OFFSET, sizeof(VertexBoneData)},
 			    // Attribute 1 - UV
-			    Diligent::LayoutElement{1, 0, 2, Diligent::VT_FLOAT32, false},
+			    Diligent::LayoutElement{1, 0, 2, Diligent::VT_FLOAT32, false, Diligent::LAYOUT_ELEMENT_AUTO_OFFSET, sizeof(VertexBoneData)},
 			    // Attribute 2 - BONE-INDICES
-			    Diligent::LayoutElement{2, 0, RB_MAX_BONES_PER_VERTEX, Diligent::VT_UINT8, false},
+			    Diligent::LayoutElement{2, 0, RB_MAX_BONES_PER_VERTEX, Diligent::VT_UINT8, false, Diligent::LAYOUT_ELEMENT_AUTO_OFFSET, sizeof(VertexBoneData)},
 			    // Attribute 3 - BONE-WEIGHTS
-			    Diligent::LayoutElement{3, 0, RB_MAX_BONES_PER_VERTEX, Diligent::VT_UINT16, true}};
+			    Diligent::LayoutElement{3, 0, RB_MAX_BONES_PER_VERTEX, Diligent::VT_UINT16, true, Diligent::LAYOUT_ELEMENT_AUTO_OFFSET, sizeof(VertexBoneData)}};
 
 			if (instanced) {
 				v.emplace_back(4, 1, 1, Diligent::VT_UINT32, false, Diligent::INPUT_ELEMENT_FREQUENCY_PER_INSTANCE); // Instance index
@@ -155,17 +155,17 @@ namespace rawrbox {
 		static std::vector<Diligent::LayoutElement> vLayout(bool instanced = false) {
 			std::vector<Diligent::LayoutElement> v = {
 			    // Attribute 0 - Position (xyz) + Slice (w)
-			    Diligent::LayoutElement{0, 0, 4, Diligent::VT_FLOAT32, false},
+			    Diligent::LayoutElement{0, 0, 4, Diligent::VT_FLOAT32, false, Diligent::LAYOUT_ELEMENT_AUTO_OFFSET, sizeof(VertexNormBoneData)},
 			    // Attribute 1 - UV
-			    Diligent::LayoutElement{1, 0, 2, Diligent::VT_FLOAT32, false},
+			    Diligent::LayoutElement{1, 0, 2, Diligent::VT_FLOAT32, false, Diligent::LAYOUT_ELEMENT_AUTO_OFFSET, sizeof(VertexNormBoneData)},
 			    // Attribute 2 - Normal
-			    Diligent::LayoutElement{2, 0, 2, Diligent::VT_UINT16, true},
+			    Diligent::LayoutElement{2, 0, 2, Diligent::VT_UINT16, true, Diligent::LAYOUT_ELEMENT_AUTO_OFFSET, sizeof(VertexNormBoneData)},
 			    // Attribute 3 - Tangent
-			    Diligent::LayoutElement{3, 0, 2, Diligent::VT_UINT16, false},
+			    Diligent::LayoutElement{3, 0, 2, Diligent::VT_UINT16, false, Diligent::LAYOUT_ELEMENT_AUTO_OFFSET, sizeof(VertexNormBoneData)},
 			    // Attribute 4 - BONE-INDICES
-			    Diligent::LayoutElement{4, 0, RB_MAX_BONES_PER_VERTEX, Diligent::VT_UINT8, false},
+			    Diligent::LayoutElement{4, 0, RB_MAX_BONES_PER_VERTEX, Diligent::VT_UINT8, false, Diligent::LAYOUT_ELEMENT_AUTO_OFFSET, sizeof(VertexNormBoneData)},
 			    // Attribute 5 - BONE-WEIGHTS
-			    Diligent::LayoutElement{5, 0, RB_MAX_BONES_PER_VERTEX, Diligent::VT_UINT16, true}};
+			    Diligent::LayoutElement{5, 0, RB_MAX_BONES_PER_VERTEX, Diligent::VT_UINT16, true, Diligent::LAYOUT_ELEMENT_AUTO_OFFSET, sizeof(VertexNormBoneData)}};
 
 			if (instanced) {
 				v.emplace_back(6, 1, 1, Diligent::VT_UINT32, false, Diligent::INPUT_ELEMENT_FREQUENCY_PER_INSTANCE); // Instance index

@@ -1,5 +1,3 @@
-#include "include/camera.fxh"
-
 struct VSInput {
 	uint TextureID : ATTRIB0;
 	float2 Pos : ATTRIB1;
@@ -18,7 +16,7 @@ struct PSInput {
 };
 
 void main(in VSInput VSIn, out PSInput PSIn) {
-	PSIn.Pos = float4((VSIn.Pos.x / ScreenSize.x * 2.0 - 1.0), (VSIn.Pos.y / ScreenSize.y * 2.0 - 1.0) * -1.0, 0.0, 1.0);
+	PSIn.Pos = float4(VSIn.Pos, 0.0, 1.0); // NDC
 	PSIn.UV = VSIn.UV;
 	PSIn.Color = VSIn.Color;
 	PSIn.TextureID = VSIn.TextureID;

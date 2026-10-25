@@ -51,7 +51,7 @@ namespace rawrbox {
 			auto* displacement = mesh.getDisplacementTexture();
 
 			return {
-			    {mesh.color.pack(), mesh.getSlice() + (texture == nullptr ? 0U : texture->getSlice()), mesh.getID(), mesh.data.billboard},
+			    {mesh.color.pack(), mesh.getSlice() + (texture == nullptr ? 0U : texture->getSlice()), mesh.meshID, mesh.data.billboard},
 			    {mesh.data.vertexSnapPower, displacement != nullptr ? static_cast<float>(displacement->getTextureID()) : 0.F, mesh.data.displacementPower},
 			    rawrbox::Matrix4x4::mtxTranspose(world)};
 		}

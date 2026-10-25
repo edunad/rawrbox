@@ -96,6 +96,7 @@ namespace rawrbox {
 		static void unregisterTexture(rawrbox::TextureBase& texture);
 
 		static void updateTextureHandle(rawrbox::TextureBase& texture);
+		static void updateTextureHandle(rawrbox::TextureRender& texture);
 		// ----------------
 	};
 } // namespace rawrbox

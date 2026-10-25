@@ -262,15 +262,11 @@ namespace rawrbox {
 		this->mtx[0] = 2.0F / (right - left);
 		this->mtx[5] = 2.0F / (top - bottom);
 
-		if (Matrix4x4::MTX_RIGHT_HANDED) {
-			this->mtx[10] = -2.0F / (far - near);
-		} else {
-			this->mtx[10] = 2.0F / (far - near);
-		}
+		this->mtx[10] = (Matrix4x4::MTX_RIGHT_HANDED ? -1.0F : 1.0F) / (far - near);
 
 		this->mtx[12] = -(right + left) / (right - left);
 		this->mtx[13] = -(top + bottom) / (top - bottom);
-		this->mtx[14] = -(far + near) / (far - near);
+		this->mtx[14] = -near / (far - near);
 
 		return *this;
 	}

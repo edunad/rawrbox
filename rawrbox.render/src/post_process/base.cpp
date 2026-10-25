@@ -3,13 +3,31 @@
 #include <rawrbox/render/post_process/base.hpp>
 #include <rawrbox/render/static.hpp>
 #include <rawrbox/render/utils/barrier.hpp>
+#include <rawrbox/render/utils/pipeline.hpp>
 
 namespace rawrbox {
 	void PostProcessBase::init() {
-		auto* plugin = rawrbox::RENDERER->getPlugin<rawrbox::PostProcessPlugin>("PostProcess");
+		const auto* plugin = rawrbox::RENDERER->getPlugin<rawrbox::PostProcessPlugin>("PostProcess");
 		if (plugin == nullptr) RAWRBOX_CRITICAL("Post process plugin requires the 'PostProcess' renderer plugin!");
 
 		this->_buffer = plugin->getBuffer();
+	}
+
+	Diligent::IPipelineState* PostProcessBase::createPipeline(const std::string& id, const std::string& pixelShader, const Diligent::ShaderMacroHelper& macros) {
+		rawrbox::PipeSettings settings;
+		
+		settings.depth = Diligent::COMPARISON_FUNC_UNKNOWN;
+		settings.depthWrite = false;
+		settings.depthFormat = false;
+		settings.blending = {.src = Diligent::BLEND_FACTOR_UNDEFINED, .dest = Diligent::BLEND_FACTOR_UNDEFINED};
+		settings.cull = Diligent::CULL_MODE_NONE;
+		settings.topology = Diligent::PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP;
+		settings.pVS = "quad/quad.vsh";
+		settings.pPS = pixelShader;
+		settings.macros = macros;
+		settings.signatures = {rawrbox::BindlessManager::signature};
+
+		return rawrbox::PipelineUtils::createPipeline(id, settings);
 	}
 
 	void PostProcessBase::draw(Diligent::IPipelineState* pipeline, const rawrbox::TextureRender& target, const rawrbox::Vector4u& textureIDs) {

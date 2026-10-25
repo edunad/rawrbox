@@ -3,6 +3,7 @@
 #include <rawrbox/render/materials/instanced.hpp>
 #include <rawrbox/render/models/instance.hpp>
 #include <rawrbox/render/models/model.hpp>
+#include <rawrbox/utils/dirty_ranges.hpp>
 
 #include <DynamicBuffer.hpp>
 
@@ -22,6 +23,7 @@ namespace rawrbox {
 		Diligent::RefCntAutoPtr<Diligent::IBuffer> _shadowIndices;
 
 		rawrbox::BBOX _instanceBounds = {};
+		rawrbox::DirtyRanges _dirtyInstances = {};
 		uint32_t _capacity = 0;
 
 		void updateBuffers() override {
@@ -175,6 +177,11 @@ namespace rawrbox {
 			this->_instances.erase(this->_instances.begin() + i);
 		}
 
+		virtual void updateRange(size_t first, size_t count = 1) {
+			if (first + count > this->_instances.size()) RAWRBOX_CRITICAL("Instance range out of bounds");
+			this->_dirtyInstances.push(first * sizeof(rawrbox::Instance), count * sizeof(rawrbox::Instance));
+		}
+
 		[[nodiscard]] rawrbox::Instance& getInstance(size_t i = 0) {
 			if (i >= this->_instances.size()) RAWRBOX_CRITICAL("Failed to find instance");
 			return this->_instances[i];
@@ -241,7 +248,10 @@ namespace rawrbox {
 			//  ---------
 
 			const bool full = total == this->_instances.size();
-			if (full) this->_resetVIS = true;
+			if (full) {
+				this->_resetVIS = true;
+				this->_dirtyInstances.clear();
+			}
 
 			// SHADOW BOUNDS ---
 			const auto& local = this->getCachedVertexBounds();
@@ -325,6 +335,23 @@ namespace rawrbox {
 
 		void draw() override {
 			if (!this->isUploaded()) RAWRBOX_CRITICAL("Failed to render model, vertex / index buffer is not uploaded");
+
+			// PENDING INSTANCES ---
+			if (!this->_dirtyInstances.empty()) {
+				const auto ranges = this->_dirtyInstances.merge(this->_instances.size() * sizeof(rawrbox::Instance));
+
+				if (this->_dirtyInstances.full()) {
+					this->updateInstances();
+				} else {
+					for (const auto& range : ranges) {
+						this->updateInstances(range.offset / sizeof(rawrbox::Instance), range.size / sizeof(rawrbox::Instance));
+					}
+				}
+
+				this->_dirtyInstances.clear();
+			}
+			// -----------
+
 			if (this->_instances.empty()) return;
 
 			// OCCLUSION ---

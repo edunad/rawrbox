@@ -18,14 +18,15 @@
 #include <rawrbox/scripting/wrappers/timer.hpp>
 #include <rawrbox/utils/i18n.hpp>
 #include <rawrbox/utils/logger.hpp>
-#include <rawrbox/utils/path.hpp>
 #include <rawrbox/utils/time.hpp>
+#include <rawrbox/utils/vfs.hpp>
 
 #include <fmt/args.h>
 #include <fmt/format.h>
 #include <fmt/ranges.h>
 
 #include <algorithm>
+#include <ranges>
 #include <vector>
 
 /*⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
@@ -63,7 +64,7 @@
 
 namespace rawrbox {
 	// PROTECTED ----
-	std::unordered_map<std::string, std::unique_ptr<rawrbox::Mod>> SCRIPTING::_mods = {};
+	std::vector<std::unique_ptr<rawrbox::Mod>> SCRIPTING::_mods = {};
 	std::unordered_map<std::string, std::vector<std::filesystem::path>> SCRIPTING::_loadedLuaFiles = {};
 
 	std::unique_ptr<rawrbox::FileWatcher> SCRIPTING::_watcher = nullptr;
@@ -76,6 +77,7 @@ namespace rawrbox {
 
 	rawrbox::Console* SCRIPTING::_console = nullptr;
 	bool SCRIPTING::_hotReloadEnabled = false;
+	bool SCRIPTING::_safeEnv = true;
 	// --------------
 
 	// PUBLIC ----
@@ -214,13 +216,13 @@ namespace rawrbox {
 		luabridge::getGlobalNamespace(L)
 		    .beginNamespace("mod", {})
 		    .addFunction("exists", [](const std::string& id) {
-			    return _mods.find(id) != _mods.end();
+			    return hasMod(id);
 		    })
 		    .addFunction("get", [](const std::string& id) {
-			    auto fnd = _mods.find(id);
-			    if (fnd == _mods.end()) throw std::runtime_error(fmt::format("Mod {} not found", id));
+			    auto* mod = getMod(id);
+			    if (mod == nullptr) throw std::runtime_error(fmt::format("Mod {} not found", id));
 
-			    return rawrbox::MODWrapper(fnd->second.get());
+			    return rawrbox::MODWrapper(mod);
 		    })
 		    .endNamespace();
 		// ----------
@@ -274,8 +276,8 @@ namespace rawrbox {
 
 	// MOD LOAD ---
 	void SCRIPTING::loadI18N(const rawrbox::Mod& mod) {
-		auto i18nPath = mod.getFolder() / "i18n";
-		if (!std::filesystem::exists(i18nPath)) return;
+		const auto i18nPath = fmt::format("{}/i18n", mod.getFolder().generic_string());
+		if (!rawrbox::VFS::contains(i18nPath)) return;
 
 		rawrbox::I18N::loadLanguagePack(mod.getID(), i18nPath);
 	}
@@ -314,8 +316,8 @@ namespace rawrbox {
 			const auto fnd = std::ranges::find(pt.second, filePath) != pt.second.end();
 			if (!fnd) continue;
 
-			const auto md = _mods.find(pt.first);
-			if (md == _mods.end()) return;
+			auto* mod = getMod(pt.first);
+			if (mod == nullptr) return;
 
 			_logger->warn("Hot-reloading lua file '{}'", filePath.generic_string());
 			if (_checker != nullptr && !_checker->check(filePath).empty()) {
@@ -324,16 +326,16 @@ namespace rawrbox {
 			}
 
 			// Cleanup and load -----
-			md->second->gc(); // Cleanup
+			mod->gc(); // Cleanup
 
 			try {
-				loadFile(*md->second, md->second->getEnvironment(), filePath);
+				loadFile(*mod, mod->getEnvironment(), filePath);
 			} catch (const std::exception& err) {
 				_logger->error("{}", err.what());
 			}
 			// ---------------
 
-			onModHotReload(*md->second);
+			onModHotReload(*mod);
 			break;
 		};
 	}
@@ -341,6 +343,7 @@ namespace rawrbox {
 	// ----------
 
 	void SCRIPTING::init(const rawrbox::ScriptingSettings& settings) {
+		_safeEnv = settings.safeEnv;
 		_hotReloadEnabled = settings.hotReloadMs > 0;
 		if (_hotReloadEnabled) {
 			_logger->info("Enabled lua hot-reloading\n  └── Delay: {}ms", fmt::styled(settings.hotReloadMs, fmt::fg(fmt::color::gold)));
@@ -370,34 +373,45 @@ namespace rawrbox {
 	}
 
 	// LOADING ----
-	std::unordered_map<std::filesystem::path, rawrbox::Mod*> SCRIPTING::loadMods(const std::filesystem::path& rootFolder) { // Load mods
+	std::vector<rawrbox::Mod*> SCRIPTING::loadMods(const std::filesystem::path& rootFolder) { // Load mods
 		if (!std::filesystem::exists(rootFolder)) RAWRBOX_CRITICAL("Failed to locate root folder '{}'", rootFolder.generic_string());
 
-		// LOAD ORDER (higher priority first) ---
+		// LOAD ORDER = rank order ---
 		std::vector<std::pair<short, std::filesystem::path>> folders = {};
 		for (const auto& p : std::filesystem::directory_iterator(rootFolder)) {
 			if (!p.is_directory()) continue;
-			folders.emplace_back(loadMetadata(p.path()).priority, p.path());
+
+			const auto metadata = loadMetadata(p.path());
+			folders.emplace_back(metadata ? metadata->priority : 0, p.path()); // Broken metadata is reported by loadMod
 		}
 
-		std::ranges::stable_sort(folders, std::ranges::greater{}, &std::pair<short, std::filesystem::path>::first);
+		std::ranges::sort(folders, [](const auto& a, const auto& b) {
+			if (a.first != b.first) return a.first > b.first;
+			return a.second.filename() < b.second.filename();
+		});
 		// ------------
 
-		std::unordered_map<std::filesystem::path, rawrbox::Mod*> success = {};
+		std::vector<rawrbox::Mod*> loaded = {};
 		for (const auto& folder : folders) {
 			auto* mod = loadMod(folder.second.filename().generic_string(), folder.second);
-			if (mod != nullptr) success[folder.second] = mod;
+			if (mod != nullptr) loaded.push_back(mod);
 		}
 
-		return success;
+		return loaded;
 	}
 
 	rawrbox::Mod* SCRIPTING::loadMod(const std::string& id, const std::filesystem::path& modFolder) {
 		if (id.empty()) RAWRBOX_CRITICAL("Mod ID cannot be empty");
 		if (!std::filesystem::exists(modFolder)) RAWRBOX_CRITICAL("Failed to locate mod folder '{}'", modFolder.generic_string());
 
-		if (_mods.contains(id)) {
+		if (hasMod(id)) {
 			_logger->warn("Mod {} already loaded! Mod name conflict?", id);
+			return nullptr;
+		}
+
+		auto metadata = loadMetadata(modFolder);
+		if (!metadata) {
+			_logger->error("Mod '{}' failed to load\n  └── {}", id, metadata.error());
 			return nullptr;
 		}
 
@@ -406,7 +420,7 @@ namespace rawrbox {
 			return nullptr;
 		}
 
-		auto mod = std::make_unique<rawrbox::Mod>(id, modFolder, loadMetadata(modFolder));
+		auto mod = std::make_unique<rawrbox::Mod>(id, modFolder, std::move(*metadata));
 
 		// Prepare env ----------
 		loadLibraries(*mod);
@@ -418,24 +432,26 @@ namespace rawrbox {
 
 		try {
 			mod->init(); // Sandbox env
-			mod->load();
+			if (!_safeEnv) lua_setsafeenv(mod->getEnvironment(), LUA_GLOBALSINDEX, 0);
 
+			mod->load();
 			mod->call("onInit");
 
 			_logger->info("Mod '{}' loaded", fmt::styled(id, fmt::fg(fmt::color::coral)));
 			registerLoadedFile(mod->getID(), mod->getEntryFilePath()); // Register file for hot-reloading
-		} catch (const std::runtime_error& err) {
+		} catch (const std::exception& err) {
 			_logger->error("{}", err.what());
 			return nullptr;
 		}
 
-		rawrbox::Mod* modPtr = mod.get();
-		_mods.emplace(id, std::move(mod));
+		auto* modPtr = mod.get();
+		const auto rank = std::ranges::upper_bound(_mods, *modPtr, rankBefore, [](const auto& loaded) -> const rawrbox::Mod& { return *loaded; });
+		_mods.insert(rank, std::move(mod));
 
 		return modPtr;
 	}
 
-	rawrbox::ModMetadata SCRIPTING::loadMetadata(const std::filesystem::path& modFolder) {
+	std::expected<rawrbox::ModMetadata, std::string> SCRIPTING::loadMetadata(const std::filesystem::path& modFolder) {
 		const auto configPath = fmt::format("{}/mod.json", modFolder.generic_string());
 
 		rawrbox::ModMetadata metadata = {};
@@ -443,9 +459,14 @@ namespace rawrbox {
 
 		std::string buffer = {};
 		const auto meta = glz::read_file_json<glz::opts{.comments = 1U, .error_on_unknown_keys = 0U, .skip_null_members = 1U, .error_on_missing_keys = 0U}>(metadata, configPath, buffer);
-		if (meta) RAWRBOX_CRITICAL("Failed to load '{}' ──> {}", configPath, glz::format_error(meta, buffer));
+		if (meta) return std::unexpected(fmt::format("Failed to load '{}' ──> {}", configPath, glz::format_error(meta, buffer)));
 
 		return metadata;
+	}
+
+	bool SCRIPTING::rankBefore(const rawrbox::Mod& a, const rawrbox::Mod& b) {
+		if (a.getMetadata().priority != b.getMetadata().priority) return a.getMetadata().priority > b.getMetadata().priority;
+		return a.getID() < b.getID();
 	}
 
 	bool SCRIPTING::unloadMod(const std::filesystem::path& modFolder) {
@@ -453,7 +474,10 @@ namespace rawrbox {
 	}
 
 	bool SCRIPTING::unloadMod(const std::string& modId) {
-		const auto fnd = _mods.find(modId);
+		const auto fnd = std::ranges::find(_mods, modId, [](const auto& mod) -> const std::string& {
+			return mod->getID();
+		});
+
 		if (fnd == _mods.end()) return false;
 
 		const auto fndLua = _loadedLuaFiles.find(modId);
@@ -467,10 +491,11 @@ namespace rawrbox {
 			_loadedLuaFiles.erase(fndLua);
 		}
 
-		onModUnload(*fnd->second);
-		rawrbox::Hooks::clear(fnd->second->getEnvironment());
+		auto& mod = **fnd;
+		onModUnload(mod);
+		rawrbox::Hooks::clear(mod.getEnvironment());
 
-		fnd->second->shutdown();
+		mod.shutdown();
 		_mods.erase(fnd);
 
 		_logger->info("Mod '{}' unloaded", fmt::styled(modId, fmt::fg(fmt::color::coral)));
@@ -481,9 +506,10 @@ namespace rawrbox {
 	void SCRIPTING::shutdown() {
 		rawrbox::Hooks::clear();
 
-		// Shutdown mods ---
-		for (const auto& mod : _mods) {
-			mod.second->shutdown();
+		// Shutdown mods, reverse order ---
+		for (auto& mod : std::views::reverse(_mods)) {
+			onModUnload(*mod);
+			mod->shutdown();
 		}
 		// ----------------
 
@@ -500,30 +526,31 @@ namespace rawrbox {
 
 	// UTILS ----
 	bool SCRIPTING::hasMod(const std::string& id) {
-		return _mods.contains(id);
+		return getMod(id) != nullptr;
 	}
 
 	rawrbox::Mod* SCRIPTING::getMod(const std::string& id) {
-		const auto fnd = _mods.find(id);
-		if (fnd == _mods.end()) return nullptr;
+		const auto fnd = std::ranges::find(_mods, id, [](const auto& mod) -> const std::string& {
+			return mod->getID();
+		});
 
-		return fnd->second.get();
+		return fnd == _mods.end() ? nullptr : fnd->get();
 	}
 
 	rawrbox::Mod* SCRIPTING::getMod(lua_State* L) {
 		if (L == nullptr) return nullptr;
 
 		auto* main = lua_mainthread(L);
-		const auto fnd = std::ranges::find_if(_mods, [main](const auto& mod) { return mod.second->getEnvironment() == main; });
-		return fnd == _mods.end() ? nullptr : fnd->second.get();
+		const auto fnd = std::ranges::find_if(_mods, [main](const auto& mod) { return mod->getEnvironment() == main; });
+		return fnd == _mods.end() ? nullptr : fnd->get();
 	}
 
-	const std::unordered_map<std::string, std::unique_ptr<Mod>>& SCRIPTING::getMods() { return _mods; }
+	const std::vector<std::unique_ptr<rawrbox::Mod>>& SCRIPTING::getMods() { return _mods; }
 	std::vector<std::string> SCRIPTING::getModsIds() {
 		std::vector<std::string> modNames = {};
 		modNames.reserve(_mods.size());
 		for (const auto& mod : _mods) {
-			modNames.push_back(mod.second->getID());
+			modNames.push_back(mod->getID());
 		}
 
 		return modNames;
@@ -545,15 +572,15 @@ namespace rawrbox {
 	std::vector<rawrbox::Mod*> SCRIPTING::getModsByWorkshopType(uint32_t type) {
 		std::vector<rawrbox::Mod*> mods = {};
 		for (auto& mod : _mods) {
-			if (mod.second->getWorkshopType() == type) mods.push_back(mod.second.get());
+			if (mod->getWorkshopType() == type) mods.push_back(mod.get());
 		}
 
 		return mods;
 	}
 
 	rawrbox::Mod* SCRIPTING::getModByWorkshopId(uint64_t id) {
-		for (auto& mod : _mods) {
-			if (mod.second->getWorkshopId() == id) return mod.second.get();
+		for (const auto& mod : _mods) {
+			if (mod->getWorkshopId() == id) return mod.get();
 		}
 
 		return nullptr;

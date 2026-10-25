@@ -48,8 +48,11 @@ namespace rawrbox {
 			copy.DstTextureTransitionMode = Diligent::RESOURCE_STATE_TRANSITION_MODE_VERIFY;
 			copy.SrcTextureTransitionMode = Diligent::RESOURCE_STATE_TRANSITION_MODE_VERIFY;
 
-			rawrbox::BarrierUtils::barrier({{copy.pSrcTexture, Diligent::RESOURCE_STATE_UNKNOWN, Diligent::RESOURCE_STATE_COPY_SOURCE, Diligent::STATE_TRANSITION_FLAG_UPDATE_STATE}});
+			const auto state = base->GetState();
+
+			rawrbox::BarrierUtils::barrier({{base, Diligent::RESOURCE_STATE_UNKNOWN, Diligent::RESOURCE_STATE_COPY_SOURCE, Diligent::STATE_TRANSITION_FLAG_UPDATE_STATE}});
 			context->CopyTexture(copy); // This is an async operation, wait for it on the queue
+			if (state != Diligent::RESOURCE_STATE_UNKNOWN) rawrbox::BarrierUtils::barrier({{base, Diligent::RESOURCE_STATE_UNKNOWN, state, Diligent::STATE_TRANSITION_FLAG_UPDATE_STATE}});
 			//   --------------
 
 			this->_copies->Enqueue(context, Diligent::RefCntAutoPtr<Diligent::ITexture>{this->_tex});
@@ -67,10 +70,14 @@ namespace rawrbox {
 
 		Diligent::MappedTextureSubresource MappedSubres;
 		context->MapTextureSubresource(this->_tex, 0, 0, Diligent::MAP_READ, Diligent::MAP_FLAG_DO_NOT_WAIT | Diligent::MAP_FLAG_DISCARD, box, MappedSubres);
-		try { // Slap a try and catch since we need to ensure that the resource is unmapped
+
+		try {
 			callback(MappedSubres.pData == nullptr ? nullptr : std::bit_cast<uint8_t*>(MappedSubres.pData), MappedSubres.Stride);
 		} catch (...) {
+			context->UnmapTextureSubresource(this->_tex, 0, 0);
+			throw;
 		}
+
 		context->UnmapTextureSubresource(this->_tex, 0, 0);
 	}
 

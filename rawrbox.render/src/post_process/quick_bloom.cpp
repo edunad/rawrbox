@@ -34,26 +34,15 @@ namespace rawrbox {
 		// ----------
 
 		// PIPELINES ----
-		rawrbox::PipeSettings settings;
-		settings.depth = Diligent::COMPARISON_FUNC_UNKNOWN;
-		settings.depthWrite = false;
-		settings.depthFormat = false;
-		settings.blending = {.src = Diligent::BLEND_FACTOR_UNDEFINED, .dest = Diligent::BLEND_FACTOR_UNDEFINED};
-		settings.cull = Diligent::CULL_MODE_NONE;
-		settings.topology = Diligent::PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP;
-		settings.pVS = "quad/quad.vsh";
-		settings.pPS = "post_process/quick_bloom.psh";
-		settings.signatures = {rawrbox::BindlessManager::signature};
+		Diligent::ShaderMacroHelper preFilter;
+		preFilter.Add("BLOOM_PREFILTER", true);
+		this->_preFilter = createPipeline("PostProcess::QuickBloom::Prefilter", "post_process/quick_bloom.psh", preFilter);
 
-		settings.macros.Add("BLOOM_PREFILTER", true);
-		this->_preFilter = rawrbox::PipelineUtils::createPipeline("PostProcess::QuickBloom::Prefilter", settings);
+		Diligent::ShaderMacroHelper blur;
+		blur.Add("BLOOM_BLUR", true);
+		this->_blur = createPipeline("PostProcess::QuickBloom::Blur", "post_process/quick_bloom.psh", blur);
 
-		settings.macros.Clear();
-		settings.macros.Add("BLOOM_BLUR", true);
-		this->_blur = rawrbox::PipelineUtils::createPipeline("PostProcess::QuickBloom::Blur", settings);
-
-		settings.macros.Clear();
-		this->_pipeline = rawrbox::PipelineUtils::createPipeline("PostProcess::QuickBloom", settings);
+		this->_pipeline = createPipeline("PostProcess::QuickBloom", "post_process/quick_bloom.psh");
 		// ----------
 	}
 

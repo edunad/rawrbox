@@ -42,7 +42,7 @@ namespace rawrbox {
 		[[nodiscard]] uint32_t getSlice() const { return data.y; }
 		void setSlice(const uint32_t slice) { data.y = slice; }
 
-		[[nodiscard]] uint32_t getId() const { return data.z; }
-		void setId(const uint32_t id) { data.z = (id << 8) | 0xFF; }
+		[[nodiscard]] uint32_t getId() const { return data.z >> 8; }
+		void setId(const uint32_t id) { data.z = id == 0 ? 0 : (id << 8) | 0xFF; }
 	};
 } // namespace rawrbox

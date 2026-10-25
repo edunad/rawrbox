@@ -112,6 +112,11 @@ namespace rawrbox {
 		// ----------
 	}
 
+	void PostProcessPlugin::resizeCamera(const rawrbox::CameraBase& camera) {
+		if (&camera != rawrbox::MAIN_CAMERA || this->_swapTexture == nullptr) return;
+		this->_swapTexture->resize(camera.getRenderTarget()->getSize());
+	}
+
 	// Post utils ----
 	void PostProcessPlugin::remove(size_t indx) {
 		if (this->_postProcesses.empty() || indx >= this->_postProcesses.size()) RAWRBOX_CRITICAL("Failed to remove {}!", indx);

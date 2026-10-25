@@ -11,6 +11,8 @@
 #include <stb/stb_easy_font.hpp>
 #pragma warning(pop)
 
+#include <algorithm>
+
 namespace rawrbox {
 	Stencil::Stencil(const rawrbox::Vector2u& size) : _size(size) {
 		const auto createStreaming = [](const char* name, Diligent::BIND_FLAGS flags, Diligent::RESOURCE_STATE state, const uint64_t size) {
@@ -481,7 +483,9 @@ namespace rawrbox {
 
 		auto* context = rawrbox::RENDERER->context();
 		auto* device = rawrbox::RENDERER->device();
-		size_t contextID = 0;
+		
+		constexpr size_t contextID = 0;
+		const rawrbox::Vector2f toNDC = {2.F / static_cast<float>(this->_size.x), -2.F / static_cast<float>(this->_size.y)};
 
 		for (auto& group : this->_drawCalls) {
 			if (group.stencilProgram == nullptr) continue;
@@ -497,7 +501,10 @@ namespace rawrbox {
 			auto* VertexData = std::bit_cast<rawrbox::PosUVColorVertexData*>(std::bit_cast<uint8_t*>(this->_streamingVB->GetMappedCPUAddress(contextID)) + VBOffset);
 			auto* IndexData = std::bit_cast<uint32_t*>(std::bit_cast<uint8_t*>(this->_streamingIB->GetMappedCPUAddress(contextID)) + IBOffset);
 
-			std::memcpy(VertexData, group.vertices.data(), vertSize * sizeof(rawrbox::PosUVColorVertexData));
+			std::ranges::transform(group.vertices, VertexData, [&toNDC](rawrbox::PosUVColorVertexData vertex) {
+				vertex.pos = {(vertex.pos.x * toNDC.x) - 1.F, (vertex.pos.y * toNDC.y) + 1.F};
+				return vertex;
+			});
 			std::memcpy(IndexData, group.indices.data(), indSize * sizeof(uint32_t));
 
 			this->_streamingVB->Unmap(contextID);

@@ -8,6 +8,8 @@
 #include <GraphicsTypes.h>
 #include <fmt/format.h>
 
+#include <atomic>
+
 struct GLFWwindow;
 struct GLFWmonitor;
 struct GLFWcursor;
@@ -71,7 +73,8 @@ namespace rawrbox {
 
 		Diligent::RENDER_DEVICE_TYPE _renderType = Diligent::RENDER_DEVICE_TYPE::RENDER_DEVICE_TYPE_UNDEFINED;
 		rawrbox::WindowSettings _settings = {};
-		bool _hasFocus = false;
+		
+		std::atomic<bool> _hasFocus = false; // Window thread
 
 		// Screen Utils --
 		std::unordered_map<int, rawrbox::Vector2u> _screenSizes = {};

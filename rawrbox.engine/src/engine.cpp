@@ -6,6 +6,7 @@
 
 #include <fmt/format.h>
 
+#include <algorithm>
 #include <chrono>
 #include <string>
 #include <thread>
@@ -117,20 +118,18 @@ namespace rawrbox {
 				// -------
 
 				// Fixed time update --------
-				this->_deltaTimeAccumulator += rawrbox::DELTA_TIME;
-				if (this->_deltaTimeAccumulator > 10.F) this->_deltaTimeAccumulator = 0; // Prevent dead loop
+				rawrbox::FIXED_DELTA_TIME = 1.0F / static_cast<float>(this->_tps);
+				this->_deltaTimeAccumulator += std::min(rawrbox::DELTA_TIME, MAX_FRAME_TIME);
 
-				const float targetFrameRateInv = 1.0F / this->_tps;
-				rawrbox::FIXED_DELTA_TIME = targetFrameRateInv;
-
-				while (this->_deltaTimeAccumulator >= targetFrameRateInv) {
+				while (this->_deltaTimeAccumulator >= rawrbox::FIXED_DELTA_TIME) {
 					this->fixedUpdate();
 
-					this->_deltaTimeAccumulator -= targetFrameRateInv;
+					this->_deltaTimeAccumulator -= rawrbox::FIXED_DELTA_TIME;
 					if (this->_shutdown != ENGINE_THREADS::NONE) break;
 				}
 
 				if (this->_shutdown != ENGINE_THREADS::NONE) break;
+				rawrbox::FRAME_ALPHA = std::clamp(this->_deltaTimeAccumulator / rawrbox::FIXED_DELTA_TIME, 0.F, 1.F);
 				// ---------------------------
 
 				// VARIABLE-TIME
@@ -139,7 +138,6 @@ namespace rawrbox {
 				// ----
 
 				// ACTUAL DRAWING
-				rawrbox::FRAME_ALPHA = this->_deltaTimeAccumulator / rawrbox::DELTA_TIME;
 				this->draw();
 				// ----------
 

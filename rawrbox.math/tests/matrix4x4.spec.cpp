@@ -425,10 +425,10 @@ TEST_CASE("Matrix4x4 should behave as expected", "[rawrbox::Matrix4x4]") {
 		REQUIRE_THAT(orthoLH[7], Catch::Matchers::WithinAbs(0.0F, 0.0001F));
 		REQUIRE_THAT(orthoLH[8], Catch::Matchers::WithinAbs(0.0F, 0.0001F));
 		REQUIRE_THAT(orthoLH[9], Catch::Matchers::WithinAbs(0.0F, 0.0001F));
-		REQUIRE_THAT(orthoLH[10], Catch::Matchers::WithinAbs(0.0200020000F, 0.0001F));
+		REQUIRE_THAT(orthoLH[10], Catch::Matchers::WithinAbs(0.0100010001F, 0.0001F));
 		REQUIRE_THAT(orthoLH[11], Catch::Matchers::WithinAbs(0.0F, 0.0001F));
 		REQUIRE_THAT(orthoLH[13], Catch::Matchers::WithinAbs(7.0F, 0.0001F));
-		REQUIRE_THAT(orthoLH[14], Catch::Matchers::WithinAbs(-1.00020003F, 0.0001F));
+		REQUIRE_THAT(orthoLH[14], Catch::Matchers::WithinAbs(-0.000100010001F, 0.0001F));
 		REQUIRE_THAT(orthoLH[15], Catch::Matchers::WithinAbs(1.0F, 0.0001F));
 
 		rawrbox::Matrix4x4::MTX_RIGHT_HANDED = true;
@@ -443,10 +443,10 @@ TEST_CASE("Matrix4x4 should behave as expected", "[rawrbox::Matrix4x4]") {
 		REQUIRE_THAT(orthoRH[7], Catch::Matchers::WithinAbs(0.0F, 0.0001F));
 		REQUIRE_THAT(orthoRH[8], Catch::Matchers::WithinAbs(0.0F, 0.0001F));
 		REQUIRE_THAT(orthoRH[9], Catch::Matchers::WithinAbs(0.0F, 0.0001F));
-		REQUIRE_THAT(orthoRH[10], Catch::Matchers::WithinAbs(-0.0200020000F, 0.0001F));
+		REQUIRE_THAT(orthoRH[10], Catch::Matchers::WithinAbs(-0.0100010001F, 0.0001F));
 		REQUIRE_THAT(orthoRH[11], Catch::Matchers::WithinAbs(0.0F, 0.0001F));
 		REQUIRE_THAT(orthoRH[13], Catch::Matchers::WithinAbs(7.0F, 0.0001F));
-		REQUIRE_THAT(orthoRH[14], Catch::Matchers::WithinAbs(-1.00020003F, 0.0001F));
+		REQUIRE_THAT(orthoRH[14], Catch::Matchers::WithinAbs(-0.000100010001F, 0.0001F));
 		REQUIRE_THAT(orthoRH[15], Catch::Matchers::WithinAbs(1.0F, 0.0001F));
 	}
 }

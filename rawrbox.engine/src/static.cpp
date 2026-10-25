@@ -3,7 +3,7 @@
 namespace rawrbox {
 	float DELTA_TIME = 0;       // Update delta time
 	float FIXED_DELTA_TIME = 0; // Update fixed delta time
-	float FRAME_ALPHA = 0;      // Update delta time
+	float FRAME_ALPHA = 0;      // Fraction of fixed step in the accumulator
 
 	// THREADING -------
 	std::thread::id RENDER_THREAD_ID;

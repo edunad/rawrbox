@@ -4,6 +4,8 @@
 #include <rawrbox/render/textures/base.hpp>
 #include <rawrbox/render/utils/barrier.hpp>
 
+#include <utility>
+
 namespace rawrbox {
 
 	class TextureRender : public rawrbox::TextureBase {
@@ -12,6 +14,11 @@ namespace rawrbox {
 		std::vector<Diligent::RefCntAutoPtr<Diligent::ITexture>> _textures = {};
 		std::vector<Diligent::ITextureView*> _views = {};
 		std::vector<Diligent::ITextureView*> _viewsRT = {};
+		// -------------------------------
+
+		// Layout ---
+		std::vector<std::pair<Diligent::TEXTURE_FORMAT, Diligent::BIND_FLAGS>> _formats = {};
+		std::vector<std::pair<size_t, Diligent::TEXTURE_VIEW_TYPE>> _viewTypes = {};
 		// -------------------------------
 
 		Diligent::ITextureView* _depthRTHandle = nullptr;

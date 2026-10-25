@@ -29,7 +29,7 @@ namespace rawrbox {
 			std::vector<rawrbox::Mesh<typename M::vertexBufferType>*> meshes = {};
 
 			for (auto& mesh : this->_meshes) {
-				if (mesh == nullptr || mesh->getID() != id) continue;
+				if (mesh == nullptr || mesh->meshID != id) continue;
 				meshes.push_back(mesh.get());
 			}
 

@@ -254,8 +254,8 @@ namespace rawrbox {
 			this->culling = _culling;
 		}
 
-		[[nodiscard]] virtual uint32_t getID() const { return this->meshID; }
-		virtual void setID(uint32_t id) { this->meshID = (id << 8) | 0xFF; }
+		[[nodiscard]] virtual uint32_t getID() const { return this->meshID >> 8; }
+		virtual void setID(uint32_t id) { this->meshID = id == 0 ? 0 : (id << 8) | 0xFF; }
 
 		[[nodiscard]] virtual const rawrbox::Color& getColor() const { return this->color; }
 		virtual void setColor(const rawrbox::Color& _color) {

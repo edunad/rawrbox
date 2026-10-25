@@ -5,6 +5,7 @@
 
 #include <filesystem>
 #include <fstream>
+#include <stdexcept>
 #include <string>
 
 namespace {
@@ -13,7 +14,10 @@ namespace {
 		std::filesystem::create_directories(folder);
 
 		std::ofstream(folder + "/mod.json", std::ios::binary | std::ios::trunc) << json;
-		return rawrbox::SCRIPTING::loadMetadata(folder).priority;
+		const auto metadata = rawrbox::SCRIPTING::loadMetadata(folder);
+		if (!metadata) throw std::runtime_error(metadata.error());
+
+		return metadata->priority;
 	}
 } // namespace
 
@@ -50,17 +54,19 @@ TEST_CASE("Mod should behave as expected", "[rawrbox::Mod]") {
 		std::ofstream("./rawrbox-tests-mod/mod.json", std::ios::binary | std::ios::trunc) << R"({"name": "My Mod", "author": "FailCake", "description": "A test mod", "repo": "https://github.com/edunad/rawrbox"})";
 
 		const auto full = rawrbox::SCRIPTING::loadMetadata("./rawrbox-tests-mod");
-		REQUIRE(full.name == "My Mod");
-		REQUIRE(full.author == "FailCake");
-		REQUIRE(full.description == "A test mod");
-		REQUIRE(full.repo == "https://github.com/edunad/rawrbox");
-		REQUIRE(full.priority == 0);
+		REQUIRE(full.has_value());
+		REQUIRE(full->name == "My Mod");
+		REQUIRE(full->author == "FailCake");
+		REQUIRE(full->description == "A test mod");
+		REQUIRE(full->repo == "https://github.com/edunad/rawrbox");
+		REQUIRE(full->priority == 0);
 
 		std::ofstream("./rawrbox-tests-mod/mod.json", std::ios::binary | std::ios::trunc) << R"({"name": "My Mod", "author": "FailCake"})";
 
 		const auto minimal = rawrbox::SCRIPTING::loadMetadata("./rawrbox-tests-mod");
-		REQUIRE_FALSE(minimal.description.has_value());
-		REQUIRE_FALSE(minimal.repo.has_value());
+		REQUIRE(minimal.has_value());
+		REQUIRE_FALSE(minimal->description.has_value());
+		REQUIRE_FALSE(minimal->repo.has_value());
 		// ---------
 
 		rawrbox::Mod mod = {"my_mod", "./my_mod", {.name = "My Mod", .priority = 3}};

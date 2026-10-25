@@ -19,6 +19,7 @@ namespace rawrbox {
 		// -------------
 
 		virtual void draw(Diligent::IPipelineState* pipeline, const rawrbox::TextureRender& target, const rawrbox::Vector4u& textureIDs);
+		[[nodiscard]] static Diligent::IPipelineState* createPipeline(const std::string& id, const std::string& pixelShader, const Diligent::ShaderMacroHelper& macros = {});
 
 	public:
 		PostProcessBase() = default;

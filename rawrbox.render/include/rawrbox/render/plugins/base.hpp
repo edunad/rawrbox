@@ -41,6 +41,7 @@ namespace rawrbox {
 
 		virtual void initialize(const rawrbox::Vector2u& renderSize);
 		virtual void resize(const rawrbox::Vector2u& renderSize);
+		virtual void resizeCamera(const rawrbox::CameraBase& camera);
 		virtual void upload();
 
 		virtual void preRender(const rawrbox::CameraBase& camera);

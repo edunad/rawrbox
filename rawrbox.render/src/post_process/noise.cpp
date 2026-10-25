@@ -16,18 +16,7 @@ namespace rawrbox {
 	void PostProcessNoise::init() {
 		rawrbox::PostProcessBase::init();
 
-		rawrbox::PipeSettings settings;
-		settings.depth = Diligent::COMPARISON_FUNC_UNKNOWN;
-		settings.depthWrite = false;
-		settings.depthFormat = false;
-		settings.blending = {.src = Diligent::BLEND_FACTOR_UNDEFINED, .dest = Diligent::BLEND_FACTOR_UNDEFINED};
-		settings.cull = Diligent::CULL_MODE_NONE;
-		settings.topology = Diligent::PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP;
-		settings.pVS = "quad/quad.vsh";
-		settings.pPS = "post_process/noise.psh";
-		settings.signatures = {rawrbox::BindlessManager::signature};
-
-		this->_pipeline = rawrbox::PipelineUtils::createPipeline("PostProcess::Noise", settings);
+		this->_pipeline = createPipeline("PostProcess::Noise", "post_process/noise.psh");
 	}
 
 	void PostProcessNoise::applyEffect(const rawrbox::TextureBase& source, const rawrbox::TextureRender& target, uint32_t depthID) {

@@ -17,6 +17,7 @@ namespace rawrbox {
 
 	void RenderPlugin::initialize(const rawrbox::Vector2u& /*renderSize*/) {}
 	void RenderPlugin::resize(const rawrbox::Vector2u& /*renderSize*/) {}
+	void RenderPlugin::resizeCamera(const rawrbox::CameraBase& /*camera*/) {}
 	void RenderPlugin::upload() {}
 
 	void RenderPlugin::preRender(const rawrbox::CameraBase& /*camera*/) {}

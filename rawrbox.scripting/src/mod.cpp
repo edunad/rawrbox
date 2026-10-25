@@ -5,7 +5,10 @@
 namespace rawrbox {
 	Mod::Mod(std::string id, std::filesystem::path folderPath, rawrbox::ModMetadata metadata) : _L(luaL_newstate()), _modTable(_L), _folder(std::move(folderPath)), _id(std::move(id)), _metadata(std::move(metadata)) {}
 	Mod::~Mod() {
-		this->gc();
+		if (this->_L == nullptr) return;
+
+		this->_modTable = luabridge::LuaRef(this->_L);
+		lua_close(this->_L);
 		this->_L = nullptr;
 	}
 

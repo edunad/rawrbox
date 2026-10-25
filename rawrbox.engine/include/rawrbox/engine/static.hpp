@@ -36,15 +36,15 @@ namespace rawrbox {
 		auto id = std::this_thread::get_id();
 		if (id != RENDER_THREAD_ID) throw std::runtime_error("Invalid thread, must run on main thread!");
 
-		while (!rawrbox::RENDER_THREAD_INVOKES.empty()) {
-			std::function<void()> fnc = nullptr;
-			{
-				std::lock_guard<std::mutex> lockGuard(RENDER_THREAD_LOCK); // This is a bit slow, having to lock on all the calls, but there's nothing else i can do
-				fnc = std::move(rawrbox::RENDER_THREAD_INVOKES.front());
-				rawrbox::RENDER_THREAD_INVOKES.pop();
-			}
+		std::queue<std::function<void()>> invokes = {};
+		{
+			std::lock_guard<std::mutex> lockGuard(RENDER_THREAD_LOCK);
+			invokes.swap(rawrbox::RENDER_THREAD_INVOKES);
+		}
 
-			if (fnc != nullptr) fnc();
+		while (!invokes.empty()) {
+			if (invokes.front() != nullptr) invokes.front()();
+			invokes.pop();
 		}
 	}
 	// NOLINTEND(clang-diagnostic-unused-function)
