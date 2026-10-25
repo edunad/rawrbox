@@ -7,6 +7,7 @@
 #include <fmt/args.h>
 #include <fmt/printf.h>
 
+#include <algorithm>
 #include <filesystem>
 #include <fstream>
 
@@ -65,17 +66,24 @@ namespace rawrbox {
 		return _language;
 	}
 
-	std::string I18N::get(const std::string& id, const std::string& key) {
+	const rawrbox::Translation* I18N::findPack(const std::string& id) {
 		auto pack = _languagePacks.find(fmt::format("{}-{}", id, _language));
 		if (pack == _languagePacks.end()) {
 			_logger->warn("Could not find language '{}' on '{}', falling back to english", _language, id);
 
 			pack = _languagePacks.find(fmt::format("{}-en", id));
-			if (pack == _languagePacks.end()) return fmt::format("$I18N FOR LANGUAGE '{}-{}' NOT FOUND$", id, _language); // Still no language? Bah..
+			if (pack == _languagePacks.end()) return nullptr;
 		}
 
-		auto val = pack->second.find(key);
-		if (val == pack->second.end()) return fmt::format("$I18N KEY '{}' NOT FOUND$", key);
+		return &pack->second;
+	}
+
+	std::string I18N::get(const std::string& id, const std::string& key) {
+		const auto* pack = findPack(id);
+		if (pack == nullptr) return fmt::format("$I18N FOR LANGUAGE '{}-{}' NOT FOUND$", id, _language);
+
+		auto val = pack->find(key);
+		if (val == pack->end()) return fmt::format("$I18N KEY '{}' NOT FOUND$", key);
 
 		return val->second;
 	}
@@ -87,5 +95,50 @@ namespace rawrbox {
 		}
 
 		return fmt::vformat(get(id, key), args);
+	}
+
+	std::optional<std::string> I18N::find(const std::string& id, const std::string& key) {
+		const auto* pack = findPack(id);
+		if (pack == nullptr) return std::nullopt;
+
+		auto val = pack->find(key);
+		if (val == pack->end()) return std::nullopt;
+
+		return val->second;
+	}
+
+	std::optional<std::string> I18N::find(const std::string& id, const std::string& key, const std::vector<std::string>& values) {
+		auto text = find(id, key);
+		if (!text.has_value()) return std::nullopt;
+
+		fmt::dynamic_format_arg_store<fmt::format_context> args;
+		for (const auto& str : values) {
+			args.push_back(str);
+		}
+
+		return fmt::vformat(*text, args);
+	}
+
+	std::optional<rawrbox::I18NKey> I18N::parseKey(std::string_view text) {
+		if (text.size() < 2 || text.front() != '#') return std::nullopt;
+
+		const auto body = text.substr(1);
+		const bool valid = std::ranges::all_of(body, [](char c) { return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9') || c == '_' || c == '.' || c == '-' || c == ':'; });
+		if (!valid || std::ranges::count(body, ':') > 1) return std::nullopt;
+
+		const auto colon = body.find(':');
+		if (colon == std::string_view::npos) return rawrbox::I18NKey{.key = body};
+		if (colon == 0 || colon == body.size() - 1) return std::nullopt;
+
+		return rawrbox::I18NKey{.id = body.substr(0, colon), .key = body.substr(colon + 1)};
+	}
+
+	std::string I18N::resolve(std::string_view text, std::string_view id, const std::vector<std::string>& values) {
+		const auto parsed = parseKey(text);
+		if (!parsed.has_value()) return std::string(text);
+
+		const std::string pack(parsed->id.empty() ? id : parsed->id);
+		const std::string key(parsed->key);
+		return values.empty() ? get(pack, key) : get(pack, key, values);
 	}
 } // namespace rawrbox

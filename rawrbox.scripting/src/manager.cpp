@@ -510,6 +510,14 @@ namespace rawrbox {
 		return fnd->second.get();
 	}
 
+	rawrbox::Mod* SCRIPTING::getMod(lua_State* L) {
+		if (L == nullptr) return nullptr;
+
+		auto* main = lua_mainthread(L);
+		const auto fnd = std::ranges::find_if(_mods, [main](const auto& mod) { return mod.second->getEnvironment() == main; });
+		return fnd == _mods.end() ? nullptr : fnd->second.get();
+	}
+
 	const std::unordered_map<std::string, std::unique_ptr<Mod>>& SCRIPTING::getMods() { return _mods; }
 	std::vector<std::string> SCRIPTING::getModsIds() {
 		std::vector<std::string> modNames = {};

@@ -98,11 +98,19 @@ namespace rawrbox {
 			lua_getfield(L, LUA_ENVIRONINDEX, varId.c_str());
 
 			const auto* conv = lua_tostring(L, -1);
-			if (conv == nullptr) throw std::runtime_error(fmt::format("Invalid lua env variable '{}'", varId));
+			if (conv == nullptr) {
+				lua_pop(L, 1);
+				throw std::runtime_error(fmt::format("Invalid lua env variable '{}'", varId));
+			}
+
 			if constexpr (std::is_same_v<T, std::string>) {
-				return conv;
+				std::string value = conv;
+				lua_pop(L, 1);
+				return value;
 			} else {
-				return static_cast<T>(conv);
+				const auto value = static_cast<T>(lua_tonumber(L, -1));
+				lua_pop(L, 1);
+				return value;
 			}
 		}
 

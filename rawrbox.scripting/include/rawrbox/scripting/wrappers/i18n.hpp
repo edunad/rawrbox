@@ -9,6 +9,7 @@ namespace rawrbox {
 		static void setLanguage(const std::string& language);
 
 		static std::string get(const luabridge::LuaRef& ref);
+		static std::string resolve(const std::string& text, lua_State* L);
 
 		static void registerLua(lua_State* L);
 	};

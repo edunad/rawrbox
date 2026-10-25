@@ -98,6 +98,7 @@ namespace rawrbox {
 
 		// UTILS ---
 		[[nodiscard]] static rawrbox::Mod* getMod(const std::string& id);
+		[[nodiscard]] static rawrbox::Mod* getMod(lua_State* L);
 		[[nodiscard]] static bool hasMod(const std::string& id);
 
 		[[nodiscard]] static const std::unordered_map<std::string, std::unique_ptr<rawrbox::Mod>>& getMods();
