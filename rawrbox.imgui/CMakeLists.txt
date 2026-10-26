@@ -4,42 +4,54 @@ set(output_target RAWRBOX.IMGUI)
 
 # LIBS ---
 CPMAddPackage(
-    NAME
+        NAME
         imgui
-    GITHUB_REPOSITORY
+        GITHUB_REPOSITORY
         ocornut/imgui
-    GIT_TAG
-        v1.92.9-docking
-    VERSION
-        1.92.9
-    DOWNLOAD_ONLY
+        GIT_TAG
+        v1.93.0-docking
+        VERSION
+        1.93.0
+        DOWNLOAD_ONLY
         YES
 )
 
-if(imgui_ADDED)
+if (imgui_ADDED)
     set(IMGUI_SRC
-        ${imgui_SOURCE_DIR}/imgui.cpp
-        ${imgui_SOURCE_DIR}/imgui_draw.cpp
-        ${imgui_SOURCE_DIR}/imgui_tables.cpp
-        ${imgui_SOURCE_DIR}/imgui_widgets.cpp
-        ${imgui_SOURCE_DIR}/imgui_demo.cpp
+            ${imgui_SOURCE_DIR}/imgui.cpp
+            ${imgui_SOURCE_DIR}/imgui_draw.cpp
+            ${imgui_SOURCE_DIR}/imgui_tables.cpp
+            ${imgui_SOURCE_DIR}/imgui_widgets.cpp
+            ${imgui_SOURCE_DIR}/imgui_demo.cpp
 
-        ${imgui_SOURCE_DIR}/backends/imgui_impl_glfw.cpp
+            ${imgui_SOURCE_DIR}/backends/imgui_impl_glfw.cpp
     )
 
     # Setup config file
     configure_file(./imconfig.h ${imgui_SOURCE_DIR}/imconfig.h)
 
+    set(IMGUI_GLFW_BACKEND ${imgui_SOURCE_DIR}/backends/imgui_impl_glfw.cpp)
+    file(READ ${IMGUI_GLFW_BACKEND} IMGUI_GLFW_SOURCE)
+
+    string(FIND "${IMGUI_GLFW_SOURCE}" "glfwGetWindowAttrib(window, GLFW_MOUSE_PASSTHROUGH)" IMGUI_GLFW_PATCHED)
+    if (IMGUI_GLFW_PATCHED EQUAL -1)
+        string(REPLACE
+                "glfwSetWindowAttrib(window, GLFW_MOUSE_PASSTHROUGH, window_no_input);"
+                "if (glfwGetWindowAttrib(window, GLFW_MOUSE_PASSTHROUGH) != (window_no_input ? GLFW_TRUE : GLFW_FALSE)) glfwSetWindowAttrib(window, GLFW_MOUSE_PASSTHROUGH, window_no_input);"
+                IMGUI_GLFW_SOURCE "${IMGUI_GLFW_SOURCE}")
+        file(WRITE ${IMGUI_GLFW_BACKEND} "${IMGUI_GLFW_SOURCE}")
+    endif ()
+
     add_library(IMGUI STATIC ${IMGUI_SRC})
     target_include_directories(IMGUI
-        PUBLIC
+            PUBLIC
             $<BUILD_INTERFACE:${imgui_SOURCE_DIR}>
             $<BUILD_INTERFACE:${imgui_SOURCE_DIR}>/backends
     )
 
     target_link_libraries(IMGUI PUBLIC glfw)
     set_lib_runtime_mt(IMGUI)
-endif()
+endif ()
 # ------------------
 # ----
 
