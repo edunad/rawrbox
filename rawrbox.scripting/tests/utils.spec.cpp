@@ -49,4 +49,21 @@ TEST_CASE("Lua Utils should behave as expected", "[rawrbox::LuaUtils]") {
 		lua_close(L);
 		std::filesystem::remove_all(folder);
 	}
+
+	SECTION("rawrbox::LuaUtils::loadBytecode") {
+		lua_State* L = luaL_newstate();
+		luaL_openlibs(L);
+		Luau::CodeGen::create(L);
+
+		REQUIRE_NOTHROW(rawrbox::LuaUtils::compileAndLoadScript(L, "native", "function SUM(n) local s = 0 for i = 1, n do s += i end return s end"));
+
+		lua_getglobal(L, "SUM");
+		REQUIRE(Luau::CodeGen::compile(L, -1, 0).result == Luau::CodeGen::CodeGenCompilationResult::NothingToCompile);
+
+		lua_pushnumber(L, 10);
+		lua_call(L, 1, 1);
+		REQUIRE(lua_tonumber(L, -1) == 55);
+
+		lua_close(L);
+	}
 }

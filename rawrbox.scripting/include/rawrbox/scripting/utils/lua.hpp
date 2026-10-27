@@ -11,6 +11,7 @@
 
 #include <glaze/glaze.hpp>
 
+#include <Luau/CodeGen.h>
 #include <Luau/Compiler.h>
 
 #include <filesystem>

@@ -72,6 +72,8 @@ namespace rawrbox {
 		if (luau_load(loadThread, chunk.c_str(), bytecode.data(), bytecode.size(), 0) != 0) {
 			throw std::runtime_error(rawrbox::LuaUtils::getError(L));
 		}
+
+		if (Luau::CodeGen::isNativeExecutionEnabled(loadThread)) Luau::CodeGen::compile(loadThread, -1, 0);
 		// -----------
 
 		// Run the thread ---

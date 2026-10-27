@@ -3,7 +3,9 @@
 #include <rawrbox/utils/path.hpp>
 
 namespace rawrbox {
-	Mod::Mod(std::string id, std::filesystem::path folderPath, rawrbox::ModMetadata metadata) : _L(luaL_newstate()), _modTable(_L), _folder(std::move(folderPath)), _id(std::move(id)), _metadata(std::move(metadata)) {}
+	Mod::Mod(std::string id, std::filesystem::path folderPath, rawrbox::ModMetadata metadata) : _L(luaL_newstate()), _modTable(_L), _folder(std::move(folderPath)), _id(std::move(id)), _metadata(std::move(metadata)) {
+		if (Luau::CodeGen::isSupported()) Luau::CodeGen::create(this->_L);
+	}
 	Mod::~Mod() {
 		if (this->_L == nullptr) return;
 

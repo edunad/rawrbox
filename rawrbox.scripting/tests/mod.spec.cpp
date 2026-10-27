@@ -27,6 +27,7 @@ TEST_CASE("Mod should behave as expected", "[rawrbox::Mod]") {
 
 		REQUIRE(mod.getFolder() == "./my_mod");
 		REQUIRE(mod.getID() == "my_mod");
+		REQUIRE(Luau::CodeGen::isNativeExecutionEnabled(mod.getEnvironment()));
 	}
 
 	SECTION("rawrbox::Mod::init") {

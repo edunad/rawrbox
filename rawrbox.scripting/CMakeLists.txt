@@ -38,6 +38,7 @@ if (luau_ADDED)
     set_lib_runtime_mt(Luau.VM)
     set_lib_runtime_mt(Luau.Common)
     set_lib_runtime_mt(Luau.Compiler)
+    set_lib_runtime_mt(Luau.CodeGen)
     set_lib_runtime_mt(Luau.Ast)
     set_lib_runtime_mt(Luau.Bytecode)
     set_lib_runtime_mt(Luau.Inliner)
@@ -79,6 +80,7 @@ target_link_libraries(${output_target}
         Luau.VM
         Luau.Common
         Luau.Compiler
+        Luau.CodeGen
         Luau.Analysis
         # ---------
 
