@@ -40,6 +40,7 @@
 #include <rawrbox/render/textures/utils/utils.hpp>
 #include <rawrbox/render/textures/webp.hpp>
 #include <rawrbox/render/utils/debug_draw.hpp>
+#include <rawrbox/render/utils/loading.hpp>
 #include <rawrbox/render/utils/render.hpp>
 #include <rawrbox/render/utils/swapchain.hpp>
 #include <rawrbox/utils/threading.hpp>
@@ -54,6 +55,8 @@
 namespace rawrbox {
 	RendererBase::RendererBase(Diligent::RENDER_DEVICE_TYPE type, Diligent::NativeWindow window, const rawrbox::Vector2u& size, const rawrbox::Vector2u& monitorSize, const rawrbox::Colorf& clearColor) : _clearColor(clearColor), _size(size), _monitorSize(monitorSize), _window(window), _type(type) {}
 	RendererBase::~RendererBase() {
+		rawrbox::LoadingUtils::clear();
+
 		this->_stencil.reset();
 		this->_occlusion.reset();
 		this->_logger.reset();
@@ -525,18 +528,7 @@ namespace rawrbox {
 
 			if (this->_currentIntro != nullptr) this->_drawCall(*rawrbox::MAIN_CAMERA, rawrbox::DrawPass::PASS_OVERLAY);
 
-			const auto size = this->_size.cast<float>();
-			const float progress = rawrbox::PipelineUtils::getCompileProgress();
-
-			constexpr rawrbox::Vector2f bar = {220.F, 4.F};
-			const rawrbox::Vector2f barPos = {(size.x - bar.x) * 0.5F, size.y - 45.F};
-
-			this->_stencil->drawText(fmt::format("COMPILING SHADERS {}%", static_cast<int>(progress * 100.F)), {size.x * 0.5F, barPos.y - 18.F}, rawrbox::Colors::White(), rawrbox::Colors::Transparent(), rawrbox::Alignment::Center);
-
-			this->_stencil->drawBox(barPos, bar, rawrbox::Color::RGBHex(0x2a2a2d));
-			this->_stencil->drawBox(barPos, {bar.x * progress, bar.y}, rawrbox::Colors::White());
-
-			this->_stencil->drawText(rawrbox::PipelineUtils::getCompilingName(), {size.x * 0.5F, barPos.y + 12.F}, rawrbox::Colors::Gray(), rawrbox::Colors::Transparent(), rawrbox::Alignment::Center);
+			rawrbox::LoadingUtils::draw(*this->_stencil, this->_size.cast<float>());
 			this->_stencil->render();
 
 			this->frame();
@@ -596,7 +588,10 @@ namespace rawrbox {
 
 		// Perform overlay, only MAIN camera does it --
 		this->_drawCall(*rawrbox::MAIN_CAMERA, rawrbox::DrawPass::PASS_OVERLAY);
-		if (this->_stencil != nullptr) this->_stencil->render();
+		if (this->_stencil != nullptr) {
+			if (rawrbox::LoadingUtils::hasTasks()) rawrbox::LoadingUtils::draw(*this->_stencil, this->_size.cast<float>());
+			this->_stencil->render();
+		}
 		// ---------------------------------------------
 
 		// Submit ---

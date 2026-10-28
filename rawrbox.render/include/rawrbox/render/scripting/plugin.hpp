@@ -3,6 +3,7 @@
 #include <rawrbox/render/scripting/global/camera.hpp>
 #include <rawrbox/render/scripting/global/decals/manager.hpp>
 #include <rawrbox/render/scripting/global/lights/manager.hpp>
+#include <rawrbox/render/scripting/global/loading.hpp>
 #include <rawrbox/render/scripting/global/resources/font_loader.hpp>
 #include <rawrbox/render/scripting/global/resources/texture_loader.hpp>
 #include <rawrbox/render/scripting/global/stencil.hpp>
@@ -74,6 +75,7 @@ namespace rawrbox {
 			// GAME --
 			rawrbox::CameraGlobal::registerLua(L);
 			rawrbox::StencilGlobal::registerLua(L);
+			rawrbox::LoadingGlobal::registerLua(L);
 			//  -------
 
 			// DECALS ---
