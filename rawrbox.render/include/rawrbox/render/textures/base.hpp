@@ -56,8 +56,8 @@ namespace rawrbox {
 	namespace TextureFlags {
 		const uint32_t NONE = 0;
 		
-		const uint32_t DYNAMIC = 1 << 1;
-		const uint32_t NO_MIPMAPS = 1 << 2;
+		const uint32_t DYNAMIC = 1U << 30U;
+		const uint32_t NO_MIPMAPS = 1U << 31U;
 	}; // namespace TextureFlags
 	// NOLINTEND(unused-const-variable)
 
