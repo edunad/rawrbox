@@ -32,10 +32,8 @@ Unity, Unreal or Godot; it's not geared towards advanced rendering techniques su
 Rather, it's tailored for creating PlayStation 1-style games with modding in mind :).
 
 > [!IMPORTANT]
-> World
-Coordinates: [left handed](<https://learn.microsoft.com/en-us/previous-versions/windows/desktop/images/bb324490.leftrght(en-us,vs.85).gif>).<br/>
->
-Matrix: [column-major](https://upload.wikimedia.org/wikipedia/commons/thumb/4/4d/Row_and_column_major_order.svg/1200px-Row_and_column_major_order.svg.png).
+> World Coordinates: [left handed](<https://learn.microsoft.com/en-us/previous-versions/windows/desktop/images/bb324490.leftrght(en-us,vs.85).gif>).<br/>
+> Matrix: [column-major](https://upload.wikimedia.org/wikipedia/commons/thumb/4/4d/Row_and_column_major_order.svg/1200px-Row_and_column_major_order.svg.png).
 
 # FEATURES
 
