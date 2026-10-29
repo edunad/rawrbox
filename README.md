@@ -206,3 +206,4 @@ Rather, it's tailored for creating PlayStation 1-style games with modding in min
 | spdlog            | Used for logging                                    | [MIT](https://github.com/gabime/spdlog/blob/v1.x/LICENSE)                                      |
 | basis_universal   | Used for texture compression                        | [APACHE](https://github.com/BinomialLLC/basis_universal/tree/master?tab=Apache-2.0-1-ov-file)  |
 | zstd              | Used for VPK file compression                       | [BSD 3-Clause](https://github.com/facebook/zstd/blob/dev/LICENSE)                              |
+| tracy             | Used for performance profilling                     | [BSD 3-Clause](https://github.com/wolfpld/tracy/blob/master/LICENSE)                           |

@@ -3,12 +3,14 @@
 #include <rawrbox/render/textures/utils/gif.hpp>
 
 #include <fmt/format.h>
+#include <tracy/Tracy.hpp>
 
 namespace rawrbox {
 	TextureGIF::TextureGIF(const std::filesystem::path& filePath, bool useFallback) : rawrbox::TextureAnimatedBase(filePath, useFallback) { this->internalLoad({}, useFallback); }
 	TextureGIF::TextureGIF(const std::filesystem::path& filePath, const std::vector<uint8_t>& buffer, bool useFallback) : rawrbox::TextureAnimatedBase(filePath, buffer, useFallback) { this->internalLoad(buffer, useFallback); }
 
 	void TextureGIF::internalLoad(const std::vector<uint8_t>& buffer, bool useFallback) {
+		ZoneScopedN("TextureGIF::load");
 		this->_name = "RawrBox::Texture::GIF";
 
 		try {

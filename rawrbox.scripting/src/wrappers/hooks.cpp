@@ -14,10 +14,13 @@ namespace rawrbox {
 	void Hooks::callLua(const std::string& id, const luabridge::LuaRef& args) {
 		const auto fnd = _hooks.find(id);
 		if (fnd == _hooks.end()) return;
+		ZoneTransientN(zone, id.c_str(), true);
+
 		const auto data = rawrbox::LuaUtils::luaToJsonObject(args);
 		const auto hooks = fnd->second;
 
 		for (const auto& hook : hooks) {
+			ZoneTransientN(hookZone, hook.name.c_str(), true);
 			auto result = rawrbox::LuaUtils::call(hook.func, rawrbox::LuaUtils::jsonToLua(hook.func.state(), data));
 			if (result.hasFailed()) _logger->error("Hook '{}' handler '{}' failed\n  └── {}", id, hook.name, result.errorMessage());
 		}

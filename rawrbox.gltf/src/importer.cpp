@@ -15,6 +15,7 @@
 #include <ozz/animation/offline/animation_optimizer.h>
 #include <ozz/animation/offline/skeleton_builder.h>
 #include <simdjson.h>
+#include <tracy/Tracy.hpp>
 
 #include <algorithm>
 #include <cmath>
@@ -24,6 +25,10 @@
 namespace rawrbox {
 	// PRIVATE -----
 	void GLTFImporter::internalLoad(fastgltf::GltfDataBuffer& data) {
+		ZoneScopedN("GLTFImporter::load");
+		const auto path = this->filePath.generic_string();
+		ZoneText(path.c_str(), path.size());
+
 		auto extensions =
 		    fastgltf::Extensions::KHR_mesh_quantization |
 		    fastgltf::Extensions::EXT_meshopt_compression |
@@ -118,6 +123,7 @@ namespace rawrbox {
 
 	// POST-LOAD ---
 	bool GLTFImporter::postLoadExternalData(fastgltf::Asset& scene) {
+		ZoneScopedN("GLTFImporter::postLoadExternalData");
 		const bool importTextures = (this->loadFlags & rawrbox::GLTFLoadFlags::IMPORT_TEXTURES) > 0;
 
 		std::vector<fastgltf::DataSource*> sources = {};
@@ -164,6 +170,7 @@ namespace rawrbox {
 	}
 
 	void GLTFImporter::postLoadMeshopt(fastgltf::Asset& scene) {
+		ZoneScopedN("GLTFImporter::postLoadMeshopt");
 		for (auto& view : scene.bufferViews) {
 			if (view.meshoptCompression == nullptr) continue;
 
@@ -353,6 +360,7 @@ namespace rawrbox {
 
 	// MATERIALS ---
 	void GLTFImporter::loadTextures(const fastgltf::Asset& scene) {
+		ZoneScopedN("GLTFImporter::loadTextures");
 		this->textures.resize(scene.textures.size());
 		this->_texturesMap.resize(scene.textures.size(), nullptr);
 
@@ -445,6 +453,7 @@ namespace rawrbox {
 	}
 
 	void GLTFImporter::loadMaterials(const fastgltf::Asset& scene) {
+		ZoneScopedN("GLTFImporter::loadMaterials");
 		const bool importTextures = (this->loadFlags & rawrbox::GLTFLoadFlags::IMPORT_TEXTURES) > 0;
 		this->materials.reserve(scene.materials.size());
 
@@ -536,6 +545,7 @@ namespace rawrbox {
 
 	// SKELETONS --
 	void GLTFImporter::loadSkeletons(const fastgltf::Asset& scene) {
+		ZoneScopedN("GLTFImporter::loadSkeletons");
 		if (scene.skins.empty()) return;
 
 		const bool printBones = (this->loadFlags & rawrbox::GLTFLoadFlags::Debug::PRINT_BONE_STRUCTURE) > 0;
@@ -762,6 +772,7 @@ namespace rawrbox {
 
 	// ANIMATIONS ---
 	void GLTFImporter::loadAnimations(const fastgltf::Asset& scene) {
+		ZoneScopedN("GLTFImporter::loadAnimations");
 		if (scene.animations.empty()) return;
 
 		const bool printAnims = (this->loadFlags & rawrbox::GLTFLoadFlags::Debug::PRINT_ANIMATIONS) > 0;
@@ -858,6 +869,7 @@ namespace rawrbox {
 	}
 
 	void GLTFImporter::buildAnimations(const fastgltf::Asset& scene) {
+		ZoneScopedN("GLTFImporter::buildAnimations");
 		if (this->_parsedAnimations.empty()) return;
 		ozz::animation::offline::AnimationBuilder builder;
 
@@ -1077,6 +1089,7 @@ namespace rawrbox {
 
 	// MODEL ---
 	void GLTFImporter::loadScene(const fastgltf::Asset& scene) {
+		ZoneScopedN("GLTFImporter::loadScene");
 		for (const auto& rootScenes : scene.scenes) {
 			for (const auto& nodeIndex : rootScenes.nodeIndices) {
 				this->loadNodes(scene, nodeIndex);

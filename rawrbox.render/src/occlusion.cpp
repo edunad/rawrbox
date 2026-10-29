@@ -1,6 +1,7 @@
 #include <rawrbox/math/utils/math.hpp>
 #include <rawrbox/render/cameras/base.hpp>
 #include <rawrbox/render/occlusion.hpp>
+#include <rawrbox/render/profiler.hpp>
 #include <rawrbox/render/static.hpp>
 #include <rawrbox/render/utils/pipeline.hpp>
 
@@ -112,6 +113,7 @@ namespace rawrbox {
 	void Occlusion::end(const rawrbox::CameraBase& camera) {
 		this->_recording = false;
 		if (this->_lateDraw.empty()) return;
+		RAWRBOX_RENDER_ZONE("Occlusion::end");
 
 		// REGEN HI-Z ---
 #ifdef _DEBUG
@@ -123,6 +125,7 @@ namespace rawrbox {
 #endif
 
 		if (rebuild) {
+			RAWRBOX_RENDER_ZONE("Occlusion::hiz");
 			auto* context = rawrbox::RENDERER->context();
 
 			for (uint32_t mip = 0; mip < this->_mips.size(); mip++) {

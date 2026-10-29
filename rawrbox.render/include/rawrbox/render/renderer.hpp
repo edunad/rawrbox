@@ -6,6 +6,7 @@
 #include <rawrbox/render/enums/draw.hpp>
 #include <rawrbox/render/occlusion.hpp>
 #include <rawrbox/render/plugins/base.hpp>
+#include <rawrbox/render/profiler.hpp>
 #include <rawrbox/render/stencil.hpp>
 #include <rawrbox/render/textures/utils/blit.hpp>
 #include <rawrbox/utils/logger.hpp>
@@ -95,6 +96,10 @@ namespace rawrbox {
 		std::unique_ptr<rawrbox::Stencil> _stencil = nullptr;
 		std::unique_ptr<rawrbox::Occlusion> _occlusion = nullptr;
 		std::unique_ptr<rawrbox::TextureBLIT> _GPUBlit = nullptr;
+
+#ifdef TRACY_ENABLE
+		std::unique_ptr<rawrbox::GPUProfiler> _profiler = nullptr;
+#endif
 		// -------------
 
 		// CAMERAS ---
@@ -205,6 +210,9 @@ namespace rawrbox {
 		// Utils ----
 		[[nodiscard]] virtual rawrbox::Stencil* stencil() const;
 		[[nodiscard]] virtual rawrbox::Occlusion* occlusion() const;
+#ifdef TRACY_ENABLE
+		[[nodiscard]] virtual rawrbox::GPUProfiler* profiler() const;
+#endif
 
 		// WARNING: NOT THREAD SAFE!!
 		[[nodiscard]] virtual Diligent::IDeviceContext* context() const;

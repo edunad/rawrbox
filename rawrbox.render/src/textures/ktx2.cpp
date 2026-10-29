@@ -2,6 +2,8 @@
 #include <rawrbox/render/textures/utils/ktx2.hpp>
 #include <rawrbox/utils/file.hpp>
 
+#include <tracy/Tracy.hpp>
+
 namespace rawrbox {
 	// NOLINTBEGIN(modernize-pass-by-value)
 	TextureKTX2::TextureKTX2(const std::filesystem::path& filePath, bool useFallback) : _filePath(filePath) {
@@ -14,6 +16,7 @@ namespace rawrbox {
 	// NOLINTEND(modernize-pass-by-value)
 
 	void TextureKTX2::internalLoad(const uint8_t* buffer, size_t bufferSize, bool useFallback) {
+		ZoneScopedN("TextureKTX2::load");
 		this->_name = "RawrBox::Texture::KTX2";
 
 		try {

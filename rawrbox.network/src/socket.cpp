@@ -1,5 +1,7 @@
 #include <rawrbox/network/socket.hpp>
 
+#include <tracy/Tracy.hpp>
+
 #include <array>
 #include <bit>
 
@@ -109,6 +111,7 @@ namespace rawrbox {
 
 	bool Socket::accept(Socket* socket) {
 		if (!blocking && !canRead()) return false;
+		ZoneScopedN("Socket::accept");
 
 #ifdef _MSC_VER
 		int length = ipv6 ? sizeof(socket->addr6) : sizeof(socket->addr);
@@ -145,6 +148,7 @@ namespace rawrbox {
 	}
 
 	SocketError Socket::connect(const std::string& host, uint16_t port) {
+		ZoneScopedN("Socket::connect");
 		if (!check())
 			return SocketError::invalidSocket;
 
@@ -247,6 +251,7 @@ namespace rawrbox {
 	}
 
 	bool Socket::receiveAll(uint8_t* buffer, int size, int spos) const {
+		ZoneScopedN("Socket::receiveAll");
 		int recv = 0;
 
 		while (recv != size) {
@@ -269,6 +274,7 @@ namespace rawrbox {
 	}
 
 	bool Socket::sendAll(const uint8_t* data, int dataSize) const {
+		ZoneScopedN("Socket::sendAll");
 		int sent = 0;
 
 		while (sent != dataSize) {

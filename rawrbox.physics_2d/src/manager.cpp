@@ -1,6 +1,8 @@
 
 #include <rawrbox/physics_2d/manager.hpp>
 
+#include <tracy/Tracy.hpp>
+
 namespace rawrbox {
 	// PUBLIC ----
 	std::unique_ptr<muli::WorldSettings> PHYSICS_2D::physSettings = std::make_unique<muli::WorldSettings>();
@@ -22,6 +24,7 @@ namespace rawrbox {
 
 	void PHYSICS_2D::tick() {
 		if (physWorld == nullptr) return;
+		ZoneScopedN("PHYSICS_2D::tick");
 
 		physWorld->Step(rawrbox::FIXED_DELTA_TIME);
 		checkContacts();

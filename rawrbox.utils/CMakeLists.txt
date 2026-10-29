@@ -112,6 +112,42 @@ CPMAddPackage(
 if (zstd_ADDED)
     set_lib_runtime_mt(libzstd_static)
 endif ()
+
+CPMAddPackage(
+        NAME
+        tracy
+        GITHUB_REPOSITORY
+        wolfpld/tracy
+        VERSION
+        0.14.1
+        OPTIONS
+        "TRACY_ENABLE ${RAWRBOX_BUILD_PROFILER}"
+        "TRACY_ONLY_LOCALHOST ON"
+)
+
+if (tracy_ADDED)
+    set_lib_runtime_mt(TracyClient)
+endif ()
+
+if (RAWRBOX_BUILD_PROFILER)
+    message(STATUS "Enabled TRACY profiler support")
+
+    if (WIN32)
+        set(TRACY_PROFILER_PLATFORM "windows")
+    elseif (APPLE)
+        set(TRACY_PROFILER_PLATFORM "macos")
+    else ()
+        set(TRACY_PROFILER_PLATFORM "linux")
+    endif ()
+
+    CPMAddPackage(
+            NAME
+            tracy-profiler
+            URL
+            "https://github.com/wolfpld/tracy/releases/download/v${CPM_PACKAGE_tracy_VERSION}/${TRACY_PROFILER_PLATFORM}-${CPM_PACKAGE_tracy_VERSION}.zip"
+            DOWNLOAD_ONLY
+            ON)
+endif ()
 # ----
 
 # LIB ----
@@ -130,9 +166,20 @@ target_link_libraries(${output_target} PUBLIC
         fmt::fmt
         glaze::glaze
         magic_enum::magic_enum
+        Tracy::TracyClient
 )
 
 set_lib_runtime_mt(${output_target})
+# --------------
+
+# COPY PROFILER ----
+if (RAWRBOX_BUILD_PROFILER)
+    add_custom_target(
+            copy_tracy ALL COMMAND ${CMAKE_COMMAND} -E copy ${tracy-profiler_SOURCE_DIR}/tracy-profiler${CMAKE_EXECUTABLE_SUFFIX} ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}
+            COMMENT "Copying tracy profiler into binary directory")
+
+    add_dependencies(${output_target} copy_tracy)
+endif ()
 # --------------
 
 # TEST ----

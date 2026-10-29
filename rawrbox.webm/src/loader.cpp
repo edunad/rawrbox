@@ -4,6 +4,7 @@
 
 #include <common/webmids.h>
 #include <fmt/format.h>
+#include <tracy/Tracy.hpp>
 
 #include <algorithm>
 #include <iterator>
@@ -432,6 +433,7 @@ namespace rawrbox {
 	// -------------
 
 	void WEBM::load(const std::filesystem::path& filePath, uint32_t flags) {
+		ZoneScopedN("WEBM::load");
 		this->_flags = flags;
 		this->_filePath = filePath;
 

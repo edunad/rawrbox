@@ -43,6 +43,11 @@
 #define RB_RENDER_OCCLUSION_THREADS 8U
 // ----------------
 
+// PROFILER ------
+#define RB_RENDER_PROFILER_FRAMES  4U
+#define RB_RENDER_PROFILER_QUERIES 256U // Timestamps per frame
+// ----------------
+
 // CAMERA -----
 // Add more layers if needed, you can then check if the camera should draw your model by checking if the layer is enabled
 #define RB_RENDER_CAMERA_LAYERS(flag) \

@@ -4,12 +4,14 @@
 #include <rawrbox/utils/file.hpp>
 
 #include <fmt/format.h>
+#include <tracy/Tracy.hpp>
 namespace rawrbox {
 	TextureWEBP::TextureWEBP(const std::filesystem::path& filePath, bool useFallback) : rawrbox::TextureAnimatedBase(filePath, useFallback) { this->internalLoad(rawrbox::FileUtils::getRawData(this->_filePath), useFallback); }
 	TextureWEBP::TextureWEBP(const std::filesystem::path& filePath, const std::vector<uint8_t>& buffer, bool useFallback) : rawrbox::TextureAnimatedBase(filePath, buffer, useFallback) { this->internalLoad(buffer, useFallback); }
 	TextureWEBP::TextureWEBP(const std::filesystem::path& filePath, const uint8_t* buffer, size_t bufferSize, bool useFallback) : TextureAnimatedBase(filePath, useFallback) { this->internalLoad(buffer, bufferSize, useFallback); }
 
 	void TextureWEBP::internalLoad(const uint8_t* buffer, size_t bufferSize, bool useFallback) {
+		ZoneScopedN("TextureWEBP::load");
 		this->_name = "RawrBox::Texture::WEBP";
 
 		try {

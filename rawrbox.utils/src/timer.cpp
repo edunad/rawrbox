@@ -1,6 +1,8 @@
 #include <rawrbox/utils/time.hpp>
 #include <rawrbox/utils/timer.hpp>
 
+#include <tracy/Tracy.hpp>
+
 #include <utility>
 
 namespace rawrbox {
@@ -10,8 +12,9 @@ namespace rawrbox {
 	// STATIC -----
 	void TIMER::update() {
 		if (timers.empty()) return;
+		ZoneScopedN("TIMER::update");
 
-		auto time = static_cast<float>(rawrbox::TimeUtils::time());
+		const auto time = static_cast<float>(rawrbox::TimeUtils::time());
 		for (auto it = timers.begin(); it != timers.end();) {
 			auto& timer = (*it).second;
 			if (timer == nullptr) {
@@ -24,8 +27,12 @@ namespace rawrbox {
 				continue;
 			}
 
-			if (timer->_func != nullptr) timer->_func(); // Tick
-			if (timer == nullptr) {                      // If timer was deleted after callback
+			if (timer->_func != nullptr) { // Tick
+				ZoneTransientN(zone, (*it).first.c_str(), true);
+				timer->_func();
+			}
+
+			if (timer == nullptr) { // If timer was deleted after callback
 				it = timers.erase(it);
 				continue;
 			}

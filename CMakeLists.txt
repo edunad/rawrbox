@@ -53,6 +53,7 @@ option(RAWRBOX_BUILD_RAWRBOX_STEAMWORKS "Build steamworks support" OFF)
 option(RAWRBOX_BUILD_RAWRBOX_IMGUI "Build imgui support" OFF)
 option(RAWRBOX_BUILD_MSVC_MULTITHREADED_RUNTIME "Build with msvc multithreading" OFF)
 option(RAWRBOX_BUILD_QHULL "Include QHull on utils" OFF)
+option(RAWRBOX_BUILD_PROFILER "Build tracy profiler support & open the profiler window on launch" OFF)
 # ---------------
 
 # Supports -----
