@@ -8,6 +8,7 @@
 #include <rawrbox/utils/string.hpp>
 
 #include <Buffer.h>
+#include <tracy/Tracy.hpp>
 
 namespace rawrbox {
 
@@ -159,6 +160,8 @@ namespace rawrbox {
 
 		virtual void internalUpdate() {
 			if (!this->isUploaded() || !this->isDynamic() || !this->_requiresUpdate) return;
+			ZoneScopedN("ModelBase::internalUpdate");
+
 			auto* context = rawrbox::RENDERER->context();
 			if (context == nullptr) RAWRBOX_CRITICAL("Context is not set!");
 
@@ -553,6 +556,7 @@ namespace rawrbox {
 		// ----
 		virtual void upload(rawrbox::UploadType type = rawrbox::UploadType::STATIC) {
 			if (this->isUploaded()) RAWRBOX_CRITICAL("Already uploaded!");
+			ZoneScopedN("ModelBase::upload");
 			this->_uploadType = type;
 
 			// BUFFERS ----

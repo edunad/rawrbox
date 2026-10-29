@@ -9,6 +9,7 @@
 #include <GraphicsAccessories.hpp>
 
 #include <fmt/format.h>
+#include <tracy/Tracy.hpp>
 
 #include <bit>
 
@@ -196,6 +197,9 @@ namespace rawrbox {
 
 	void TextureBase::upload(Diligent::TEXTURE_FORMAT format, uint32_t flags) {
 		if (this->_failedToLoad || this->_handle != nullptr) return; // Failed texture is already bound, so skip it
+		ZoneScopedN("TextureBase::upload");
+		ZoneText(this->_name.c_str(), this->_name.size());
+
 		if (!this->_data.valid()) RAWRBOX_CRITICAL("Cannot upload invalid image data");
 		if (this->_data.total() > 2048U) RAWRBOX_CRITICAL("Cannot upload more than 2048 image frames");
 

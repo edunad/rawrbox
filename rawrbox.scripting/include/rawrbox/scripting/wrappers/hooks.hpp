@@ -2,6 +2,8 @@
 #include <rawrbox/scripting/utils/lua.hpp>
 #include <rawrbox/utils/logger.hpp>
 
+#include <tracy/Tracy.hpp>
+
 #include <memory>
 #include <string>
 #include <unordered_map>
@@ -31,9 +33,11 @@ namespace rawrbox {
 		static void call(const std::string& id, const Args&... args) {
 			const auto fnd = _hooks.find(id);
 			if (fnd == _hooks.end()) return;
+			ZoneTransientN(zone, id.c_str(), true);
 
 			const auto hooks = fnd->second;
 			for (const auto& hook : hooks) {
+				ZoneTransientN(hookZone, hook.name.c_str(), true);
 				auto result = rawrbox::LuaUtils::call(hook.func, args...);
 				if (result.hasFailed()) _logger->error("Hook '{}' handler '{}' failed\n  └── {}", id, hook.name, result.errorMessage());
 			}

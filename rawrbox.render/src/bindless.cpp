@@ -4,6 +4,7 @@
 #include <rawrbox/render/static.hpp>
 
 #include <fmt/format.h>
+#include <tracy/Tracy.hpp>
 
 namespace rawrbox {
 	// PROTECTED ---
@@ -214,6 +215,7 @@ namespace rawrbox {
 
 	void BindlessManager::update() {
 		if (signature == nullptr || signatureBind == nullptr) return;
+		ZoneScopedN("BindlessManager::update");
 
 		// UPDATE TEXTURES ---
 		if (!_updateTextures.empty()) {

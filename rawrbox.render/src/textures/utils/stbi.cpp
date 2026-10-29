@@ -2,6 +2,8 @@
 #include <rawrbox/render/textures/utils/stbi.hpp>
 #include <rawrbox/utils/vfs.hpp>
 
+#include <tracy/Tracy.hpp>
+
 // NOLINTBEGIN(clang-diagnostic-unknown-pragmas)
 #pragma warning(push)
 #pragma warning(disable : 4505)
@@ -48,6 +50,7 @@ namespace rawrbox {
 
 	rawrbox::ImageData STBI::decode(const std::vector<uint8_t>& data) {
 		if (data.empty()) RAWRBOX_CRITICAL("Invalid data, cannot be empty!");
+		ZoneScopedN("STBI::decode");
 
 		int width = 0;
 		int height = 0;
@@ -60,6 +63,7 @@ namespace rawrbox {
 	}
 
 	rawrbox::ImageData STBI::decode(const uint8_t* buffer, int bufferSize) {
+		ZoneScopedN("STBI::decode");
 		int width = 0;
 		int height = 0;
 		int channels = 0;

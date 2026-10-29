@@ -1,5 +1,6 @@
 
 #include <rawrbox/engine/static.hpp>
+#include <rawrbox/render/profiler.hpp>
 #include <rawrbox/render/static.hpp>
 #include <rawrbox/render/utils/barrier.hpp>
 #include <rawrbox/utils/vfs.hpp>
@@ -75,6 +76,7 @@ namespace rawrbox {
 	void TextureWEBM::update() {
 		if (this->_failedToLoad || this->_handle == nullptr) return;
 		if (this->_webm == nullptr) RAWRBOX_CRITICAL("WEBM loader not initialized!");
+		RAWRBOX_RENDER_ZONE("TextureWEBM::update");
 
 		if (!this->_started) {
 			this->_started = true;

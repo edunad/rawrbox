@@ -1,5 +1,24 @@
 
 #include <rawrbox/physics/manager.hpp>
+#include <rawrbox/utils/thread_utils.hpp>
+
+#include <fmt/format.h>
+#include <tracy/Tracy.hpp>
+
+#include <cstring>
+#include <new>
+
+#ifdef JPH_EXTERNAL_PROFILE
+// JOLT PROFILER ---
+JPH::ExternalProfileMeasurement::ExternalProfileMeasurement(const char* inName, JPH::uint32 /*inColor*/) {
+	new (this->mUserData) tracy::ScopedZone(TracyLine, TracyFile, std::strlen(TracyFile), TracyFunction, std::strlen(TracyFunction), inName, std::strlen(inName), 0U);
+}
+
+JPH::ExternalProfileMeasurement::~ExternalProfileMeasurement() {
+	std::launder(reinterpret_cast<tracy::ScopedZone*>(this->mUserData))->~ScopedZone();
+}
+// -----------------
+#endif
 
 namespace rawrbox {
 	// Private
@@ -52,7 +71,9 @@ namespace rawrbox {
 
 		// Initialize pool
 		if (maxThreads == 0) maxThreads = std::thread::hardware_concurrency() - 1;
-		_threadPool = std::make_unique<JPH::JobSystemThreadPool>(JPH::cMaxPhysicsJobs, JPH::cMaxPhysicsBarriers, maxThreads);
+		_threadPool = std::make_unique<JPH::JobSystemThreadPool>();
+		_threadPool->SetThreadInitFunction([](int index) { rawrbox::ThreadUtils::setName(fmt::format("rawrbox:physics:{}", index)); });
+		_threadPool->Init(JPH::cMaxPhysicsJobs, JPH::cMaxPhysicsBarriers, maxThreads);
 
 		_bodyListener = std::make_unique<rawrbox::BodyActivationListener>();
 		_contactListener = std::make_unique<rawrbox::ContactListener>();
@@ -105,6 +126,7 @@ namespace rawrbox {
 
 	void PHYSICS::tick() {
 		if (allocator == nullptr || _threadPool == nullptr || physicsSystem == nullptr || !simulate) return;
+		ZoneScopedN("PHYSICS::tick");
 		physicsSystem->Update(rawrbox::FIXED_DELTA_TIME, steps, allocator.get(), _threadPool.get());
 	}
 

@@ -7,6 +7,7 @@
 #include <rawrbox/utils/vfs.hpp>
 
 #include <fmt/format.h>
+#include <tracy/Tracy.hpp>
 
 #include <filesystem>
 #include <functional>
@@ -54,6 +55,8 @@ namespace rawrbox {
 			// check if it's already loaded
 			auto found = getFileImpl<T>(path);
 			if (found != nullptr) return found;
+			ZoneScopedN("RESOURCES::loadFile");
+			ZoneText(path.c_str(), path.size());
 
 			// load file
 			auto ext = filePath.extension().generic_string();

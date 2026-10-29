@@ -2,6 +2,7 @@
 #include <rawrbox/webm/decoder.hpp>
 
 #include <fmt/format.h>
+#include <tracy/Tracy.hpp>
 #include <vpx/vp8dx.h>
 #include <vpx/vpx_decoder.h>
 
@@ -122,6 +123,7 @@ namespace rawrbox {
 
 	bool WEBMDecoder::decode(const rawrbox::WEBMFrame& frame) {
 		if (this->_ctx == nullptr) RAWRBOX_CRITICAL("WEBM codec not initialized");
+		ZoneScopedN("WEBMDecoder::decode");
 
 		this->_image = nullptr;
 		this->_alphaImage = nullptr;
@@ -139,6 +141,7 @@ namespace rawrbox {
 
 	void WEBMDecoder::convert(rawrbox::WEBMImage& image) const {
 		if (this->_image == nullptr) return;
+		ZoneScopedN("WEBMDecoder::convert");
 
 		const auto format = static_cast<vpx_img_fmt_t>(this->_image->fmt & ~VPX_IMG_FMT_HIGHBITDEPTH);
 		if (format != VPX_IMG_FMT_I420 && format != VPX_IMG_FMT_I422 && format != VPX_IMG_FMT_I444 && format != VPX_IMG_FMT_I440) {

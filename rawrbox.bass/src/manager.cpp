@@ -8,6 +8,7 @@
 #include <bass.h>
 #include <bass_fx.h>
 #include <fmt/printf.h>
+#include <tracy/Tracy.hpp>
 
 #include <filesystem>
 
@@ -144,6 +145,8 @@ namespace rawrbox {
 		std::string pth = path.generic_string();
 
 		if (sounds.find(pth) != sounds.end()) return sounds[pth].get();
+		ZoneScopedN("BASS::loadSound");
+		ZoneText(pth.c_str(), pth.size());
 
 		auto stream = rawrbox::VFS::open(path);
 		if (stream == nullptr) RAWRBOX_CRITICAL("File '{}' not found!", pth);
@@ -191,6 +194,8 @@ namespace rawrbox {
 	rawrbox::SoundBase* BASS::loadHTTPSound(const std::string& url, uint32_t flags) {
 		if (!url.starts_with("http://") && !url.starts_with("https://")) RAWRBOX_CRITICAL("Invalid sound url '{}'", url);
 		if (sounds.find(url) != sounds.end()) return sounds[url].get();
+		ZoneScopedN("BASS::loadHTTPSound");
+		ZoneText(url.c_str(), url.size());
 
 		if (url.rfind(".3D") != std::string::npos) flags |= SoundFlags::SOUND_3D;
 

@@ -15,6 +15,7 @@
 #include <rawrbox/scripting/wrappers/math/vector3.hpp>
 #include <rawrbox/scripting/wrappers/math/vector4.hpp>
 #include <rawrbox/scripting/wrappers/mod.hpp>
+#include <rawrbox/scripting/wrappers/profiler.hpp>
 #include <rawrbox/scripting/wrappers/timer.hpp>
 #include <rawrbox/utils/i18n.hpp>
 #include <rawrbox/utils/logger.hpp>
@@ -134,6 +135,7 @@ namespace rawrbox {
 		// Rawrbox ---
 		rawrbox::Hooks::registerLua(L);
 		rawrbox::TimerWrapper::registerLua(L);
+		rawrbox::ProfilerWrapper::registerLua(L);
 		rawrbox::I18NWrapper::registerLua(L);
 		rawrbox::MODWrapper::registerLua(L);
 

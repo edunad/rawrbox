@@ -5,6 +5,7 @@
 // ---- IMGUI ----
 #include <backends/imgui_impl_glfw.h>
 #include <imgui.h>
+#include <tracy/Tracy.hpp>
 // ---------------
 
 namespace rawrbox {
@@ -121,11 +122,13 @@ namespace rawrbox {
 	}
 
 	void IMGUIManager::clear() {
+		ZoneScopedN("IMGUIManager::clear");
 		ImGui_ImplGlfw_NewFrame();
 		ImGui::NewFrame();
 	}
 
 	void IMGUIManager::render() {
+		ZoneScopedN("IMGUIManager::render");
 		ImGui::Render();
 		renderDrawData(ImGui::GetDrawData());
 	}

@@ -159,6 +159,7 @@ Matrix: [column-major](https://upload.wikimedia.org/wikipedia/commons/thumb/4/4d
 | `RAWRBOX_DISABLE_SUPPORT_VULKAN`           | Disable vulkan support                                                                             | OFF     |
 | --                                         | --                                                                                                 | --      |
 | `RAWRBOX_DEV_MODE`                         | Enables all the modules, used for rawrbox development                                              | OFF     |
+| `RAWRBOX_BUILD_PROFILER`                   | Enables tracy profilling support + auto-open                                                       | OFF     |
 | --                                         | --                                                                                                 | --      |
 | `RAWRBOX_INTERPROCEDURAL_OPTIMIZATION`     | Enables IPO compilation on release                                                                 | ON      |
 
@@ -208,3 +209,4 @@ Matrix: [column-major](https://upload.wikimedia.org/wikipedia/commons/thumb/4/4d
 | spdlog            | Used for logging                                    | [MIT](https://github.com/gabime/spdlog/blob/v1.x/LICENSE)                                      |
 | basis_universal   | Used for texture compression                        | [APACHE](https://github.com/BinomialLLC/basis_universal/tree/master?tab=Apache-2.0-1-ov-file)  |
 | zstd              | Used for VPK file compression                       | [BSD 3-Clause](https://github.com/facebook/zstd/blob/dev/LICENSE)                              |
+| tracy             | Used for performance profilling                     | [BSD 3-Clause](https://github.com/wolfpld/tracy/blob/master/LICENSE)                           |

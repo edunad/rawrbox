@@ -3,12 +3,15 @@
 #include <rawrbox/utils/string.hpp>
 
 namespace rawrbox {
+	// PRIVATE -----
+	std::unordered_map<uint64_t, luabridge::LuaRef> HTTPGlobal::_callbacks = {};
+	uint64_t HTTPGlobal::_id = 0;
+	// -------------
+
 	void HTTPGlobal::request(const std::string& url, int method, const luabridge::LuaRef& headers, const luabridge::LuaRef& callback, std::optional<int> timeout) {
 		if (url.empty()) throw std::runtime_error("URL cannot be empty");
 		if (!headers.isTable()) throw std::runtime_error("Invalid header table");
 		if (!callback.isCallable()) throw std::runtime_error("Invalid callback");
-
-		auto* L = headers.state();
 
 		// Setup headers -------
 		std::map<std::string, std::string> headerMap = {};
@@ -24,9 +27,18 @@ namespace rawrbox {
 		}
 		// ----------
 
+		const auto id = ++_id;
+		_callbacks.emplace(id, callback);
+
 		rawrbox::HTTP::request(
-		    url, static_cast<rawrbox::HTTPMethod>(method), headerMap, [callback, L](int code, const std::map<std::string, std::string>& headerResp, const std::string& resp) {
-			    rawrbox::runOnRenderThread([resp, code, callback, headerResp, L]() {
+		    url, static_cast<rawrbox::HTTPMethod>(method), headerMap, [id](int code, const std::map<std::string, std::string>& headerResp, const std::string& resp) {
+			    rawrbox::runOnRenderThread([resp, code, headerResp, id]() {
+				    auto node = _callbacks.extract(id);
+				    if (node.empty()) return; // Mod unloaded
+
+				    const auto& callback = node.mapped();
+				    auto* L = callback.state();
+
 				    if (code == 0 || (code == 200 && resp.starts_with("Operation timed out after"))) {
 					    auto result = rawrbox::LuaUtils::call(callback, false, resp); // curl error
 					    if (result.hasFailed()) fmt::print("Lua error\n  └── {}\n", result.errorMessage());
@@ -50,6 +62,10 @@ namespace rawrbox {
 			    });
 		    },
 		    timeout.value_or(10000));
+	}
+
+	void HTTPGlobal::clear(rawrbox::Mod& mod) {
+		std::erase_if(_callbacks, [&mod](const auto& pair) { return lua_mainthread(pair.second.state()) == mod.getEnvironment(); });
 	}
 
 	void HTTPGlobal::registerLua(lua_State* L) {
