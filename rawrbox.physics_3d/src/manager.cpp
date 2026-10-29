@@ -11,7 +11,7 @@
 #ifdef JPH_EXTERNAL_PROFILE
 // JOLT PROFILER ---
 JPH::ExternalProfileMeasurement::ExternalProfileMeasurement(const char* inName, JPH::uint32 /*inColor*/) {
-	new (this->mUserData) tracy::ScopedZone(TracyLine, TracyFile, std::strlen(TracyFile), TracyFunction, std::strlen(TracyFunction), inName, std::strlen(inName), 0U);
+	new (this->mUserData) tracy::ScopedZone(TracyLine, TracyFile, sizeof(TracyFile) - 1, TracyFunction, sizeof(TracyFunction) - 1, inName, std::strlen(inName), 0U);
 }
 
 JPH::ExternalProfileMeasurement::~ExternalProfileMeasurement() {

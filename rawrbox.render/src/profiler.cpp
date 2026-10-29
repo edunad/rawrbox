@@ -9,7 +9,7 @@
 
 	#include <fmt/format.h>
 
-	#include <cstring>
+	#include <algorithm>
 	#include <thread>
 
 namespace rawrbox {
@@ -44,12 +44,13 @@ namespace rawrbox {
 		// -------------
 
 		const auto& adapter = device.GetAdapterInfo();
+		const std::string_view adapterName(adapter.Description, std::ranges::find(adapter.Description, '\0'));
 		const auto type = device.GetDeviceInfo().Type == Diligent::RENDER_DEVICE_TYPE_VULKAN ? tracy::GpuContextType::Vulkan : tracy::GpuContextType::Direct3D12;
 
 		this->_id = static_cast<uint8_t>(tracy::GetGpuCtxCounter().fetch_add(1, std::memory_order_relaxed));
 
 		___tracy_emit_gpu_new_context_serial({static_cast<int64_t>(timestamp.Counter), static_cast<float>(1e9 / static_cast<double>(timestamp.Frequency)), this->_id, 0, static_cast<uint8_t>(type)});
-		___tracy_emit_gpu_context_name_serial({this->_id, adapter.Description, static_cast<uint16_t>(std::strlen(adapter.Description))});
+		___tracy_emit_gpu_context_name_serial({this->_id, adapterName.data(), static_cast<uint16_t>(adapterName.size())});
 	}
 
 	bool GPUProfiler::begin(std::string_view name, uint32_t line, std::string_view file, std::string_view function) {
