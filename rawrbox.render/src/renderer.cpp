@@ -61,6 +61,9 @@ namespace rawrbox {
 		this->_occlusion.reset();
 		this->_logger.reset();
 		this->_GPUBlit.reset();
+#ifdef TRACY_ENABLE
+		this->_profiler.reset();
+#endif
 
 		RAWRBOX_DESTROY(this->_device);
 		RAWRBOX_DESTROY(this->_context);
@@ -98,6 +101,10 @@ namespace rawrbox {
 		features.PipelineStatisticsQueries = Diligent::DEVICE_FEATURE_STATE_OPTIONAL;
 		features.DurationQueries = Diligent::DEVICE_FEATURE_STATE_OPTIONAL;
 #endif
+
+#ifdef TRACY_ENABLE
+		features.TimestampQueries = Diligent::DEVICE_FEATURE_STATE_ENABLED;
+#endif
 		// --------------
 
 		// PLUGIN REQUIREMENTS ---
@@ -125,6 +132,9 @@ namespace rawrbox {
 					Diligent::EngineD3D12CreateInfo EngineCI;
 					EngineCI.Features = features;
 					EngineCI.NumAsyncShaderCompilationThreads = ASYNC_COMPILE_THREADS;
+	#ifdef TRACY_ENABLE
+					EngineCI.QueryPoolSizes[Diligent::QUERY_TYPE_TIMESTAMP] += RB_RENDER_PROFILER_FRAMES * RB_RENDER_PROFILER_QUERIES;
+	#endif
 					// EngineCI.D3D12ValidationFlags = Diligent::D3D12_VALIDATION_FLAG_NONE;
 					// EngineCI.EnableValidation = false;
 
@@ -179,6 +189,9 @@ namespace rawrbox {
 					EngineCI.Features = features;
 					EngineCI.NumAsyncShaderCompilationThreads = ASYNC_COMPILE_THREADS;
 					EngineCI.MainDescriptorPoolSize.NumSampledImageDescriptors += RB_RENDER_MAX_TEXTURES + RB_RENDER_MAX_VERTEX_TEXTURES;
+	#ifdef TRACY_ENABLE
+					EngineCI.QueryPoolSizes[Diligent::QUERY_TYPE_TIMESTAMP] += RB_RENDER_PROFILER_FRAMES * RB_RENDER_PROFILER_QUERIES;
+	#endif
 	#ifdef _WIN32
 					EngineCI.pDxCompilerPath = "dxcompiler.dll";
 	#else
@@ -265,6 +278,10 @@ namespace rawrbox {
 			RAWRBOX_CRITICAL("Base vertex not supported");
 		}
 		// ----------------------------
+
+#ifdef TRACY_ENABLE
+		this->_profiler = std::make_unique<rawrbox::GPUProfiler>(*this->_device, *this->_context);
+#endif
 
 		// Setup shader pipeline if not exists
 		if (rawrbox::SHADER_FACTORY == nullptr) {
@@ -475,6 +492,7 @@ namespace rawrbox {
 	void RendererBase::setDrawCall(std::function<void(const rawrbox::CameraBase&, const rawrbox::DrawPass&)> call) { this->_drawCall = std::move(call); }
 
 	void RendererBase::update() {
+		ZoneScopedN("RendererBase::update");
 		if (this->_currentIntro != nullptr) {
 			if (this->_introComplete) {
 				this->_introList.erase(this->_introList.begin());
@@ -501,6 +519,7 @@ namespace rawrbox {
 			// Update plugins --
 			for (auto& plugin : this->_renderPlugins) {
 				if (plugin.second == nullptr || !plugin.second->isEnabled()) continue;
+				ZoneTransientN(zone, plugin.first.c_str(), true);
 				plugin.second->update();
 			}
 			// --------------------
@@ -511,6 +530,10 @@ namespace rawrbox {
 		if (this->_swapChain == nullptr || this->_context == nullptr || this->_device == nullptr) RAWRBOX_CRITICAL("Failed to bind swapChain / context / device! Did you call 'init' ?");
 		if (this->_drawCall == nullptr) RAWRBOX_CRITICAL("Missing draw call! Did you call 'setDrawCall' ?");
 		if (rawrbox::MAIN_CAMERA == nullptr || this->_cameras.empty()) RAWRBOX_CRITICAL("Missing cameras! Did you call 'createCamera' ?");
+
+#ifdef TRACY_ENABLE
+		this->_profiler->collect();
+#endif
 
 		// Clear backbuffer ----
 		this->clear();
@@ -538,6 +561,7 @@ namespace rawrbox {
 
 		for (auto& camera : this->_cameras) {
 			if (!camera->isEnabled()) continue;
+			RAWRBOX_RENDER_ZONE("Camera");
 			this->_passCamera = camera.get();
 
 			// Update camera buffers --
@@ -548,6 +572,7 @@ namespace rawrbox {
 			// Perform pre-render --
 			for (auto& plugin : this->_renderPlugins) {
 				if (plugin.second == nullptr || !plugin.second->isEnabled()) continue;
+				RAWRBOX_RENDER_ZONE(fmt::format("{}::preRender", plugin.first));
 				plugin.second->preRender(*camera);
 			}
 			// -----------------------
@@ -560,9 +585,12 @@ namespace rawrbox {
 			const bool occlusion = camera.get() == rawrbox::MAIN_CAMERA;
 			if (occlusion) this->_occlusion->begin();
 
-			camera->begin();
-			this->_drawCall(*camera, rawrbox::DrawPass::PASS_WORLD);
-			camera->end();
+			{
+				RAWRBOX_RENDER_ZONE("World");
+				camera->begin();
+				this->_drawCall(*camera, rawrbox::DrawPass::PASS_WORLD);
+				camera->end();
+			}
 
 			if (occlusion) this->_occlusion->end(*camera);
 			//  -----------------
@@ -570,12 +598,14 @@ namespace rawrbox {
 			// Perform post-render --
 			for (auto& plugin : this->_renderPlugins) {
 				if (plugin.second == nullptr || !plugin.second->isEnabled()) continue;
+				RAWRBOX_RENDER_ZONE(fmt::format("{}::postRender", plugin.first));
 				plugin.second->postRender(*camera);
 			}
 			// -----------------------
 		}
 
 		this->_passCamera = nullptr;
+		RAWRBOX_RENDER_PLOT("Draw calls: World");
 
 		// Render main camera ----
 		const auto present = rawrbox::MAIN_CAMERA->getPresentRect();
@@ -587,11 +617,22 @@ namespace rawrbox {
 		// ------------------
 
 		// Perform overlay, only MAIN camera does it --
-		this->_drawCall(*rawrbox::MAIN_CAMERA, rawrbox::DrawPass::PASS_OVERLAY);
+		{
+			RAWRBOX_RENDER_ZONE("Overlay");
+			this->_drawCall(*rawrbox::MAIN_CAMERA, rawrbox::DrawPass::PASS_OVERLAY);
+		}
+
+		RAWRBOX_RENDER_PLOT("Draw calls: Overlay");
+		// ---------------------------------------------
+
+		// Perform stencil --
 		if (this->_stencil != nullptr) {
+			RAWRBOX_RENDER_ZONE("Stencil");
 			if (rawrbox::LoadingUtils::hasTasks()) rawrbox::LoadingUtils::draw(*this->_stencil, this->_size.cast<float>());
 			this->_stencil->render();
 		}
+
+		RAWRBOX_RENDER_PLOT("Draw calls: Stencil");
 		// ---------------------------------------------
 
 		// Submit ---
@@ -620,6 +661,7 @@ namespace rawrbox {
 	}
 
 	void RendererBase::frame() {
+		ZoneScopedN("RendererBase::frame");
 		this->_swapChain->Present(this->_vsync ? 1 : 0); // Submit
 		rawrbox::FRAME = this->_context->GetFrameNumber();
 	}
@@ -811,6 +853,9 @@ namespace rawrbox {
 
 	rawrbox::Stencil* RendererBase::stencil() const { return this->_stencil.get(); }
 	rawrbox::Occlusion* RendererBase::occlusion() const { return this->_occlusion.get(); }
+#ifdef TRACY_ENABLE
+	rawrbox::GPUProfiler* RendererBase::profiler() const { return this->_profiler.get(); }
+#endif
 
 	Diligent::IDeviceContext* RendererBase::context() const { return this->_context; }
 	Diligent::ISwapChain* RendererBase::swapChain() const { return this->_swapChain; }

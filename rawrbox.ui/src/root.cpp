@@ -1,7 +1,10 @@
 
 #include <rawrbox/engine/static.hpp>
+#include <rawrbox/render/profiler.hpp>
 #include <rawrbox/render/window.hpp>
 #include <rawrbox/ui/root.hpp>
+
+#include <tracy/Tracy.hpp>
 
 namespace rawrbox {
 	UIRoot::UIRoot(rawrbox::Window& window) : _window(&window) {
@@ -207,6 +210,7 @@ namespace rawrbox {
 
 	void UIRoot::render() {
 		if (this->_window == nullptr) return;
+		RAWRBOX_RENDER_ZONE("UIRoot::render");
 		auto& renderer = this->_window->getRenderer();
 		auto* sten = renderer.stencil();
 
@@ -219,6 +223,7 @@ namespace rawrbox {
 
 	void UIRoot::update() {
 		if (this->_window == nullptr) return;
+		ZoneScopedN("UIRoot::update");
 		for (auto& ch : this->_children) {
 			ch->updateChildren();
 		}

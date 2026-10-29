@@ -1,5 +1,7 @@
 #include <rawrbox/network/http.hpp>
 
+#include <tracy/Tracy.hpp>
+
 namespace rawrbox {
 	void HTTP::request(const std::string& url, const rawrbox::HTTPMethod method, const std::map<std::string, std::string>& headers, const std::function<void(int, std::map<std::string, std::string>, std::string)>& callback, int timeout) {
 		if (callback == nullptr) throw std::runtime_error("[RawrBox-HTTP] Invalid callback");
@@ -16,7 +18,10 @@ namespace rawrbox {
 		// ----
 
 		// Setup callback ---
-		auto cb = [callback](const cpr::Response& r) {
+		auto cb = [callback, url](const cpr::Response& r) {
+			ZoneScopedN("HTTP::request");
+			ZoneText(url.c_str(), url.size());
+
 			std::map<std::string, std::string> headerResp = {};
 			for (const auto& h : r.header) {
 				headerResp[h.first] = h.second;

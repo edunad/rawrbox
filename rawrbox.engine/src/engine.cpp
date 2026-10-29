@@ -5,14 +5,20 @@
 #include <rawrbox/utils/timer.hpp>
 
 #include <fmt/format.h>
+#include <tracy/Tracy.hpp>
 
 #include <algorithm>
+#include <array>
 #include <chrono>
 #include <string>
 #include <thread>
 
 #ifdef _WIN32
 	#include <windows.h>
+#elif defined(TRACY_ENABLE)
+	#include <spawn.h>
+
+extern char** environ;
 #endif
 
 namespace rawrbox {
@@ -91,6 +97,32 @@ namespace rawrbox {
 		rawrbox::ASYNC::init();
 		rawrbox::ThreadUtils::setName("rawrbox:input");
 
+#ifdef TRACY_ENABLE
+		// Open profiler window ---
+	#ifdef _WIN32
+		std::string command = "tracy-profiler.exe -a 127.0.0.1";
+
+		STARTUPINFOA startup = {.cb = sizeof(STARTUPINFOA)};
+		PROCESS_INFORMATION process = {};
+
+		if (CreateProcessA(nullptr, command.data(), nullptr, nullptr, FALSE, DETACHED_PROCESS, nullptr, nullptr, &startup, &process) != FALSE) {
+			CloseHandle(process.hThread);
+			CloseHandle(process.hProcess);
+		} else {
+			this->_logger->warn("Failed to open 'tracy-profiler.exe', profiling data will be kept in memory until a profiler connects");
+		}
+	#else
+		pid_t pid = 0;
+		std::array<std::string, 3> args = {"./tracy-profiler", "-a", "127.0.0.1"};
+		std::array<char*, 4> argv = {args[0].data(), args[1].data(), args[2].data(), nullptr};
+
+		if (posix_spawn(&pid, argv[0], nullptr, nullptr, argv.data(), environ) != 0) {
+			this->_logger->warn("Failed to open 'tracy-profiler', profiling data will be kept in memory until a profiler connects");
+		}
+	#endif
+		// -----------
+#endif
+
 		// Init GLFW ---
 		this->setupGLFW();
 		// ---------
@@ -109,12 +141,16 @@ namespace rawrbox {
 
 				const float target_deltaTime = 1.0F / this->_fps;
 				if (rawrbox::DELTA_TIME < target_deltaTime) {
+					ZoneScopedN("Engine::sleep");
 					sleep((target_deltaTime - rawrbox::DELTA_TIME) * 1000);
 					rawrbox::DELTA_TIME += static_cast<float>(std::max(0.0, this->_timer.record_elapsed_seconds()));
 				}
 
 				// THREADING ----
-				rawrbox::___runThreadInvokes();
+				{
+					ZoneScopedN("Engine::invokes");
+					rawrbox::___runThreadInvokes();
+				}
 				// -------
 
 				// Fixed time update --------
@@ -122,6 +158,7 @@ namespace rawrbox {
 				this->_deltaTimeAccumulator += std::min(rawrbox::DELTA_TIME, MAX_FRAME_TIME);
 
 				while (this->_deltaTimeAccumulator >= rawrbox::FIXED_DELTA_TIME) {
+					ZoneScopedN("Engine::fixedUpdate");
 					this->fixedUpdate();
 
 					this->_deltaTimeAccumulator -= rawrbox::FIXED_DELTA_TIME;
@@ -133,12 +170,20 @@ namespace rawrbox {
 				// ---------------------------
 
 				// VARIABLE-TIME
-				rawrbox::TIMER::update();
-				this->update();
+				{
+					ZoneScopedN("Engine::update");
+					rawrbox::TIMER::update();
+					this->update();
+				}
 				// ----
 
 				// ACTUAL DRAWING
-				this->draw();
+				{
+					ZoneScopedN("Engine::draw");
+					this->draw();
+				}
+
+				FrameMark;
 				// ----------
 
 				// FRAME RATE ---
