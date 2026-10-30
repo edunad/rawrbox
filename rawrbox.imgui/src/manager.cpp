@@ -59,11 +59,11 @@ namespace rawrbox {
 				if (pCmd.ElemCount == 0) continue;
 
 				// Texturing ----
-				auto* texture = pCmd.GetTexID();
+				const auto* texture = pCmd.GetTexID();
 				if (texture == nullptr) texture = rawrbox::MISSING_TEXTURE.get();
 
 				for (uint32_t i = pCmd.IdxOffset; i < pCmd.IdxOffset + pCmd.ElemCount; i++) {
-					auto verticeIndex = indices[i];
+					const auto verticeIndex = indices[i];
 
 					vertices[verticeIndex].textureID = texture->getTextureID();
 					vertices[verticeIndex].uv.z = static_cast<float>(texture->getSlice());
@@ -93,8 +93,8 @@ namespace rawrbox {
 
 	// PROTECTED ---
 	void IMGUIManager::init(bool darkTheme) {
-		auto* window = rawrbox::Window::getWindow();
-		auto& renderer = window->getRenderer();
+		const auto* window = rawrbox::Window::getWindow();
+		const auto& renderer = window->getRenderer();
 
 		// SETUP IMGUI
 		IMGUI_CHECKVERSION();
@@ -138,14 +138,25 @@ namespace rawrbox {
 		options.callbacks.OnImage = [](const std::string& path) -> std::optional<RichMd::MarkdownImage> {
 			if (!rawrbox::RESOURCES::isLoaded(path)) {
 				const auto ext = std::filesystem::path(path).extension().generic_string();
-				const bool canLoad = std::ranges::any_of(rawrbox::RESOURCES::getLoaders(), [&ext](const auto& loader) { return dynamic_cast<rawrbox::TextureLoader*>(loader.get()) != nullptr && loader->canLoad(ext); });
+				const bool canLoad = std::ranges::any_of(rawrbox::RESOURCES::getLoaders(), [&ext](const auto& loader) {
+					return dynamic_cast<rawrbox::TextureLoader*>(loader.get()) != nullptr && loader->canLoad(ext);
+				});
+
 				if (!canLoad || !rawrbox::VFS::contains(path)) return RichMd::OnImage_Default(path);
 			}
 
 			auto* texture = rawrbox::RESOURCES::loadFile<rawrbox::ResourceTexture>(path)->get();
 			const auto size = texture->getSize().cast<float>();
 
-			return RichMd::MarkdownImage{texture, {size.x, size.y}, {0.F, 0.F}, {1.F, 1.F}, {1.F, 1.F, 1.F, 1.F}, {0.F, 0.F, 0.F, 0.F}};
+			return RichMd::MarkdownImage{
+			    .texture_id = texture,
+			    .size = {size.x, size.y},
+
+			    .uv0 = {0.F, 0.F},
+			    .uv1 = {1.F, 1.F},
+
+			    .col_tint = {1.F, 1.F, 1.F, 1.F},
+			    .col_border = {0.F, 0.F, 0.F, 0.F}};
 		};
 
 		RichMd::SetHostServices(services);

@@ -51,13 +51,13 @@ Rather, it's tailored for creating PlayStation 1-style games with modding in min
 
 # SAMPLES
 
-|        001-stencil<br/><a href='/samples/001-stencil'><img src="https://i.rawr.dev/sample1-min-4.gif" width="240" /></a>        | 002-generated-models<br/><a href='/samples/002-generated-models'><img src="https://i.rawr.dev/sample2-min-4.gif" width="240" /></a> |    003-light<br/><a href='/samples/003-light'><img src="https://i.rawr.dev/sample3-shadow-min-2.gif" width="240" /></a>    |
+|        001-stencil<br/><a href='/samples/001-stencil'><img src=".github/media/sample1-min-4.gif" width="240" /></a>        | 002-generated-models<br/><a href='/samples/002-generated-models'><img src=".github/media/sample2-min-4.gif" width="240" /></a> |    003-light<br/><a href='/samples/003-light'><img src=".github/media/sample3-shadow-min-2.gif" width="240" /></a>    |
 |:-------------------------------------------------------------------------------------------------------------------------------:|:-----------------------------------------------------------------------------------------------------------------------------------:|:--------------------------------------------------------------------------------------------------------------------------:|
-|     004-instancing<br/><a href='/samples/004-instancing'><img src="https://i.rawr.dev/sample4-min-2.gif" width="240" /></a>     |     005-post-process<br/><a href='/samples/005-post-process'><img src="https://i.rawr.dev/sample5-min-2.gif" width="240" /></a>     |      006-decals<br/><a href='/samples/006-decals'><img src="https://i.rawr.dev/sample6-min-2.gif" width="240" /></a>       |
-| 007-particle-system<br/><a href='/samples/007-particle-system'><img src="https://i.rawr.dev/sample7-min.gif" width="240" /></a> |               008-ui<br/><a href='/samples/008-ui'><img src="https://i.rawr.dev/sample8-min-5.gif" width="240" /></a>               |        009-gltf<br/><a href='/samples/009-gltf'><img src="https://i.rawr.dev/sample9-min-4.gif" width="240" /></a>         |
-|     010-bass-audio<br/><a href='/samples/010-bass-audio'><img src="https://i.rawr.dev/sample10-min.gif" width="240" /></a>      |      011-physics-3D<br/><a href='/samples/011-physics-3D'><img src="https://i.rawr.dev/sample11-min-2.gif" width="240" /></a>       |  012-physics-2D<br/><a href='/samples/012-physics-2D'><img src="https://i.rawr.dev/sample12-min-2.gif" width="240" /></a>  |
-|          013-webm<br/><a href='/samples/013-webm'><img src="https://i.rawr.dev/sample13-min-2.gif" width="240" /></a>           |       014-scripting<br/><a href='/samples/014-scripting'><img src="https://i.rawr.dev/sample14-min-2.gif" width="240" /></a>        | 015-gpu-picking<br/><a href='/samples/015-gpu-picking'><img src="https://i.rawr.dev/sample15-min-2.gif" width="240" /></a> |
-|     016-steamworks<br/><a href='/samples/016-steamworks'><img src="https://i.rawr.dev/sample16-min.gif" width="240" /></a>      |           017-imgui<br/><a href='/samples/017-imgui'><img src="https://i.rawr.dev/sample17-min-2.gif" width="240" /></a>            |       018-camera<br/><a href='/samples/018-camera'><img src="https://i.rawr.dev/sample18-min.gif" width="240" /></a>       |
+|     004-instancing<br/><a href='/samples/004-instancing'><img src=".github/media/sample4-min-2.gif" width="240" /></a>     |     005-post-process<br/><a href='/samples/005-post-process'><img src=".github/media/sample5-min-2.gif" width="240" /></a>     |      006-decals<br/><a href='/samples/006-decals'><img src=".github/media/sample6-min-2.gif" width="240" /></a>       |
+| 007-particle-system<br/><a href='/samples/007-particle-system'><img src=".github/media/sample7-min.gif" width="240" /></a> |               008-ui<br/><a href='/samples/008-ui'><img src=".github/media/sample8-min-5.gif" width="240" /></a>               |        009-gltf<br/><a href='/samples/009-gltf'><img src=".github/media/sample9-min-4.gif" width="240" /></a>         |
+|     010-bass-audio<br/><a href='/samples/010-bass-audio'><img src=".github/media/sample10-min.gif" width="240" /></a>      |      011-physics-3D<br/><a href='/samples/011-physics-3D'><img src=".github/media/sample11-min-2.gif" width="240" /></a>       |  012-physics-2D<br/><a href='/samples/012-physics-2D'><img src=".github/media/sample12-min-2.gif" width="240" /></a>  |
+|          013-webm<br/><a href='/samples/013-webm'><img src=".github/media/sample13-min-2.gif" width="240" /></a>           |       014-scripting<br/><a href='/samples/014-scripting'><img src=".github/media/sample14-min-2.gif" width="240" /></a>        | 015-gpu-picking<br/><a href='/samples/015-gpu-picking'><img src=".github/media/sample15-min-2.gif" width="240" /></a> |
+|     016-steamworks<br/><a href='/samples/016-steamworks'><img src=".github/media/sample16-min.gif" width="240" /></a>      |           017-imgui<br/><a href='/samples/017-imgui'><img src=".github/media/sample17-min-2.gif" width="240" /></a>            |       018-camera<br/><a href='/samples/018-camera'><img src=".github/media/sample18-min.gif" width="240" /></a>       |
 
 # BUILDING
 
@@ -70,7 +70,7 @@ Rather, it's tailored for creating PlayStation 1-style games with modding in min
 - [GIT](https://git-scm.com/) or something similar to GIT
 - [CMAKE](https://cmake.org/download/) at least > 3.16.3
 - Download and install **C++ Build Tools** (2022 is recommended)<br/>
-    - ![](https://i.rawr.dev/KcTNzFJZhZ.png)
+    - ![](.github/media/KcTNzFJZhZ.png)
 - Download and install a IDE, [Visual Code](https://code.visualstudio.com/) is **recommended**.
 - Download and setup [ninja](https://github.com/ninja-build/ninja/releases) (make sure it's in the enviroment path)<br/>
     - `pip install ninja` if you have python3 installed

@@ -3,4 +3,4 @@
 > [!NOTE]
 > This sample demonstrates how to integrate multiple cameras and layer filtering
 
-![](https://i.rawr.dev/sample18-min.gif)
+![](../../.github/media/sample18-min.gif)

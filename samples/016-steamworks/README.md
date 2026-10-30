@@ -6,4 +6,4 @@
 > [!WARNING]
 > A Steamworks account and app ID are required.
 
-![](https://i.rawr.dev/sample16-min.gif)
+![](../../.github/media/sample16-min.gif)
