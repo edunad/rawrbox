@@ -184,7 +184,7 @@ Rather, it's tailored for creating PlayStation 1-style games with modding in min
 | DiligentCore      | Used for vulkan / directx rendering                 | [Apache License 2.0](https://github.com/DiligentGraphics/DiligentCore/blob/master/License.txt)           |
 | glfw              | Used for window management                          | [ZLIB](https://github.com/glfw/glfw/blob/master/LICENSE.md)                                              |
 | glaze             | Used for JSON loading                               | [MIT](https://github.com/stephenberry/glaze/blob/main/LICENSE)                                           |
-| fmt               | Used for text formatting                            | [CUSTOM](https://github.com/fmtlib/fmt/blob/master/LICENSE)                                              |
+| fmt               | Used for text formatting                            | [MIT](https://github.com/fmtlib/fmt/blob/master/LICENSE)                                              |
 | magic_enum        | Used for enum reflection                            | [MIT](https://github.com/Neargye/magic_enum/blob/master/LICENSE)                                         |
 | utfcpp            | Used for utf support                                | [Boost Software License 1.0](https://github.com/nemtrif/utfcpp/blob/master/LICENSE)                      |
 | imgui             | Used for ui rendering                               | [MIT](https://github.com/ocornut/imgui/blob/master/LICENSE.txt)                                          |
