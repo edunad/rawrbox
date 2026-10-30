@@ -126,7 +126,8 @@ Rather, it's tailored for creating PlayStation 1-style games with modding in min
 | `RAWRBOX_BUILD_TESTING`                    | Builds & enables project tests                                                                     | OFF     |
 | `RAWRBOX_BUILD_SAMPLES`                    | Builds the project sample                                                                          | OFF     |
 | --                                         | --                                                                                                 | --      |
-| `RAWRBOX_CONTENT_FOLDER`                   | The folder assets are packed into a VPK                                                            | Assets  |
+| `RAWRBOX_CONTENT_FOLDER`                   | The folder assets are packed into a VPK                                                            | assets  |
+| `RAWRBOX_LIBRARY_TYPE`                     | Linking type for the rawrbox libraries                                                             | STATIC  |
 | --                                         | --                                                                                                 | --      |
 | `RAWRBOX_USE_WAYLAND`                      | Enables WAYLAND compiling on LINUX                                                                 | OFF     |
 | --                                         | --                                                                                                 | --      |
@@ -139,7 +140,10 @@ Rather, it's tailored for creating PlayStation 1-style games with modding in min
 | `RAWRBOX_BUILD_RAWRBOX_GLTF`               | Enables gltf2.0 model loading support                                                              | OFF     |
 | `RAWRBOX_BUILD_RAWRBOX_WEBM`               | Enables WEBM loading                                                                               | OFF     |
 | `RAWRBOX_BUILD_RAWRBOX_NETWORK`            | Builds network support                                                                             | OFF     |
+| --                                         | --                                                                                                 | --      |
 | `RAWRBOX_BUILD_RAWRBOX_IMGUI`              | Builds imgui support                                                                               | OFF     |
+| `RAWRBOX_BUILD_RAWRBOX_IMGUI_IMPLOT`       | Includes implot on imgui (auto-enables imgui)                                                      | OFF     |
+| `RAWRBOX_BUILD_RAWRBOX_IMGUI_RICHMD`       | Includes imgui_rich_mdon imgui (auto-enables imgui & resources)                                    | OFF     |
 | --                                         | --                                                                                                 | --      |
 | `RAWRBOX_BUILD_RAWRBOX_SCRIPTING`          | Enables lua & modding support                                                                      | OFF     |
 | `RAWRBOX_SCRIPTING_UNSAFE`                 | Enables io support on lua (loading and saving files on the data folder)                            | OFF     |
@@ -150,6 +154,7 @@ Rather, it's tailored for creating PlayStation 1-style games with modding in min
 | `STEAMWORKS_APPID`                         | Sets the steamworks appid                                                                          | OFF     |
 | --                                         | --                                                                                                 | --      |
 | `RAWRBOX_BUILD_QHULL`                      | Builds QHull util                                                                                  | OFF     |
+| `RAWRBOX_BUILD_PROFILER`                   | Builds tracy profiler support & opens the profiler on launch                                       | OFF     |
 | --                                         | --                                                                                                 | --      |
 | `RAWRBOX_BUILD_MSVC_MULTITHREADED_RUNTIME` | Builds libraries with MSVC Multithreaded runtime (Auto-enabled if jolt is used)                    | OFF     |
 | --                                         | --                                                                                                 | --      |
@@ -174,36 +179,48 @@ Rather, it's tailored for creating PlayStation 1-style games with modding in min
 
 # EXTERNAL DEPENDENCIES
 
-| LIB               | NOTE                                                | LICENSE                                                                                        |
-|:------------------|:----------------------------------------------------|------------------------------------------------------------------------------------------------|
-| DiligentCore      | Used for vulkan / directx rendering                 | [Apache License 2.0](https://github.com/DiligentGraphics/DiligentCore/blob/master/License.txt) |
-| glfw              | Used for window management                          | [ZLIB](https://github.com/glfw/glfw/blob/master/LICENSE.md)                                    |
-| glaze             | Used for JSON loading                               | [MIT](https://github.com/stephenberry/glaze/blob/main/LICENSE)                                 |
-| fmt               | Used for text formatting                            | [CUSTOM](https://github.com/fmtlib/fmt/blob/master/LICENSE)                                    |
-| utfcpp            | Used for utf support                                | [Boost Software License 1.0](https://github.com/nemtrif/utfcpp/blob/master/LICENSE)            |
-| imgui             | Used for ui rendering                               | [MIT](https://github.com/ocornut/imgui/blob/master/LICENSE.txt)                                |
-| stb_image.h       | Used for loading images (png,gif,jpeg)              | [MIT / Public Domain](https://github.com/nothings/stb/blob/master/LICENSE)                     |
-| stb_image_write.h | Used for writting images                            | [MIT / Public Domain](https://github.com/nothings/stb/blob/master/LICENSE)                     |
-| stb_freetype.h    | Used for loading fonts                              | [MIT / Public Domain](https://github.com/nothings/stb/blob/master/LICENSE)                     |
-| stb_easy_font.h   | Used for drawing debug text                         | [MIT / Public Domain](https://github.com/nothings/stb/blob/master/LICENSE)                     |
-| thread-pool       | Used for managing async threading                   | [MIT](https://github.com/bshoshany/thread-pool/blob/master/LICENSE.txt)                        |
-| qhull             | Used for calculating convex hulls from given points | [CUSTOM](https://github.com/qhull/qhull/blob/master/COPYING.txt)                               |
-| fastgltf          | Used for loading gltf2.0 models                     | [MIT](https://github.com/spnda/fastgltf/blob/main/LICENSE.md)                                  |
-| catch2            | Used for testing                                    | [Boost Software License 1.0](https://github.com/catchorg/Catch2/blob/devel/LICENSE.txt)        |
-| bass              | Used for loading sounds                             | [FREE / PAID](https://www.un4seen.com/bass.html)                                               |
-| JoltPhysics       | Used for managing 3D physics                        | [MIT](https://github.com/jrouwe/JoltPhysics/blob/master/LICENSE)                               |
-| muli              | Used for managing 2D physics                        | [MIT](https://github.com/Sopiro/Muli/blob/master/LICENSE.txt)                                  |
-| webmlib & vpx     | Used for loading webm                               | [BSD 3-Clause](https://github.com/webmproject/libwebm/blob/main/LICENSE.TXT)                   |
-| libwebp           | Used for WEBP loading                               | [BSD 3-Clause](https://github.com/webmproject/libwebp/blob/main/COPYING)                       |
-| luabridge3        | Used for loading & managing lua scripting           | [MIT](https://github.com/kunitoki/LuaBridge3/blob/master/LICENSE.txt)                          |
-| luau              | Used for lua scripting                              | [MIT](https://github.com/luau-lang/luau/blob/master/LICENSE.txt)                               |
-| lua               | Used for lua scripting                              | [CUSTOM](https://github.com/luau-lang/luau/blob/master/lua_LICENSE.txt)                        |
-| curl              | Used for HTTP / HTTPS requests                      | [MIT](https://github.com/libcpr/cpr/blob/master/LICENSE)                                       |
-| libcpr            | Used for HTTP / HTTPS requests                      | [MIT](https://github.com/libcpr/cpr/blob/master/LICENSE)                                       |
-| lunasvg           | Used for SVG loading                                | [MIT](https://github.com/sammycage/lunasvg/blob/master/LICENSE)                                |
-| meshoptimizer     | Used to optimize meshes                             | [MIT](https://github.com/zeux/meshoptimizer/blob/master/LICENSE.md)                            |
-| ozz-animation     | Used to animate skinned meshes                      | [MIT](https://github.com/guillaumeblanc/ozz-animation/blob/master/LICENSE.md)                  |
-| spdlog            | Used for logging                                    | [MIT](https://github.com/gabime/spdlog/blob/v1.x/LICENSE)                                      |
-| basis_universal   | Used for texture compression                        | [APACHE](https://github.com/BinomialLLC/basis_universal/tree/master?tab=Apache-2.0-1-ov-file)  |
-| zstd              | Used for VPK file compression                       | [BSD 3-Clause](https://github.com/facebook/zstd/blob/dev/LICENSE)                              |
-| tracy             | Used for performance profilling                     | [BSD 3-Clause](https://github.com/wolfpld/tracy/blob/master/LICENSE)                           |
+| LIB               | NOTE                                                | LICENSE                                                                                                  |
+|:------------------|:----------------------------------------------------|----------------------------------------------------------------------------------------------------------|
+| DiligentCore      | Used for vulkan / directx rendering                 | [Apache License 2.0](https://github.com/DiligentGraphics/DiligentCore/blob/master/License.txt)           |
+| glfw              | Used for window management                          | [ZLIB](https://github.com/glfw/glfw/blob/master/LICENSE.md)                                              |
+| glaze             | Used for JSON loading                               | [MIT](https://github.com/stephenberry/glaze/blob/main/LICENSE)                                           |
+| fmt               | Used for text formatting                            | [CUSTOM](https://github.com/fmtlib/fmt/blob/master/LICENSE)                                              |
+| magic_enum        | Used for enum reflection                            | [MIT](https://github.com/Neargye/magic_enum/blob/master/LICENSE)                                         |
+| utfcpp            | Used for utf support                                | [Boost Software License 1.0](https://github.com/nemtrif/utfcpp/blob/master/LICENSE)                      |
+| imgui             | Used for ui rendering                               | [MIT](https://github.com/ocornut/imgui/blob/master/LICENSE.txt)                                          |
+| implot            | Used for plotting on imgui                          | [MIT](https://github.com/epezent/implot/blob/master/LICENSE)                                             |
+| imgui_rich_md     | Used for markdown rendering on imgui                | [MIT](https://github.com/pthom/imgui_rich_md/blob/main/LICENSE)                                          |
+| md4c              | Used for markdown parsing (by imgui_rich_md)        | [MIT](https://github.com/mity/md4c/blob/master/LICENSE.md)                                               |
+| Roboto            | Markdown font (embedded by imgui_rich_md)           | [Apache License 2.0](https://github.com/pthom/imgui_rich_md/blob/main/assets/fonts/Roboto/LICENSE.txt)   |
+| Inconsolata       | Markdown code font (embedded by imgui_rich_md)      | [SIL OFL 1.1](https://github.com/pthom/imgui_rich_md/blob/main/assets/fonts/Inconsolata-LICENSE-OFL.txt) |
+| clip              | Used for clipboard support on the UI                | [MIT](https://github.com/dacap/clip/blob/main/LICENSE.txt)                                               |
+| stb_image.h       | Used for loading images (png,gif,jpeg)              | [MIT / Public Domain](https://github.com/nothings/stb/blob/master/LICENSE)                               |
+| stb_image_write.h | Used for writting images                            | [MIT / Public Domain](https://github.com/nothings/stb/blob/master/LICENSE)                               |
+| stb_truetype.h    | Used for loading fonts                              | [MIT / Public Domain](https://github.com/nothings/stb/blob/master/LICENSE)                               |
+| stb_easy_font.h   | Used for drawing debug text                         | [MIT / Public Domain](https://github.com/nothings/stb/blob/master/LICENSE)                               |
+| stb_gif.hpp       | Used for loading animated gifs                      | [CUSTOM](https://gist.github.com/urraka/685d9a6340b26b830d49)                                            |
+| CRCpp             | Used for CRC calculation                            | [BSD 3-Clause](https://github.com/d-bahr/CRCpp/blob/master/LICENSE)                                      |
+| Ring-Buffer       | Used for lock-free ring buffers                     | [MIT](https://github.com/jnk0le/Ring-Buffer/blob/master/LICENSE)                                         |
+| thread-pool       | Used for managing async threading                   | [MIT](https://github.com/bshoshany/thread-pool/blob/master/LICENSE.txt)                                  |
+| qhull             | Used for calculating convex hulls from given points | [CUSTOM](https://github.com/qhull/qhull/blob/master/COPYING.txt)                                         |
+| fastgltf          | Used for loading gltf2.0 models                     | [MIT](https://github.com/spnda/fastgltf/blob/main/LICENSE.md)                                            |
+| catch2            | Used for testing                                    | [Boost Software License 1.0](https://github.com/catchorg/Catch2/blob/devel/LICENSE.txt)                  |
+| bass              | Used for loading sounds                             | [FREE / PAID](https://www.un4seen.com/bass.html)                                                         |
+| steamworks        | Used for steam support                              | [CUSTOM](https://partner.steamgames.com/documentation/sdk_access_agreement)                              |
+| JoltPhysics       | Used for managing 3D physics                        | [MIT](https://github.com/jrouwe/JoltPhysics/blob/master/LICENSE)                                         |
+| muli              | Used for managing 2D physics                        | [MIT](https://github.com/Sopiro/Muli/blob/master/LICENSE.txt)                                            |
+| webmlib & vpx     | Used for loading webm                               | [BSD 3-Clause](https://github.com/webmproject/libwebm/blob/main/LICENSE.TXT)                             |
+| libwebp           | Used for WEBP loading                               | [BSD 3-Clause](https://github.com/webmproject/libwebp/blob/main/COPYING)                                 |
+| luabridge3        | Used for loading & managing lua scripting           | [MIT](https://github.com/kunitoki/LuaBridge3/blob/master/LICENSE.txt)                                    |
+| luau              | Used for lua scripting                              | [MIT](https://github.com/luau-lang/luau/blob/master/LICENSE.txt)                                         |
+| lua               | Used for lua scripting                              | [CUSTOM](https://github.com/luau-lang/luau/blob/master/lua_LICENSE.txt)                                  |
+| curl              | Used for HTTP / HTTPS requests                      | [MIT](https://github.com/libcpr/cpr/blob/master/LICENSE)                                                 |
+| libcpr            | Used for HTTP / HTTPS requests                      | [MIT](https://github.com/libcpr/cpr/blob/master/LICENSE)                                                 |
+| lunasvg           | Used for SVG loading                                | [MIT](https://github.com/sammycage/lunasvg/blob/master/LICENSE)                                          |
+| meshoptimizer     | Used to optimize meshes                             | [MIT](https://github.com/zeux/meshoptimizer/blob/master/LICENSE.md)                                      |
+| ozz-animation     | Used to animate skinned meshes                      | [MIT](https://github.com/guillaumeblanc/ozz-animation/blob/master/LICENSE.md)                            |
+| spdlog            | Used for logging                                    | [MIT](https://github.com/gabime/spdlog/blob/v1.x/LICENSE)                                                |
+| basis_universal   | Used for texture compression                        | [APACHE](https://github.com/BinomialLLC/basis_universal/tree/master?tab=Apache-2.0-1-ov-file)            |
+| zstd              | Used for VPK file compression                       | [BSD 3-Clause](https://github.com/facebook/zstd/blob/dev/LICENSE)                                        |
+| tracy             | Used for performance profilling                     | [BSD 3-Clause](https://github.com/wolfpld/tracy/blob/master/LICENSE)                                     |
+| weston            | Used for wayland support (linux)                    | [MIT](https://gitlab.freedesktop.org/wayland/weston/-/blob/main/COPYING)                                 |

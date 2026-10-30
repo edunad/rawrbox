@@ -50,7 +50,11 @@ option(RAWRBOX_SCRIPTING_WORKSHOP_MODDING "Enables workshop utilities (useful fo
 option(RAWRBOX_SCRIPTING_EXCEPTION "Enables scripting throwing exceptions instead of catching them" OFF)
 
 option(RAWRBOX_BUILD_RAWRBOX_STEAMWORKS "Build steamworks support" OFF)
+
 option(RAWRBOX_BUILD_RAWRBOX_IMGUI "Build imgui support" OFF)
+option(RAWRBOX_BUILD_RAWRBOX_IMGUI_IMPLOT "Include ImPlot on imgui" OFF)
+option(RAWRBOX_BUILD_RAWRBOX_IMGUI_RICHMD "Include imgui_rich_md (markdown) on imgui" OFF)
+
 option(RAWRBOX_BUILD_MSVC_MULTITHREADED_RUNTIME "Build with msvc multithreading" OFF)
 option(RAWRBOX_BUILD_QHULL "Include QHull on utils" OFF)
 option(RAWRBOX_BUILD_PROFILER "Build tracy profiler support & open the profiler window on launch" OFF)
@@ -105,6 +109,8 @@ if (RAWRBOX_DEV_MODE)
 
     set(RAWRBOX_BUILD_RAWRBOX_STEAMWORKS ON)
     set(RAWRBOX_BUILD_RAWRBOX_IMGUI ON)
+    set(RAWRBOX_BUILD_RAWRBOX_IMGUI_IMPLOT ON)
+    set(RAWRBOX_BUILD_RAWRBOX_IMGUI_RICHMD ON)
     set(RAWRBOX_BUILD_QHULL ON)
 
     if (NOT DEFINED STEAMWORKS_APPID)
@@ -180,6 +186,8 @@ if (NOT RAWRBOX_BUILD_RAWRBOX_RENDER)
     set(RAWRBOX_BUILD_RAWRBOX_UI OFF)
     set(RAWRBOX_BUILD_RAWRBOX_GLTF OFF)
     set(RAWRBOX_BUILD_RAWRBOX_IMGUI OFF)
+    set(RAWRBOX_BUILD_RAWRBOX_IMGUI_IMPLOT OFF)
+    set(RAWRBOX_BUILD_RAWRBOX_IMGUI_RICHMD OFF)
     set(RAWRBOX_BUILD_RAWRBOX_WEBM OFF)
 
     set(RAWRBOX_BUILD_SAMPLES OFF)
@@ -192,6 +200,23 @@ else ()
 
     if (RAWRBOX_BUILD_RAWRBOX_UI AND NOT RAWRBOX_BUILD_RAWRBOX_RESOURCES)
         message(WARNING "RAWRBOX.UI requires RAWRBOX.RESOURCES to be enabled, enabling...")
+        set(RAWRBOX_BUILD_RAWRBOX_RESOURCES ON)
+    endif ()
+    # -----------
+
+    # IMGUI ---
+    if (RAWRBOX_BUILD_RAWRBOX_IMGUI_IMPLOT AND NOT RAWRBOX_BUILD_RAWRBOX_IMGUI)
+        message(WARNING "ImPlot requires RAWRBOX.IMGUI to be enabled, enabling...")
+        set(RAWRBOX_BUILD_RAWRBOX_IMGUI ON)
+    endif ()
+
+    if (RAWRBOX_BUILD_RAWRBOX_IMGUI_RICHMD AND NOT RAWRBOX_BUILD_RAWRBOX_IMGUI)
+        message(WARNING "imgui_rich_md requires RAWRBOX.IMGUI to be enabled, enabling...")
+        set(RAWRBOX_BUILD_RAWRBOX_IMGUI ON)
+    endif ()
+
+    if (RAWRBOX_BUILD_RAWRBOX_IMGUI_RICHMD AND NOT RAWRBOX_BUILD_RAWRBOX_RESOURCES)
+        message(WARNING "imgui_rich_md requires RAWRBOX.RESOURCES to be enabled, enabling...")
         set(RAWRBOX_BUILD_RAWRBOX_RESOURCES ON)
     endif ()
     # -----------

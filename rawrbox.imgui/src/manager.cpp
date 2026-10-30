@@ -1,17 +1,32 @@
 #include <rawrbox/engine/engine.hpp>
 #include <rawrbox/imgui/manager.hpp>
 #include <rawrbox/math/utils/math.hpp>
+#include <rawrbox/render/utils/barrier.hpp>
 
 // ---- IMGUI ----
+#include <tracy/Tracy.hpp>
+
 #include <backends/imgui_impl_glfw.h>
 #include <imgui.h>
-#include <tracy/Tracy.hpp>
 // ---------------
+
+#ifdef RAWRBOX_IMGUI_IMPLOT
+	#include <implot.h>
+#endif
+
+#ifdef RAWRBOX_IMGUI_RICHMD
+	#include <rawrbox/render/resources/texture.hpp>
+	#include <rawrbox/resources/manager.hpp>
+	#include <rawrbox/utils/vfs.hpp>
+
+	#include <imgui_rich_md/rich_md.h>
+	#include <imgui_rich_md/rich_md_host.h>
+#endif
 
 namespace rawrbox {
 	// PROTECTED ---
 	// TEXTURE ----
-	std::unique_ptr<rawrbox::TextureImage> IMGUIManager::_imguiFontTexture = nullptr;
+	std::unordered_map<int, std::unique_ptr<rawrbox::TextureImage>> IMGUIManager::_textures = {};
 	// -------
 	// ---------
 
@@ -86,10 +101,16 @@ namespace rawrbox {
 		ImGui::CreateContext();
 		darkTheme ? ImGui::StyleColorsDark() : ImGui::StyleColorsLight();
 
+#ifdef RAWRBOX_IMGUI_IMPLOT
+		ImPlot::CreateContext();
+		darkTheme ? ImPlot::StyleColorsDark() : ImPlot::StyleColorsLight();
+#endif
+
 		ImGuiIO& IO = ImGui::GetIO();
 		IO.BackendRendererName = "RawrBox-IMGUI";
 		IO.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
 		IO.BackendFlags |= ImGuiBackendFlags_RendererHasVtxOffset;
+		IO.BackendFlags |= ImGuiBackendFlags_RendererHasTextures;
 
 		switch (renderer.getRenderType()) {
 			case Diligent::RENDER_DEVICE_TYPE_D3D12:
@@ -102,23 +123,34 @@ namespace rawrbox {
 				throw std::runtime_error("Not supported");
 				break;
 		}
-		// ----
-	}
+			// ----
 
-	void IMGUIManager::load() {
-		// Load font --
-		ImGuiIO& IO = ImGui::GetIO();
+#ifdef RAWRBOX_IMGUI_RICHMD
+		RichMd::HostServices services = {};
+		services.ReadAsset = [](const std::string& path) -> RichMd::AssetBytes {
+			auto data = rawrbox::VFS::read(path);
+			if (data.empty()) return RichMd::ReadAssetDefault(path);
 
-		unsigned char* pData = nullptr;
-		rawrbox::Vector2i size = {};
-		IO.Fonts->GetTexDataAsRGBA32(&pData, &size.x, &size.y);
+			return data;
+		};
 
-		_imguiFontTexture = std::make_unique<rawrbox::TextureImage>(size.cast<uint32_t>(), pData, uint8_t(4));
-		_imguiFontTexture->setName("IMGUI");
-		_imguiFontTexture->upload();
-		// ----------
-		
-		IO.Fonts->SetTexID(_imguiFontTexture.get());
+		RichMd::MarkdownOptions options = {};
+		options.callbacks.OnImage = [](const std::string& path) -> std::optional<RichMd::MarkdownImage> {
+			if (!rawrbox::RESOURCES::isLoaded(path)) {
+				const auto ext = std::filesystem::path(path).extension().generic_string();
+				const bool canLoad = std::ranges::any_of(rawrbox::RESOURCES::getLoaders(), [&ext](const auto& loader) { return dynamic_cast<rawrbox::TextureLoader*>(loader.get()) != nullptr && loader->canLoad(ext); });
+				if (!canLoad || !rawrbox::VFS::contains(path)) return RichMd::OnImage_Default(path);
+			}
+
+			auto* texture = rawrbox::RESOURCES::loadFile<rawrbox::ResourceTexture>(path)->get();
+			const auto size = texture->getSize().cast<float>();
+
+			return RichMd::MarkdownImage{texture, {size.x, size.y}, {0.F, 0.F}, {1.F, 1.F}, {1.F, 1.F, 1.F, 1.F}, {0.F, 0.F, 0.F, 0.F}};
+		};
+
+		RichMd::SetHostServices(services);
+		RichMd::CreateContext(options);
+#endif
 	}
 
 	void IMGUIManager::clear() {
@@ -130,14 +162,85 @@ namespace rawrbox {
 	void IMGUIManager::render() {
 		ZoneScopedN("IMGUIManager::render");
 		ImGui::Render();
-		renderDrawData(ImGui::GetDrawData());
+
+		auto* data = ImGui::GetDrawData();
+
+		// Textures ----
+		for (ImTextureData* tex : *data->Textures) {
+			switch (tex->Status) {
+				case ImTextureStatus_WantCreate:
+					{
+						if (tex->Format != ImTextureFormat_RGBA32) RAWRBOX_CRITICAL("Unsupported IMGUI texture format, only RGBA32 is supported");
+
+						auto texture = std::make_unique<rawrbox::TextureImage>(rawrbox::Vector2u(tex->Width, tex->Height), static_cast<const uint8_t*>(tex->GetPixels()), uint8_t(4));
+						texture->setName("IMGUI");
+						texture->upload(Diligent::TEX_FORMAT_UNKNOWN, rawrbox::TextureFlags::DYNAMIC);
+
+						tex->SetTexID(texture.get());
+						tex->SetStatus(ImTextureStatus_OK);
+
+						_textures[tex->UniqueID] = std::move(texture);
+						break;
+					}
+				case ImTextureStatus_WantUpdates:
+					{
+						auto* handle = _textures.at(tex->UniqueID)->getTexture();
+						auto* context = rawrbox::RENDERER->context();
+
+						rawrbox::BarrierUtils::barrier({{handle, Diligent::RESOURCE_STATE_SHADER_RESOURCE, Diligent::RESOURCE_STATE_COPY_DEST, Diligent::STATE_TRANSITION_FLAG_UPDATE_STATE}});
+						for (const auto& rect : tex->Updates) {
+							Diligent::Box UpdateBox;
+							UpdateBox.MinX = rect.x;
+							UpdateBox.MinY = rect.y;
+							UpdateBox.MaxX = rect.x + rect.w;
+							UpdateBox.MaxY = rect.y + rect.h;
+
+							Diligent::TextureSubResData SubresData;
+							SubresData.Stride = static_cast<uint64_t>(tex->GetPitch());
+							SubresData.pData = tex->GetPixelsAt(rect.x, rect.y);
+
+							context->UpdateTexture(handle, 0, 0, UpdateBox, SubresData, Diligent::RESOURCE_STATE_TRANSITION_MODE_VERIFY, Diligent::RESOURCE_STATE_TRANSITION_MODE_VERIFY);
+						}
+						rawrbox::BarrierUtils::barrier({{handle, Diligent::RESOURCE_STATE_COPY_DEST, Diligent::RESOURCE_STATE_SHADER_RESOURCE, Diligent::STATE_TRANSITION_FLAG_UPDATE_STATE}});
+
+						tex->SetStatus(ImTextureStatus_OK);
+						break;
+					}
+				case ImTextureStatus_WantDestroy:
+					{
+						if (tex->UnusedFrames == 0) break;
+
+						_textures.erase(tex->UniqueID);
+						tex->SetTexID(ImTextureID_Invalid);
+						tex->SetStatus(ImTextureStatus_Destroyed);
+						break;
+					}
+				default:
+					break;
+			}
+		}
+		// ------------
+
+		renderDrawData(data);
 	}
 
 	void IMGUIManager::shutdown(rawrbox::ENGINE_THREADS thread) {
 		if (thread == rawrbox::ENGINE_THREADS::THREAD_RENDER) {
-			_imguiFontTexture.reset();
+#ifdef RAWRBOX_IMGUI_RICHMD
+			RichMd::DestroyContext();
+#endif
+
+			for (ImTextureData* tex : ImGui::GetPlatformIO().Textures) {
+				tex->SetTexID(ImTextureID_Invalid);
+				tex->SetStatus(ImTextureStatus_Destroyed);
+			}
+
+			_textures.clear();
 		} else {
 			ImGui_ImplGlfw_Shutdown();
+#ifdef RAWRBOX_IMGUI_IMPLOT
+			ImPlot::DestroyContext();
+#endif
 			ImGui::DestroyContext();
 		}
 	}

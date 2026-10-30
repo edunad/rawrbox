@@ -11,6 +11,14 @@
 #include <fmt/format.h>
 #include <imgui.h>
 
+#ifdef RAWRBOX_IMGUI_IMPLOT
+	#include <implot.h>
+#endif
+
+#ifdef RAWRBOX_IMGUI_RICHMD
+	#include <imgui_rich_md/rich_md.h>
+#endif
+
 namespace imgui {
 	void Game::setupGLFW() {
 #if defined(_DEBUG) && defined(RAWRBOX_SUPPORT_DX12)
@@ -72,8 +80,6 @@ namespace imgui {
 
 		rawrbox::RESOURCES::loadListAsync(initialContentFiles, [this]() {
 			rawrbox::runOnRenderThread([this]() {
-				rawrbox::IMGUIManager::load();
-
 				this->contentLoaded();
 			});
 		});
@@ -152,6 +158,34 @@ namespace imgui {
 		// ----------
 
 		ImGui::ShowDemoWindow();
+#ifdef RAWRBOX_IMGUI_IMPLOT
+		ImPlot::ShowDemoWindow();
+#endif
+
+#ifdef RAWRBOX_IMGUI_RICHMD
+		ImGui::SetNextWindowPos({720, 120}, ImGuiCond_FirstUseEver);
+		ImGui::SetNextWindowSize({840, 740}, ImGuiCond_FirstUseEver);
+		ImGui::Begin("Markdown");
+		RichMd::Render(R"(
+# Hello *DEV*
+Some **markdown** with `code`, a [link](https://github.com/edunad/rawrbox) and an image from the assets:
+
+![meow](./assets/textures/meow3.gif)
+
+| Module | Flag |
+|---|---|
+| ImPlot | `RAWRBOX_BUILD_RAWRBOX_IMGUI_IMPLOT` |
+| imgui_rich_md | `RAWRBOX_BUILD_RAWRBOX_IMGUI_RICHMD` |
+
+> [!TIP]
+> Tippy goes here
+
+```mermaid
+flowchart LR
+    A[Markdown] --> B[RichMd] --> C[rawrbox]
+```)");
+		ImGui::End();
+#endif
 	}
 
 	void Game::draw() {
