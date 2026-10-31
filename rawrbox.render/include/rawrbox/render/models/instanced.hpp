@@ -3,6 +3,7 @@
 #include <rawrbox/render/materials/instanced.hpp>
 #include <rawrbox/render/models/instance.hpp>
 #include <rawrbox/render/models/model.hpp>
+#include <rawrbox/render/render_config.hpp>
 #include <rawrbox/utils/dirty_ranges.hpp>
 
 #include <DynamicBuffer.hpp>
@@ -206,6 +207,7 @@ namespace rawrbox {
 
 			Diligent::DynamicBufferCreateInfo dynamicBuff;
 			dynamicBuff.Desc = InstBuffDesc;
+			dynamicBuff.VirtualSize = RB_RENDER_MAX_INSTANCE_BUFFER_SIZE;
 
 			this->_dataBuffer = std::make_unique<Diligent::DynamicBuffer>(device, dynamicBuff);
 			this->_dataBuffer->Resize(device, rawrbox::RENDERER->context(), sizeof(rawrbox::Instance) * std::max<uint64_t>(this->_instances.capacity(), 1U), true);
