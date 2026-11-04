@@ -163,9 +163,11 @@ namespace bass_test {
 	void Game::drawWorld() {
 		if (!this->_ready) return;
 
-		this->_modelGrid->draw();
-		this->_beatText->draw();
-		this->_text->draw();
+		rawrbox::RENDERER->parallelRender(
+		    this->_modelGrid,
+
+		    this->_beatText,
+		    this->_text);
 	}
 
 	void Game::drawOverlay() const {

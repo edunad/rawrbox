@@ -188,8 +188,7 @@ namespace decal_test {
 	void Game::drawWorld() const {
 		if (!this->_ready) return;
 
-		this->_model->draw();
-		this->_model2->draw();
+		rawrbox::RENDERER->parallelRender(this->_model, this->_model2);
 	}
 
 	void Game::drawOverlay() const {

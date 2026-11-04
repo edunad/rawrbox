@@ -9,6 +9,7 @@
 #include <rawrbox/render/profiler.hpp>
 #include <rawrbox/render/stencil.hpp>
 #include <rawrbox/render/textures/utils/blit.hpp>
+#include <rawrbox/render/threading/render_thread_pool.hpp>
 #include <rawrbox/utils/logger.hpp>
 #include <rawrbox/utils/string.hpp>
 
@@ -21,6 +22,7 @@
 #include <fmt/printf.h>
 
 #include <algorithm>
+#include <array>
 #include <filesystem>
 #include <functional>
 #include <map>
@@ -42,6 +44,12 @@ namespace rawrbox {
 	};
 
 	using RenderPluginList = std::vector<std::pair<std::string, std::unique_ptr<rawrbox::RenderPlugin>>>; // Sorted by priority
+
+	template <typename T>
+	concept ParallelRender = requires(const T& call) {
+		call == nullptr;
+		call->draw();
+	};
 
 	class RendererBase {
 	protected:
@@ -80,6 +88,8 @@ namespace rawrbox {
 		bool _transparent = false;
 		bool _initialized = false;
 
+		uint32_t _renderThreads = 0;
+
 		std::vector<std::function<void()>> _precompile = {}; // Materials built at the end of init
 
 		Diligent::RENDER_DEVICE_TYPE _type = Diligent::RENDER_DEVICE_TYPE_UNDEFINED;
@@ -96,6 +106,7 @@ namespace rawrbox {
 		std::unique_ptr<rawrbox::Stencil> _stencil = nullptr;
 		std::unique_ptr<rawrbox::Occlusion> _occlusion = nullptr;
 		std::unique_ptr<rawrbox::TextureBLIT> _GPUBlit = nullptr;
+		std::unique_ptr<rawrbox::RenderThreadPool> _threadPool = nullptr;
 
 #ifdef TRACY_ENABLE
 		std::unique_ptr<rawrbox::GPUProfiler> _profiler = nullptr;
@@ -120,6 +131,20 @@ namespace rawrbox {
 #endif
 		virtual void clear();
 		virtual void frame();
+
+		template <typename T>
+		static void render(const void* call) {
+			const auto& calldraw = *static_cast<const T*>(call);
+			if (calldraw == nullptr) return;
+
+			if constexpr (requires { calldraw->isUploaded(); }) {
+				if (!calldraw->isUploaded()) return;
+			}
+
+			calldraw->draw();
+		}
+
+		virtual void addDeferredContexts(std::vector<Diligent::IDeviceContext*>& contexts);
 
 	public:
 		std::function<void()> onIntroCompleted = nullptr;
@@ -182,6 +207,26 @@ namespace rawrbox {
 		virtual void update();
 		virtual void render();
 
+		virtual void setRenderThreads(uint32_t threads);
+		[[nodiscard]] virtual uint32_t getRenderThreads() const;
+
+		virtual void parallelRender(uint32_t count, const rawrbox::RenderThreadPool::RecordFunc& record);
+
+		template <typename... T>
+			requires(sizeof...(T) > 0 && (rawrbox::ParallelRender<T> && ...))
+		void parallelRender(const T&... drawables) {
+			using DrawFn = void (*)(const void*);
+			const std::array<std::pair<const void*, DrawFn>, sizeof...(T)> items = {std::pair<const void*, DrawFn>{&drawables, &RendererBase::render<T>}...};
+
+			this->parallelRender(static_cast<uint32_t>(items.size()), [&items](Diligent::IDeviceContext& /*context*/, uint32_t begin, uint32_t end) {
+				for (uint32_t i = begin; i < end; i++) {
+					items[i].second(items[i].first);
+				}
+			});
+		}
+
+		[[nodiscard]] virtual rawrbox::RenderThreadPool* threadPool() const;
+
 		// INTRO ------
 		void skipIntros(bool skip); // :(
 		void addIntro(const std::filesystem::path& webpPath, float speed = 1.F, bool cover = false, const rawrbox::Colorf& color = rawrbox::Colors::Black());
@@ -236,7 +281,7 @@ namespace rawrbox {
 
 		[[nodiscard]] virtual bool isTransparent() const;
 		virtual void setTransparent(bool transparent);
-		
+
 		virtual void gpuPick(const rawrbox::Vector2i& windowPos, const std::function<void(uint32_t)>& callback);
 		//  ------
 	};

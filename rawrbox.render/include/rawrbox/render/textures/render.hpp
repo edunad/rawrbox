@@ -33,6 +33,7 @@ namespace rawrbox {
 
 		bool _depth = true;
 		bool _recording = false;
+		size_t _recordTargets = 0;
 
 	public:
 		explicit TextureRender(const rawrbox::Vector2u& size, bool depth = true);
@@ -63,6 +64,9 @@ namespace rawrbox {
 		// ------RENDER
 		virtual void startRecord(bool clear = true, size_t renderTargets = 0);
 		virtual void stopRecord();
+
+		virtual void bindContext(Diligent::IDeviceContext& context);
+		[[nodiscard]] virtual bool isRecording() const;
 
 		virtual size_t addTexture(Diligent::TEXTURE_FORMAT format, Diligent::BIND_FLAGS flags = Diligent::BIND_RENDER_TARGET | Diligent::BIND_SHADER_RESOURCE);
 		virtual void addView(size_t index, Diligent::TEXTURE_VIEW_TYPE format = Diligent::TEXTURE_VIEW_SHADER_RESOURCE);

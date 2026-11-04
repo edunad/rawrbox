@@ -59,10 +59,11 @@ namespace rawrbox {
 		//  --------
 
 		size_t totalTargets = renderTargets == 0 ? this->_viewsRT.size() : renderTargets;
-		context->SetRenderTargets(static_cast<uint32_t>(totalTargets), this->_viewsRT.data(), this->getRTDepth(), Diligent::RESOURCE_STATE_TRANSITION_MODE_VERIFY);
+		this->_recordTargets = totalTargets;
+		this->bindContext(*context);
 
 		if (clear) {
-			const std::array<float, 4> ClearColor = {0.0F, 0.0F, 0.0F, 0.0F};
+			constexpr std::array<float, 4> ClearColor = {0.0F, 0.0F, 0.0F, 0.0F};
 			for (size_t i = 0; i < totalTargets; i++) {
 				context->ClearRenderTarget(this->_viewsRT[i], ClearColor.data(), Diligent::RESOURCE_STATE_TRANSITION_MODE_VERIFY);
 			}
@@ -89,11 +90,18 @@ namespace rawrbox {
 		this->_recording = false;
 	}
 
+	void TextureRender::bindContext(Diligent::IDeviceContext& context) {
+		const size_t totalTargets = this->_recordTargets == 0 ? this->_viewsRT.size() : this->_recordTargets;
+		context.SetRenderTargets(static_cast<uint32_t>(totalTargets), this->_viewsRT.data(), this->getRTDepth(), Diligent::RESOURCE_STATE_TRANSITION_MODE_VERIFY);
+	}
+
+	bool TextureRender::isRecording() const { return this->_recording; }
+
 	size_t TextureRender::addTexture(Diligent::TEXTURE_FORMAT format, Diligent::BIND_FLAGS flags) {
-		bool isDepth = (flags & Diligent::BIND_DEPTH_STENCIL) != 0;
+		const bool isDepth = (flags & Diligent::BIND_DEPTH_STENCIL) != 0;
 		if (isDepth && this->_depthHandle != nullptr) RAWRBOX_CRITICAL("Only one depth texture is allowed");
 
-		std::string name = isDepth ? fmt::format("{}::DEPTH", this->_name) : this->_name;
+		const std::string name = isDepth ? fmt::format("{}::DEPTH", this->_name) : this->_name;
 
 		Diligent::TextureDesc desc;
 		desc.Type = Diligent::RESOURCE_DIM_TEX_2D_ARRAY;

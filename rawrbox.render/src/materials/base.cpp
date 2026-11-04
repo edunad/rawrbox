@@ -19,8 +19,6 @@ namespace rawrbox {
 	}
 
 	void MaterialBase::resetUniformBinds() {
-		this->_lastPixelBuffer.reset();
-		this->_lastVertexBuffer.reset();
-		this->_lastSkinnedVertexBuffer.reset();
+		rawrbox::UniformCache::reset();
 	}
 } // namespace rawrbox

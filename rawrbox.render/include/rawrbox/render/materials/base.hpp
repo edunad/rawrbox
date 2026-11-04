@@ -3,6 +3,7 @@
 #include <rawrbox/render/bindless.hpp>
 #include <rawrbox/render/models/mesh.hpp>
 #include <rawrbox/render/models/vertex.hpp>
+#include <rawrbox/render/utils/uniform_cache.hpp>
 #include <rawrbox/utils/logger.hpp>
 
 #include <InputLayout.h>
@@ -12,10 +13,6 @@ namespace rawrbox {
 	class MaterialBase {
 
 	protected:
-		std::optional<rawrbox::BindlessPixelBuffer> _lastPixelBuffer = std::nullopt;
-		std::optional<rawrbox::BindlessVertexBuffer> _lastVertexBuffer = std::nullopt;
-		std::optional<rawrbox::BindlessVertexSkinnedBuffer> _lastSkinnedVertexBuffer = std::nullopt;
-
 		std::unique_ptr<rawrbox::Logger> _logger = std::make_unique<rawrbox::Logger>("RawrBox-Material");
 
 	public:
@@ -75,39 +72,15 @@ namespace rawrbox {
 		template <typename T = rawrbox::VertexData>
 			requires(std::derived_from<T, rawrbox::VertexData>)
 		bool bindPixelUniforms(const rawrbox::Mesh<T>& mesh) {
-			rawrbox::BindlessPixelBuffer buff = this->bindBasePixelUniforms<T>(mesh);
-			if (this->_lastPixelBuffer.has_value() && buff == this->_lastPixelBuffer.value()) return false;
-			this->_lastPixelBuffer = buff;
-
-			// SETUP UNIFORMS ----------------------------
-			{
-				Diligent::MapHelper<rawrbox::BindlessPixelBuffer> PixelConstants(rawrbox::RENDERER->context(), rawrbox::BindlessManager::signatureBufferPixel, Diligent::MAP_WRITE, Diligent::MAP_FLAG_DISCARD);
-				if (PixelConstants == nullptr) RAWRBOX_CRITICAL("Failed to map the pixel constants buffer!");
-
-				std::memcpy(PixelConstants, &this->_lastPixelBuffer.value(), sizeof(rawrbox::BindlessPixelBuffer));
-			}
-			// -----------
-
-			return true;
+			const rawrbox::BindlessPixelBuffer buff = this->bindBasePixelUniforms<T>(mesh);
+			return rawrbox::UniformCache::map(rawrbox::BindlessManager::signatureBufferPixel, buff);
 		}
 
 		template <typename T = rawrbox::VertexData>
 			requires(std::derived_from<T, rawrbox::VertexData>)
 		bool bindVertexUniforms(const rawrbox::Mesh<T>& mesh, const rawrbox::Matrix4x4& world) {
-			rawrbox::BindlessVertexBuffer buff = this->bindBaseUniforms<T>(mesh, world);
-			if (this->_lastVertexBuffer.has_value() && buff == this->_lastVertexBuffer.value()) return false;
-			this->_lastVertexBuffer = buff;
-
-			// SETUP UNIFORMS ----------------------------
-			{
-				Diligent::MapHelper<rawrbox::BindlessVertexBuffer> VertexConstants(rawrbox::RENDERER->context(), rawrbox::BindlessManager::signatureBufferVertex, Diligent::MAP_WRITE, Diligent::MAP_FLAG_DISCARD);
-				if (VertexConstants == nullptr) RAWRBOX_CRITICAL("Failed to map the vertex constants buffer!");
-
-				std::memcpy(VertexConstants, &this->_lastVertexBuffer.value(), sizeof(rawrbox::BindlessVertexBuffer));
-			}
-			// -----------
-
-			return true;
+			const rawrbox::BindlessVertexBuffer buff = this->bindBaseUniforms<T>(mesh, world);
+			return rawrbox::UniformCache::map(rawrbox::BindlessManager::signatureBufferVertex, buff);
 		}
 
 		template <typename T = rawrbox::VertexData>

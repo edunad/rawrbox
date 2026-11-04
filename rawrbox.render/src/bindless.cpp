@@ -2,9 +2,12 @@
 #include <rawrbox/engine/static.hpp>
 #include <rawrbox/render/bindless.hpp>
 #include <rawrbox/render/static.hpp>
+#include <rawrbox/render/utils/uniform_cache.hpp>
+
+#include <MapHelper.hpp>
+#include <tracy/Tracy.hpp>
 
 #include <fmt/format.h>
-#include <tracy/Tracy.hpp>
 
 namespace rawrbox {
 	// PROTECTED ---
@@ -16,6 +19,8 @@ namespace rawrbox {
 	bool BindlessManager::_updatePixelSignature = false;
 	bool BindlessManager::_updateVertexSignature = false;
 
+	std::vector<Diligent::RefCntAutoPtr<Diligent::IShaderResourceBinding>> BindlessManager::_instanceBinds = {};
+
 	std::unique_ptr<rawrbox::Logger> BindlessManager::_logger = std::make_unique<rawrbox::Logger>("RawrBox-BindlessManager");
 	// --------------
 
@@ -24,7 +29,6 @@ namespace rawrbox {
 	Diligent::RefCntAutoPtr<Diligent::IShaderResourceBinding> BindlessManager::signatureBind;
 
 	Diligent::RefCntAutoPtr<Diligent::IPipelineResourceSignature> BindlessManager::instanceSignature;
-	Diligent::RefCntAutoPtr<Diligent::IShaderResourceBinding> BindlessManager::instanceBind;
 	Diligent::RefCntAutoPtr<Diligent::IBuffer> BindlessManager::signatureBufferPixel;
 	Diligent::RefCntAutoPtr<Diligent::IBuffer> BindlessManager::signatureBufferVertex;
 	Diligent::RefCntAutoPtr<Diligent::IBuffer> BindlessManager::signatureBufferVertexSkinned;
@@ -101,7 +105,9 @@ namespace rawrbox {
 
 		RAWRBOX_DESTROY(signature);
 		RAWRBOX_DESTROY(signatureBind);
-		RAWRBOX_DESTROY(instanceBind);
+
+		_instanceBinds.clear();
+		rawrbox::UniformCache::clear();
 		RAWRBOX_DESTROY(instanceSignature);
 
 		RAWRBOX_DESTROY(signatureBufferPixel);
@@ -169,8 +175,14 @@ namespace rawrbox {
 		device->CreatePipelineResourceSignature(instanceDesc, &instanceSignature);
 		if (instanceSignature == nullptr) RAWRBOX_CRITICAL("Failed to create instance signature");
 
-		instanceSignature->CreateShaderResourceBinding(&instanceBind, true);
-		if (instanceBind == nullptr) RAWRBOX_CRITICAL("Failed to create instance binding");
+		const uint32_t contexts = rawrbox::RENDERER->threadPool()->contextCount();
+		if (contexts > RB_RENDER_MAX_CONTEXTS) RAWRBOX_CRITICAL("Too many render contexts ({}), max is {}", contexts, RB_RENDER_MAX_CONTEXTS);
+
+		_instanceBinds.resize(contexts);
+		for (auto& bind : _instanceBinds) {
+			instanceSignature->CreateShaderResourceBinding(&bind, true);
+			if (bind == nullptr) RAWRBOX_CRITICAL("Failed to create instance binding");
+		}
 		// ----------------------
 	}
 
@@ -212,6 +224,24 @@ namespace rawrbox {
 		// ----------------
 	}
 	// --------------------------
+
+	void BindlessManager::bindContext(Diligent::IDeviceContext& context) {
+		if (signatureBind == nullptr) RAWRBOX_CRITICAL("Bindless manager not initialized!");
+
+		rawrbox::UniformCache::reset();
+		rawrbox::UniformCache::map(context, signatureBufferVertex, rawrbox::BindlessVertexBuffer{});
+		rawrbox::UniformCache::map(context, signatureBufferVertexSkinned, rawrbox::BindlessVertexSkinnedBuffer{});
+		rawrbox::UniformCache::map(context, signatureBufferPixel, rawrbox::BindlessPixelBuffer{});
+
+		context.CommitShaderResources(signatureBind, Diligent::RESOURCE_STATE_TRANSITION_MODE_NONE);
+	}
+
+	Diligent::IShaderResourceBinding* BindlessManager::getInstanceBind() {
+		const uint32_t index = rawrbox::RenderThreadPool::contextIndex();
+		if (index >= _instanceBinds.size()) RAWRBOX_CRITICAL("Instance binding for context #{} not initialized!", index);
+
+		return _instanceBinds[index];
+	}
 
 	void BindlessManager::update() {
 		if (signature == nullptr || signatureBind == nullptr) return;

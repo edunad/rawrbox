@@ -16,7 +16,7 @@ namespace rawrbox {
 		RAWRBOX_DESTROY(this->_hiz);
 		RAWRBOX_DESTROY(this->_depthBind);
 		RAWRBOX_DESTROY(this->_reduceBind);
-		RAWRBOX_DESTROY(this->_cullBind);
+		this->_cullBinds.clear();
 
 		this->_depthReduceProgram = nullptr;
 		this->_reduceProgram = nullptr;
@@ -56,8 +56,16 @@ namespace rawrbox {
 		cull.macros.AddShaderMacro("CULL_THREADS", CULL_THREADS);
 
 		this->_cullProgram = rawrbox::PipelineUtils::createComputePipeline("Model::Cull", cull);
-		this->_cullProgram->CreateShaderResourceBinding(&this->_cullBind, true);
-		if (this->_cullBind == nullptr) RAWRBOX_CRITICAL("Failed to create culling binding");
+
+		const uint32_t contexts = rawrbox::RENDERER->threadPool()->contextCount();
+
+		this->_cullBinds.resize(contexts);
+		this->_lateDraw.resize(contexts);
+
+		for (auto& bind : this->_cullBinds) {
+			this->_cullProgram->CreateShaderResourceBinding(&bind, true);
+			if (bind == nullptr) RAWRBOX_CRITICAL("Failed to create culling binding");
+		}
 
 		// -----------
 
@@ -106,13 +114,23 @@ namespace rawrbox {
 	}
 
 	void Occlusion::begin() {
-		this->_lateDraw.clear();
+		for (auto& queue : this->_lateDraw) {
+			queue.clear();
+		}
+
 		this->_recording = this->_enabled;
+	}
+
+	void Occlusion::prepareParallel(Diligent::IDeviceContext& context) {
+		if (!this->_recording || this->_hiz == nullptr) return;
+
+		Diligent::StateTransitionDesc barrier = {this->_hiz, Diligent::RESOURCE_STATE_UNKNOWN, Diligent::RESOURCE_STATE_SHADER_RESOURCE, Diligent::STATE_TRANSITION_FLAG_UPDATE_STATE};
+		context.TransitionResourceStates(1, &barrier);
 	}
 
 	void Occlusion::end(const rawrbox::CameraBase& camera) {
 		this->_recording = false;
-		if (this->_lateDraw.empty()) return;
+		if (std::ranges::all_of(this->_lateDraw, [](const auto& queue) { return queue.empty(); })) return;
 		RAWRBOX_RENDER_ZONE("Occlusion::end");
 
 		// REGEN HI-Z ---
@@ -155,18 +173,25 @@ namespace rawrbox {
 		auto* target = camera.getRenderTarget();
 		target->startRecord(false);
 
-		for (auto* draw : this->_lateDraw) {
-			draw->drawLate();
+		for (auto& queue : this->_lateDraw) {
+			for (auto* draw : queue) {
+				draw->drawLate();
+			}
+
+			queue.clear();
 		}
 
 		target->stopRecord();
-		this->_lateDraw.clear();
 		// -----------
 	}
 
 	void Occlusion::queue(rawrbox::OcclusionDraw& draw) {
 		if (!this->_recording) RAWRBOX_CRITICAL("Occlusion not in record mode, switch to recording first!");
-		this->_lateDraw.push_back(&draw);
+
+		const uint32_t index = rawrbox::RenderThreadPool::contextIndex();
+		if (index >= this->_lateDraw.size()) RAWRBOX_CRITICAL("Occlusion queue for context #{} not initialized!", index);
+
+		this->_lateDraw[index].push_back(&draw);
 	}
 
 	bool Occlusion::isRecording() const { return this->_recording; }
@@ -179,7 +204,12 @@ namespace rawrbox {
 	const rawrbox::Vector2u& Occlusion::getSize() const { return this->_size; }
 
 	Diligent::IPipelineState* Occlusion::getCullProgram() const { return this->_cullProgram; }
-	Diligent::IShaderResourceBinding* Occlusion::getCullBind() const { return this->_cullBind; }
+	Diligent::IShaderResourceBinding* Occlusion::getCullBind() const {
+		const uint32_t index = rawrbox::RenderThreadPool::contextIndex();
+		if (index >= this->_cullBinds.size()) RAWRBOX_CRITICAL("Culling binding for context #{} not initialized!", index);
+
+		return this->_cullBinds[index];
+	}
 
 	uint32_t Occlusion::getMips() const { return this->_built ? static_cast<uint32_t>(this->_mips.size()) : 0U; }
 

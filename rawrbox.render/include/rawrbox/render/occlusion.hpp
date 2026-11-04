@@ -61,10 +61,10 @@ namespace rawrbox {
 
 		// CULLING ---
 		Diligent::IPipelineState* _cullProgram = nullptr;
-		Diligent::RefCntAutoPtr<Diligent::IShaderResourceBinding> _cullBind;
+		std::vector<Diligent::RefCntAutoPtr<Diligent::IShaderResourceBinding>> _cullBinds = {};
 		// -----------
 
-		std::vector<rawrbox::OcclusionDraw*> _lateDraw = {};
+		std::vector<std::vector<rawrbox::OcclusionDraw*>> _lateDraw = {};
 
 		bool _enabled = true;
 		bool _recording = false;
@@ -92,6 +92,7 @@ namespace rawrbox {
 		virtual void end(const rawrbox::CameraBase& camera);
 
 		virtual void queue(rawrbox::OcclusionDraw& draw);
+		virtual void prepareParallel(Diligent::IDeviceContext& context);
 		// -----------
 
 		[[nodiscard]] virtual bool isRecording() const;

@@ -15,7 +15,7 @@
 namespace rawrbox {
 	namespace {
 		rawrbox::GPUProfiler* activeProfiler() {
-			if (rawrbox::RENDERER == nullptr || std::this_thread::get_id() != rawrbox::RENDER_THREAD_ID) return nullptr;
+			if (rawrbox::RENDERER == nullptr || rawrbox::RenderThreadPool::isRecording() || std::this_thread::get_id() != rawrbox::RENDER_THREAD_ID) return nullptr;
 			return rawrbox::RENDERER->profiler();
 		}
 	} // namespace

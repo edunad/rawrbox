@@ -11,6 +11,7 @@
 
 #include <array>
 #include <cstdint>
+#include <mutex>
 #include <vector>
 
 namespace rawrbox {
@@ -26,6 +27,7 @@ namespace rawrbox {
 		static std::array<Diligent::IPipelineState*, 4> _pipelines;
 
 		static Diligent::RefCntAutoPtr<Diligent::IBuffer> _buffer;
+		static std::mutex _lock;
 
 		static size_t queueIndex(bool line, bool depthTest);
 		static void push(size_t queue, const rawrbox::Vector3f& pos, uint32_t color);

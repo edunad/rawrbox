@@ -1,5 +1,7 @@
+#include <rawrbox/engine/static.hpp>
 #include <rawrbox/render/models/animations/sampler.hpp>
 #include <rawrbox/render/models/skeleton.hpp>
+#include <rawrbox/render/threading/render_thread_pool.hpp>
 #include <rawrbox/utils/logger.hpp>
 
 #include <ozz/animation/runtime/skeleton_utils.h>
@@ -32,6 +34,12 @@ namespace rawrbox {
 
 		auto callback = std::move(this->_onComplete);
 		this->_onComplete = nullptr;
+
+		if (rawrbox::RenderThreadPool::isRecording()) {
+			std::lock_guard<std::mutex> lock(rawrbox::RENDER_THREAD_LOCK);
+			rawrbox::RENDER_THREAD_INVOKES.emplace([callback = std::move(callback), name = this->_animation->name]() { callback(name); });
+			return;
+		}
 
 		callback(this->_animation->name);
 	}

@@ -9,6 +9,8 @@
 
 #include <ShaderResourceBinding.h>
 
+#include <vector>
+
 namespace rawrbox {
 	struct BindlessVertexBuffer {
 		// MODEL ---
@@ -51,6 +53,8 @@ namespace rawrbox {
 
 	class BindlessManager {
 	protected:
+		static std::vector<Diligent::RefCntAutoPtr<Diligent::IShaderResourceBinding>> _instanceBinds;
+
 		static std::vector<Diligent::IDeviceObject*> _textureHandles;
 		static std::vector<Diligent::IDeviceObject*> _vertexTextureHandles;
 
@@ -71,7 +75,6 @@ namespace rawrbox {
 		static Diligent::RefCntAutoPtr<Diligent::IPipelineResourceSignature> signature;
 		static Diligent::RefCntAutoPtr<Diligent::IShaderResourceBinding> signatureBind;
 		static Diligent::RefCntAutoPtr<Diligent::IPipelineResourceSignature> instanceSignature;
-		static Diligent::RefCntAutoPtr<Diligent::IShaderResourceBinding> instanceBind;
 
 		static Diligent::RefCntAutoPtr<Diligent::IBuffer> signatureBufferPixel;
 		static Diligent::RefCntAutoPtr<Diligent::IBuffer> signatureBufferVertex;
@@ -81,6 +84,9 @@ namespace rawrbox {
 		static void shutdown();
 
 		static void update();
+		static void bindContext(Diligent::IDeviceContext& context);
+
+		[[nodiscard]] static Diligent::IShaderResourceBinding* getInstanceBind();
 
 		// SIGNATURES
 		static void bindSignatures();

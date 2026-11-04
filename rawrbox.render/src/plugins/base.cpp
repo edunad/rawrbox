@@ -20,6 +20,7 @@ namespace rawrbox {
 	void RenderPlugin::resizeCamera(const rawrbox::CameraBase& /*camera*/) {}
 	void RenderPlugin::upload() {}
 
+	void RenderPlugin::bindContext(Diligent::IDeviceContext& /*context*/) {}
 	void RenderPlugin::preRender(const rawrbox::CameraBase& /*camera*/) {}
 	void RenderPlugin::postRender(const rawrbox::CameraBase& /*camera*/) {}
 

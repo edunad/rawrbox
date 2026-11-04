@@ -390,13 +390,17 @@ namespace model {
 	void Game::drawWorld() {
 		if (!this->_ready) return;
 
-		if (this->_model->isUploaded()) this->_model->draw();
-		if (this->_modelDynamic->isUploaded()) this->_modelDynamic->draw();
-		if (this->_displacement->isUploaded()) this->_displacement->draw();
-		if (this->_sprite->isUploaded()) this->_sprite->draw();
-		if (this->_sprite_2->isUploaded()) this->_sprite_2->draw();
-		if (this->_spline->isUploaded()) this->_spline->draw();
-		if (this->_text->isUploaded()) this->_text->draw();
+		rawrbox::RENDERER->parallelRender(
+		    this->_model,
+		    this->_modelDynamic,
+
+		    this->_displacement,
+
+		    this->_sprite,
+		    this->_sprite_2,
+
+		    this->_spline,
+		    this->_text);
 
 		// DEBUG DRAW ----
 		if (this->_debugDraw) {

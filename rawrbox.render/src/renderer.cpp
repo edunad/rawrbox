@@ -43,6 +43,7 @@
 #include <rawrbox/render/utils/loading.hpp>
 #include <rawrbox/render/utils/render.hpp>
 #include <rawrbox/render/utils/swapchain.hpp>
+#include <rawrbox/render/utils/uniform_cache.hpp>
 #include <rawrbox/utils/threading.hpp>
 #include <rawrbox/utils/vfs.hpp>
 
@@ -50,11 +51,17 @@
 
 #include <ShaderSourceFactoryUtils.h>
 
+#include <ranges>
+#include <thread>
 #include <utility>
 
 namespace rawrbox {
-	RendererBase::RendererBase(Diligent::RENDER_DEVICE_TYPE type, Diligent::NativeWindow window, const rawrbox::Vector2u& size, const rawrbox::Vector2u& monitorSize, const rawrbox::Colorf& clearColor) : _clearColor(clearColor), _size(size), _monitorSize(monitorSize), _window(window), _type(type) {}
+	RendererBase::RendererBase(Diligent::RENDER_DEVICE_TYPE type, Diligent::NativeWindow window, const rawrbox::Vector2u& size, const rawrbox::Vector2u& monitorSize, const rawrbox::Colorf& clearColor) : _clearColor(clearColor), _size(size), _monitorSize(monitorSize), _window(window), _type(type) {
+		const uint32_t hardware = std::thread::hardware_concurrency();
+		this->_renderThreads = std::min<uint32_t>(RB_RENDER_MAX_THREADS, hardware > 1U ? hardware - 1U : 0U);
+	}
 	RendererBase::~RendererBase() {
+		this->_threadPool.reset();
 		rawrbox::LoadingUtils::clear();
 
 		this->_stencil.reset();
@@ -132,6 +139,7 @@ namespace rawrbox {
 					Diligent::EngineD3D12CreateInfo EngineCI;
 					EngineCI.Features = features;
 					EngineCI.NumAsyncShaderCompilationThreads = ASYNC_COMPILE_THREADS;
+					EngineCI.NumDeferredContexts = this->_renderThreads == 0 ? 0U : this->_renderThreads + 1U;
 	#ifdef TRACY_ENABLE
 					EngineCI.QueryPoolSizes[Diligent::QUERY_TYPE_TIMESTAMP] += RB_RENDER_PROFILER_FRAMES * RB_RENDER_PROFILER_QUERIES;
 	#endif
@@ -151,7 +159,9 @@ namespace rawrbox {
 						EngineCI.DynamicDescriptorAllocationChunkSize[1] = 8;
 					}
 
-					pFactoryD3D12->CreateDeviceAndContextsD3D12(EngineCI, &this->_device, &this->_context);
+					std::vector<Diligent::IDeviceContext*> contexts(1U + EngineCI.NumDeferredContexts, nullptr);
+					pFactoryD3D12->CreateDeviceAndContextsD3D12(EngineCI, &this->_device, contexts.data());
+					this->addDeferredContexts(contexts);
 
 					// Shader compiler ---
 					Diligent::RefCntAutoPtr<Diligent::IRenderDeviceD3D12> deviceD3D12(this->_device, Diligent::IID_RenderDeviceD3D12);
@@ -188,6 +198,7 @@ namespace rawrbox {
 					Diligent::EngineVkCreateInfo EngineCI;
 					EngineCI.Features = features;
 					EngineCI.NumAsyncShaderCompilationThreads = ASYNC_COMPILE_THREADS;
+					EngineCI.NumDeferredContexts = this->_renderThreads == 0 ? 0U : this->_renderThreads + 1U;
 					EngineCI.MainDescriptorPoolSize.NumSampledImageDescriptors += RB_RENDER_MAX_TEXTURES + RB_RENDER_MAX_VERTEX_TEXTURES;
 	#ifdef TRACY_ENABLE
 					EngineCI.QueryPoolSizes[Diligent::QUERY_TYPE_TIMESTAMP] += RB_RENDER_PROFILER_FRAMES * RB_RENDER_PROFILER_QUERIES;
@@ -208,7 +219,9 @@ namespace rawrbox {
 						EngineCI.DynamicHeapPageSize = 2 << 20;
 					}
 
-					pFactoryVk->CreateDeviceAndContextsVk(EngineCI, &this->_device, &this->_context);
+					std::vector<Diligent::IDeviceContext*> contexts(1U + EngineCI.NumDeferredContexts, nullptr);
+					pFactoryVk->CreateDeviceAndContextsVk(EngineCI, &this->_device, contexts.data());
+					this->addDeferredContexts(contexts);
 
 					// Shader compiler ---
 					Diligent::RefCntAutoPtr<Diligent::IRenderDeviceVk> deviceVk(this->_device, Diligent::IID_RenderDeviceVk);
@@ -243,8 +256,11 @@ namespace rawrbox {
 
 					Diligent::EngineD3D11CreateInfo EngineCI;
 					EngineCI.Features = features;
+					EngineCI.NumDeferredContexts = this->_renderThreads == 0 ? 0U : this->_renderThreads + 1U;
 
-					pFactoryD3D11->CreateDeviceAndContextsD3D11(EngineCI, &this->_device, &this->_context);
+					std::vector<Diligent::IDeviceContext*> contexts(1U + EngineCI.NumDeferredContexts, nullptr);
+					pFactoryD3D11->CreateDeviceAndContextsD3D11(EngineCI, &this->_device, contexts.data());
+					this->addDeferredContexts(contexts);
 					pFactoryD3D11->CreateSwapChainD3D11(this->_device, this->_context, SCDesc, Diligent::FullScreenModeDesc{}, this->_window, &this->_swapChain);
 				}
 				break;
@@ -265,6 +281,12 @@ namespace rawrbox {
 					Diligent::EngineGLCreateInfo EngineCI;
 					EngineCI.Features = features;
 					EngineCI.Window = this->_window;
+
+					if (this->_renderThreads != 0) {
+						this->_logger->warn("OpenGL does not support deferred contexts, disabling render threads");
+						this->_renderThreads = 0;
+					}
+
 					pFactoryOpenGL->CreateDeviceAndSwapChainGL(EngineCI, &this->_device, &this->_context, SCDesc, &this->_swapChain);
 				}
 				break;
@@ -278,6 +300,9 @@ namespace rawrbox {
 			RAWRBOX_CRITICAL("Base vertex not supported");
 		}
 		// ----------------------------
+
+		if (this->_threadPool == nullptr)
+			this->_threadPool = std::make_unique<rawrbox::RenderThreadPool>(*this->_context, std::vector<Diligent::RefCntAutoPtr<Diligent::IDeviceContext>>{});
 
 #ifdef TRACY_ENABLE
 		this->_profiler = std::make_unique<rawrbox::GPUProfiler>(*this->_device, *this->_context);
@@ -663,8 +688,64 @@ namespace rawrbox {
 	void RendererBase::frame() {
 		ZoneScopedN("RendererBase::frame");
 		this->_swapChain->Present(this->_vsync ? 1 : 0); // Submit
+		if (this->_threadPool != nullptr) this->_threadPool->finishFrame();
+
 		rawrbox::FRAME = this->_context->GetFrameNumber();
 	}
+
+	void RendererBase::addDeferredContexts(std::vector<Diligent::IDeviceContext*>& contexts) {
+		if (contexts.empty() || contexts.front() == nullptr) RAWRBOX_CRITICAL("Failed to create the immediate context");
+		this->_context.Attach(contexts.front());
+
+		std::vector<Diligent::RefCntAutoPtr<Diligent::IDeviceContext>> deferred = {};
+		deferred.reserve(contexts.size() - 1);
+
+		for (size_t i = 1; i < contexts.size(); i++) {
+			if (contexts[i] == nullptr) RAWRBOX_CRITICAL("Failed to create deferred context #{}", i - 1);
+			deferred.emplace_back().Attach(contexts[i]);
+		}
+
+		contexts.clear();
+		this->_threadPool = std::make_unique<rawrbox::RenderThreadPool>(*this->_context, std::move(deferred));
+	}
+
+	void RendererBase::setRenderThreads(uint32_t threads) {
+		if (this->_initialized || this->_device != nullptr) RAWRBOX_CRITICAL("'setRenderThreads' must be called before 'init'!");
+
+		const uint32_t hardware = std::thread::hardware_concurrency();
+		const uint32_t max = std::min<uint32_t>(RB_RENDER_MAX_THREADS, hardware > 1U ? hardware - 1U : 0U);
+
+		if (threads > max) this->_logger->warn("Requested {} render threads, clamping to {}", threads, max);
+		this->_renderThreads = std::min(threads, max);
+	}
+
+	uint32_t RendererBase::getRenderThreads() const { return this->_renderThreads; }
+
+	void RendererBase::parallelRender(uint32_t count, const rawrbox::RenderThreadPool::RecordFunc& record) {
+		if (this->_threadPool == nullptr) RAWRBOX_CRITICAL("Renderer not initialized! Did you call 'init' ?");
+
+		auto* target = this->_passCamera != nullptr ? this->_passCamera->getRenderTarget() : nullptr;
+		if (target == nullptr || !target->isRecording()) RAWRBOX_CRITICAL("'parallelRender' can only be called during 'PASS_WORLD'");
+
+		const rawrbox::RenderThreadPool::SetupFunc setup = [this, target](Diligent::IDeviceContext& context) {
+			target->bindContext(context);
+			rawrbox::BindlessManager::bindContext(context);
+
+			for (auto& val : this->_renderPlugins | std::views::values) {
+				if (val == nullptr || !val->isEnabled()) continue;
+				val->bindContext(context);
+			}
+		};
+
+		this->_occlusion->prepareParallel(*this->_context);
+		if (!this->_threadPool->record(count, record, setup)) return;
+
+		target->bindContext(*this->_context);
+		this->_context->CommitShaderResources(rawrbox::BindlessManager::signatureBind, Diligent::RESOURCE_STATE_TRANSITION_MODE_NONE);
+		rawrbox::UniformCache::reset();
+	}
+
+	rawrbox::RenderThreadPool* RendererBase::threadPool() const { return this->_threadPool.get(); }
 
 	// INTRO ------
 	void RendererBase::playIntro() {
@@ -857,7 +938,10 @@ namespace rawrbox {
 	rawrbox::GPUProfiler* RendererBase::profiler() const { return this->_profiler.get(); }
 #endif
 
-	Diligent::IDeviceContext* RendererBase::context() const { return this->_context; }
+	Diligent::IDeviceContext* RendererBase::context() const {
+		auto* current = rawrbox::RenderThreadPool::currentContext();
+		return current != nullptr ? current : this->_context.RawPtr();
+	}
 	Diligent::ISwapChain* RendererBase::swapChain() const { return this->_swapChain; }
 	Diligent::IRenderDevice* RendererBase::device() const { return this->_device; }
 

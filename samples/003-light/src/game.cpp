@@ -316,9 +316,10 @@ namespace light {
 	void Game::drawWorld() const {
 		if (!this->_ready) return;
 
-		this->_house->draw();
-		this->_props->draw();
-		this->_monster->draw();
+		rawrbox::RENDERER->parallelRender(
+		    this->_house,
+		    this->_props,
+		    this->_monster);
 	}
 
 	void Game::drawOverlay() const {

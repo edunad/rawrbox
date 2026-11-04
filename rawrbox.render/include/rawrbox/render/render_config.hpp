@@ -44,6 +44,9 @@
 #define RB_RENDER_OCCLUSION_THREADS 8U
 // ----------------
 
+#define RB_RENDER_MAX_THREADS  16U
+#define RB_RENDER_MAX_CONTEXTS (RB_RENDER_MAX_THREADS + 2U)
+
 // PROFILER ------
 #define RB_RENDER_PROFILER_FRAMES  4U
 #define RB_RENDER_PROFILER_QUERIES 256U // Timestamps per frame
