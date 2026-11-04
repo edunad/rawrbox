@@ -2,6 +2,7 @@
 #include <rawrbox/render/static.hpp>
 #include <rawrbox/render/utils/pipeline.hpp>
 #include <rawrbox/render/utils/render.hpp>
+#include <rawrbox/render/utils/uniform_cache.hpp>
 
 namespace rawrbox {
 	// PROTECTED ----
@@ -57,5 +58,7 @@ namespace rawrbox {
 		DrawAttrs.NumVertices = 4; // QUAD
 		DrawAttrs.Flags = Diligent::DRAW_FLAG_VERIFY_ALL;
 		context->Draw(DrawAttrs);
+
+		rawrbox::UniformCache::reset();
 	}
 } // namespace rawrbox

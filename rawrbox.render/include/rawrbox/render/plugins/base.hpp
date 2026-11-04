@@ -2,12 +2,9 @@
 
 #include <rawrbox/math/vector2.hpp>
 #include <rawrbox/render/cameras/base.hpp>
-#include <rawrbox/render/enums/draw.hpp>
 #include <rawrbox/render/textures/render.hpp>
 
 #include <GraphicsTypes.h>
-#include <RenderPass.h>
-#include <TextureView.h>
 
 namespace rawrbox {
 	class RenderPlugin {
@@ -44,6 +41,7 @@ namespace rawrbox {
 		virtual void resizeCamera(const rawrbox::CameraBase& camera);
 		virtual void upload();
 
+		virtual void bindContext(Diligent::IDeviceContext& context);
 		virtual void preRender(const rawrbox::CameraBase& camera);
 		virtual void postRender(const rawrbox::CameraBase& camera);
 

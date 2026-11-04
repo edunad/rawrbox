@@ -250,9 +250,14 @@ namespace phys_3d_test {
 			b->mdl->setPos(pos);
 			b->mdl->setAngle(ang);
 			b->mdl->setColor(body->IsActive() ? rawrbox::Colors::White() : rawrbox::Colors::Gray());
-
-			b->mdl->draw();
 		}
+
+		rawrbox::RENDERER->parallelRender(static_cast<uint32_t>(this->_boxes.size()), [this](Diligent::IDeviceContext& /*context*/, uint32_t begin, uint32_t end) {
+			for (uint32_t i = begin; i < end; i++) {
+				const auto& b = this->_boxes[i];
+				if (b->body != nullptr) b->mdl->draw();
+			}
+		});
 		// ------------------*/
 	}
 

@@ -15,6 +15,7 @@ namespace rawrbox {
 	std::array<Diligent::IPipelineState*, 4> DebugDraw::_pipelines = {};
 
 	Diligent::RefCntAutoPtr<Diligent::IBuffer> DebugDraw::_buffer;
+	std::mutex DebugDraw::_lock;
 	// ----------------
 
 	// PRIVATE ----
@@ -23,6 +24,7 @@ namespace rawrbox {
 	}
 
 	void DebugDraw::push(size_t queue, const rawrbox::Vector3f& pos, uint32_t color) {
+		std::lock_guard<std::mutex> lock(_lock);
 		_queues[queue].push_back({pos, color});
 	}
 
@@ -118,6 +120,9 @@ namespace rawrbox {
 	}
 
 	void DebugDraw::draw() {
+		if (rawrbox::RenderThreadPool::isRecording()) RAWRBOX_CRITICAL("'DebugDraw::draw' cannot be called inside 'parallelRender'");
+		std::lock_guard<std::mutex> lock(_lock);
+
 		size_t total = 0;
 		for (const auto& queue : _queues) {
 			total += queue.size();

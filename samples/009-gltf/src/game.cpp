@@ -257,18 +257,11 @@ namespace gltf {
 	void Game::drawWorld() {
 		if (!this->_ready) return;
 
-		this->_modelGrid->draw();
-
-		// TV ---
-		if (this->_grandmaTV != nullptr) this->_grandmaTV->draw();
-		// ---------
-
 		// BLEND SHAPE ----
 		if (this->_blendTest != nullptr) {
 			this->_blendTest->setBlendShape("Cheese-Melt", std::abs(std::cos(rawrbox::FRAME * 0.005F) * 1.F));
 			this->_blendTest->setBlendShape("Other-Nya", std::abs(std::cos(rawrbox::FRAME * 0.008F) * 1.F));
 			this->_blendTest->setBlendShape("Other-Melt", std::abs(std::cos(rawrbox::FRAME * 0.002F) * 1.F));
-			this->_blendTest->draw();
 		}
 		//  -----
 
@@ -280,26 +273,24 @@ namespace gltf {
 			rawrbox::AnimationIKAim head = {};
 			head.target = target;
 			this->_wolfLit->addIK("Head", head);
-
-			this->_wolf->draw();
-			this->_wolfLit->draw();
-			this->_lookTarget->draw();
 		}
 		// --------
 
-		// ANIM TEST --
-		if (this->_animTest != nullptr) this->_animTest->draw();
-		// -------
+		rawrbox::RENDERER->parallelRender(
+		    this->_modelGrid,
 
-		// LIGHT TEST --
-		if (this->_phasmo != nullptr) this->_phasmo->draw();
-		// -------------
+		    this->_grandmaTV,
+		    this->_blendTest,
 
-		// TEXT ----
-		if (this->_text != nullptr) this->_text->draw();
-		// ----
+		    this->_wolf,
+		    this->_wolfLit,
+		    this->_lookTarget,
+		    this->_animTest,
 
-		if (this->_bbox != nullptr) this->_bbox->draw();
+		    this->_phasmo,
+
+		    this->_text,
+		    this->_bbox);
 	}
 
 	void Game::drawOverlay() const {

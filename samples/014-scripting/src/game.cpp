@@ -214,8 +214,7 @@ namespace scripting_test {
 
 	void Game::drawWorld() {
 		if (!this->_ready) return;
-		if (this->_model != nullptr) this->_model->draw();
-		if (this->_instance != nullptr) this->_instance->draw();
+		rawrbox::RENDERER->parallelRender(this->_model, this->_instance);
 		rawrbox::SCRIPTING::call("draw", static_cast<int>(rawrbox::DrawPass::PASS_WORLD));
 	}
 

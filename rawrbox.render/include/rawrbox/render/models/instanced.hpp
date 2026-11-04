@@ -8,6 +8,7 @@
 
 #include <DynamicBuffer.hpp>
 
+#include <algorithm>
 #include <numeric>
 #include <optional>
 
@@ -30,6 +31,13 @@ namespace rawrbox {
 		void updateBuffers() override {
 			rawrbox::ModelBase<M>::updateBuffers();
 			this->updateInstances();
+		}
+
+		[[nodiscard]] uint32_t bufferCapacity(size_t requested) const {
+			constexpr uint64_t max = RB_RENDER_MAX_INSTANCE_BUFFER_SIZE / sizeof(rawrbox::Instance);
+			if (this->_instances.size() > max) RAWRBOX_CRITICAL("Too many instances {}!. Max is {}! Increase 'RB_RENDER_MAX_INSTANCE_BUFFER_SIZE'", this->_instances.size(), max);
+
+			return static_cast<uint32_t>(std::clamp<uint64_t>(requested, 1U, max));
 		}
 
 		// CULLING ---
@@ -99,8 +107,9 @@ namespace rawrbox {
 			// BIND MATERIALS + TEXTURES ----
 			this->_material->bindPipeline(*this->_mesh);
 
-			rawrbox::BindlessManager::instanceBind->GetVariableByName(Diligent::SHADER_TYPE_VERTEX, "Instances")->Set(this->_dataBuffer->GetBuffer()->GetDefaultView(Diligent::BUFFER_VIEW_SHADER_RESOURCE));
-			context->CommitShaderResources(rawrbox::BindlessManager::instanceBind, Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
+			auto* instanceBind = rawrbox::BindlessManager::getInstanceBind();
+			instanceBind->GetVariableByName(Diligent::SHADER_TYPE_VERTEX, "Instances")->Set(this->_dataBuffer->GetBuffer()->GetDefaultView(Diligent::BUFFER_VIEW_SHADER_RESOURCE));
+			context->CommitShaderResources(instanceBind, Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
 
 			this->_material->resetUniformBinds();
 
@@ -209,15 +218,17 @@ namespace rawrbox {
 			dynamicBuff.Desc = InstBuffDesc;
 			dynamicBuff.VirtualSize = RB_RENDER_MAX_INSTANCE_BUFFER_SIZE;
 
+			const uint32_t capacity = this->bufferCapacity(this->_instances.capacity());
+
 			this->_dataBuffer = std::make_unique<Diligent::DynamicBuffer>(device, dynamicBuff);
-			this->_dataBuffer->Resize(device, rawrbox::RENDERER->context(), sizeof(rawrbox::Instance) * std::max<uint64_t>(this->_instances.capacity(), 1U), true);
+			this->_dataBuffer->Resize(device, rawrbox::RENDERER->context(), sizeof(rawrbox::Instance) * static_cast<uint64_t>(capacity), true);
 			//  ---------------------
 
 			// Barrier ----
 			rawrbox::BarrierUtils::barrier({{this->_dataBuffer->GetBuffer(), Diligent::RESOURCE_STATE_UNKNOWN, Diligent::RESOURCE_STATE_SHADER_RESOURCE, Diligent::STATE_TRANSITION_FLAG_UPDATE_STATE}});
 			// ------------
 
-			this->createCullBuffers(static_cast<uint32_t>(this->_instances.capacity()), 2U);
+			this->createCullBuffers(capacity, 2U);
 			if (size != 0) this->updateInstances(); // Data was already added, then update the buffer
 		}
 
@@ -238,9 +249,9 @@ namespace rawrbox {
 
 			// RESIZE ----
 			if (this->_instances.size() > this->_capacity) {
-				this->_instances.reserve(this->_instances.size() + 16);
+				const uint32_t capacity = this->bufferCapacity(this->_instances.size() + 16);
+				this->_instances.reserve(capacity);
 
-				const auto capacity = static_cast<uint32_t>(this->_instances.capacity());
 				this->_dataBuffer->Resize(device, context, sizeof(rawrbox::Instance) * static_cast<uint64_t>(capacity), true);
 				this->createCullBuffers(capacity, 2U);
 
@@ -323,8 +334,9 @@ namespace rawrbox {
 				this->_material->resetUniformBinds();
 				this->bindShadowMesh(*this->_mesh, this->getMatrix());
 
-				rawrbox::BindlessManager::instanceBind->GetVariableByName(Diligent::SHADER_TYPE_VERTEX, "Instances")->Set(this->_dataBuffer->GetBuffer()->GetDefaultView(Diligent::BUFFER_VIEW_SHADER_RESOURCE));
-				rawrbox::RENDERER->context()->CommitShaderResources(rawrbox::BindlessManager::instanceBind, Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
+				auto* instanceBind = rawrbox::BindlessManager::getInstanceBind();
+				instanceBind->GetVariableByName(Diligent::SHADER_TYPE_VERTEX, "Instances")->Set(this->_dataBuffer->GetBuffer()->GetDefaultView(Diligent::BUFFER_VIEW_SHADER_RESOURCE));
+				rawrbox::RENDERER->context()->CommitShaderResources(instanceBind, Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
 			}
 
 			const auto bounds = this->getShadowBounds();

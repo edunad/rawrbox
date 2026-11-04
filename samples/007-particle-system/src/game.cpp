@@ -173,10 +173,12 @@ namespace particle_system {
 	void Game::drawWorld() {
 		if (!this->_ready) return;
 
-		if (this->_model != nullptr) this->_model->draw();
-		if (this->_text != nullptr) this->_text->draw();
-		if (this->_emitter != nullptr) this->_emitter->draw();
-		if (this->_emitter2 != nullptr) this->_emitter2->draw();
+		rawrbox::RENDERER->parallelRender(
+		    this->_model,
+		    this->_text,
+
+		    this->_emitter,
+		    this->_emitter2);
 	}
 
 	void Game::drawOverlay() const {

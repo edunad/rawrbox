@@ -182,9 +182,14 @@ namespace phys_2d_test {
 			b->mdl->setPos(pos);
 			b->mdl->setEulerAngle({0, 0, body->GetAngle()});
 			b->mdl->setColor(body->IsSleeping() ? rawrbox::Colors::Gray() : rawrbox::Colors::White());
-
-			b->mdl->draw();
 		}
+
+		rawrbox::RENDERER->parallelRender(static_cast<uint32_t>(this->_boxes.size()), [this](Diligent::IDeviceContext& /*context*/, uint32_t begin, uint32_t end) {
+			for (uint32_t i = begin; i < end; i++) {
+				const auto& b = this->_boxes[i];
+				if (b->body != nullptr) b->mdl->draw();
+			}
+		});
 		// ------------------
 	}
 

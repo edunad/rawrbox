@@ -183,10 +183,7 @@ namespace gpu {
 
 	void Game::drawWorld() {
 		if (!this->_ready) return;
-
-		if (this->_model != nullptr) this->_model->draw();
-		if (this->_instance != nullptr) this->_instance->draw();
-		if (this->_text != nullptr) this->_text->draw();
+		rawrbox::RENDERER->parallelRender(this->_model, this->_instance, this->_text);
 	}
 
 	void Game::drawOverlay() const {

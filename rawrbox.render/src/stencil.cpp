@@ -78,6 +78,8 @@ namespace rawrbox {
 	}
 
 	void Stencil::pushVertice(const uint32_t& textureID, rawrbox::Vector2f pos, const rawrbox::Vector4f& uv, const rawrbox::Color& col) {
+		if (rawrbox::RenderThreadPool::isRecording()) RAWRBOX_CRITICAL("Stencil cannot be used inside 'parallelRender'");
+
 		this->applyScale(pos);
 		this->applyRotation(pos);
 
@@ -483,7 +485,7 @@ namespace rawrbox {
 
 		auto* context = rawrbox::RENDERER->context();
 		auto* device = rawrbox::RENDERER->device();
-		
+
 		constexpr size_t contextID = 0;
 		const rawrbox::Vector2f toNDC = {2.F / static_cast<float>(this->_size.x), -2.F / static_cast<float>(this->_size.y)};
 
@@ -555,6 +557,8 @@ namespace rawrbox {
 	}
 
 	void Stencil::render() {
+		if (rawrbox::RenderThreadPool::isRecording()) RAWRBOX_CRITICAL("Stencil cannot be used inside 'parallelRender'");
+
 		if (!this->_offsets.empty()) RAWRBOX_CRITICAL("Missing 'popOffset', cannot draw");
 		if (!this->_rotations.empty()) RAWRBOX_CRITICAL("Missing 'popRotation', cannot draw");
 		if (!this->_outlines.empty()) RAWRBOX_CRITICAL("Missing 'popOutline', cannot draw");
