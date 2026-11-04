@@ -9,6 +9,7 @@
 #include <fmt/format.h>
 #include <tracy/Tracy.hpp>
 
+#include <exception>
 #include <filesystem>
 #include <functional>
 #include <string>
@@ -84,8 +85,15 @@ namespace rawrbox {
 
 				ret->status = rawrbox::LoadStatus::LOADING;
 
-				if (!ret->load(buffer)) RAWRBOX_CRITICAL("Failed to load file '{}'", path);
-				ret->upload();
+				bool loaded = false;
+				try {
+					loaded = ret->load(buffer);
+					if (loaded) ret->upload();
+				} catch (const std::exception& e) {
+					RAWRBOX_CRITICAL("Failed to load file '{}'\n  └── {}", path, e.what());
+				}
+
+				if (!loaded) RAWRBOX_CRITICAL("Failed to load file '{}'", path);
 
 				ret->status = rawrbox::LoadStatus::LOADED;
 

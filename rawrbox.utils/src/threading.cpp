@@ -4,6 +4,8 @@
 #include <fmt/format.h>
 #include <tracy/Tracy.hpp>
 
+#include <exception>
+
 namespace rawrbox {
 	// PRIVATE -------------
 	std::unique_ptr<BS::thread_pool<>> ASYNC::_pool = nullptr;
@@ -44,7 +46,14 @@ namespace rawrbox {
 		try {
 			_pool->detach_task([job]() {
 				ZoneScopedN("ASYNC::run");
-				job();
+
+				try {
+					job();
+				} catch (const std::exception& e) {
+					_logger->error("Fatal error on async job\n  └── {}", e.what());
+					spdlog::default_logger()->flush();
+					std::terminate();
+				}
 			});
 		} catch (const std::exception& e) {
 			RAWRBOX_CRITICAL("Fatal error\n  └── {}", e.what());
