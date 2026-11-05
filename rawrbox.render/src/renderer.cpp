@@ -139,7 +139,7 @@ namespace rawrbox {
 					Diligent::EngineD3D12CreateInfo EngineCI;
 					EngineCI.Features = features;
 					EngineCI.NumAsyncShaderCompilationThreads = ASYNC_COMPILE_THREADS;
-					EngineCI.NumDeferredContexts = this->_renderThreads == 0 ? 0U : this->_renderThreads + 1U;
+					EngineCI.NumDeferredContexts = this->_renderThreads;
 	#ifdef TRACY_ENABLE
 					EngineCI.QueryPoolSizes[Diligent::QUERY_TYPE_TIMESTAMP] += RB_RENDER_PROFILER_FRAMES * RB_RENDER_PROFILER_QUERIES;
 	#endif
@@ -198,7 +198,7 @@ namespace rawrbox {
 					Diligent::EngineVkCreateInfo EngineCI;
 					EngineCI.Features = features;
 					EngineCI.NumAsyncShaderCompilationThreads = ASYNC_COMPILE_THREADS;
-					EngineCI.NumDeferredContexts = this->_renderThreads == 0 ? 0U : this->_renderThreads + 1U;
+					EngineCI.NumDeferredContexts = this->_renderThreads;
 					EngineCI.MainDescriptorPoolSize.NumSampledImageDescriptors += RB_RENDER_MAX_TEXTURES + RB_RENDER_MAX_VERTEX_TEXTURES;
 	#ifdef TRACY_ENABLE
 					EngineCI.QueryPoolSizes[Diligent::QUERY_TYPE_TIMESTAMP] += RB_RENDER_PROFILER_FRAMES * RB_RENDER_PROFILER_QUERIES;
@@ -256,7 +256,7 @@ namespace rawrbox {
 
 					Diligent::EngineD3D11CreateInfo EngineCI;
 					EngineCI.Features = features;
-					EngineCI.NumDeferredContexts = this->_renderThreads == 0 ? 0U : this->_renderThreads + 1U;
+					EngineCI.NumDeferredContexts = this->_renderThreads;
 
 					std::vector<Diligent::IDeviceContext*> contexts(1U + EngineCI.NumDeferredContexts, nullptr);
 					pFactoryD3D11->CreateDeviceAndContextsD3D11(EngineCI, &this->_device, contexts.data());
@@ -721,7 +721,7 @@ namespace rawrbox {
 
 	uint32_t RendererBase::getRenderThreads() const { return this->_renderThreads; }
 
-	void RendererBase::parallelRender(uint32_t count, const rawrbox::RenderThreadPool::RecordFunc& record) {
+	void RendererBase::parallelRender(uint32_t count, const rawrbox::RenderThreadPool::RecordFunc& record, std::span<const uint32_t> weights) {
 		if (this->_threadPool == nullptr) RAWRBOX_CRITICAL("Renderer not initialized! Did you call 'init' ?");
 
 		auto* target = this->_passCamera != nullptr ? this->_passCamera->getRenderTarget() : nullptr;
@@ -738,7 +738,7 @@ namespace rawrbox {
 		};
 
 		this->_occlusion->prepareParallel(*this->_context);
-		if (!this->_threadPool->record(count, record, setup)) return;
+		if (!this->_threadPool->record(count, record, setup, weights)) return;
 
 		target->bindContext(*this->_context);
 		this->_context->CommitShaderResources(rawrbox::BindlessManager::signatureBind, Diligent::RESOURCE_STATE_TRANSITION_MODE_NONE);

@@ -457,7 +457,7 @@ namespace rawrbox {
 				references.push_back(&material["pbrMetallicRoughness"]["metallicRoughnessTexture"]);
 
 			for (auto* reference : references) {
-				auto& texture = textures.at(static_cast<size_t>((*reference)["index"].as<int64_t>()));
+				auto& texture = textures.at(static_cast<size_t>(reference->at("index").as<int64_t>()));
 				if (texture.contains("source")) images.insert(texture["source"].as<int64_t>());
 
 				if (!texture.contains("extensions")) continue;

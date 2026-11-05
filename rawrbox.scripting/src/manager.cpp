@@ -422,7 +422,7 @@ namespace rawrbox {
 			return nullptr;
 		}
 
-		auto mod = std::make_unique<rawrbox::Mod>(id, modFolder, std::move(*metadata));
+		auto mod = std::make_unique<rawrbox::Mod>(id, modFolder, std::move(metadata.value()));
 
 		// Prepare env ----------
 		loadLibraries(*mod);

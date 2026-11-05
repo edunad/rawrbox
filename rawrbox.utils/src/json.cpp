@@ -79,7 +79,7 @@ namespace rawrbox {
 					current = &array[index];
 
 				} else {
-					current = &(*current)[segment];
+					current = &current->at(segment);
 				}
 			}
 

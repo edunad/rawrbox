@@ -38,7 +38,7 @@ namespace rawrbox {
 
 		rawrbox::runOnRenderThread([channel]() {
 			for (auto it = rawrbox::BASS::sounds.begin(); it != rawrbox::BASS::sounds.end();) {
-				if ((*it).second != nullptr && (*it).second->getSample() == channel) {
+				if (it->second != nullptr && it->second->getSample() == channel) {
 					it = rawrbox::BASS::sounds.erase(it);
 					continue;
 				}

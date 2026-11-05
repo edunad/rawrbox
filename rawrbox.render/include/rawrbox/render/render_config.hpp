@@ -21,6 +21,7 @@
 #define RB_RENDER_MAX_BONES_PER_MODEL      150
 #define RB_RENDER_BUFFER_INCREASE_OFFSET   256 // To prevent the vertex / index buffer from resizing too often, increase this value to offset the scaling based on your model needs
 #define RB_RENDER_MAX_INSTANCE_BUFFER_SIZE (64ULL << 20U)
+#define RB_RENDER_GPU_CULL_MIN_INSTANCES   64U
 // -------------
 
 // SHADERS ------

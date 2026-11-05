@@ -13,6 +13,7 @@
 #include <limits>
 #include <memory>
 #include <mutex>
+#include <span>
 #include <string>
 #include <thread>
 #include <vector>
@@ -52,6 +53,7 @@ namespace rawrbox {
 		std::vector<Slot> _slots = {};
 		std::vector<std::thread> _workers = {};
 		std::vector<Diligent::ICommandList*> _executeList = {};
+		std::vector<uint32_t> _bounds = {};
 
 		std::thread::id _owner;
 
@@ -71,6 +73,8 @@ namespace rawrbox {
 		void workerMain(size_t slotIndex);
 		void runSlot(Slot& slot, const Job& job) const;
 
+		void split(uint32_t count, uint32_t parts, std::span<const uint32_t> weights);
+
 	public:
 		RenderThreadPool(Diligent::IDeviceContext& immediate, std::vector<Diligent::RefCntAutoPtr<Diligent::IDeviceContext>> deferred);
 		RenderThreadPool(const RenderThreadPool&) = delete;
@@ -79,7 +83,7 @@ namespace rawrbox {
 		RenderThreadPool& operator=(RenderThreadPool&&) = delete;
 		~RenderThreadPool();
 
-		bool record(uint32_t count, const RecordFunc& record, const SetupFunc& setup = nullptr);
+		bool record(uint32_t count, const RecordFunc& record, const SetupFunc& setup = nullptr, std::span<const uint32_t> weights = {});
 		void finishFrame();
 
 		[[nodiscard]] uint32_t slots() const;

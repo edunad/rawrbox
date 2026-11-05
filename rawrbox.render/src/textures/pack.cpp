@@ -26,10 +26,10 @@ namespace rawrbox {
 	rawrbox::PackNode& TexturePack::addSprite(uint32_t width, uint32_t height, const std::vector<uint8_t>& data) {
 		if (this->_tex == nullptr) RAWRBOX_CRITICAL("Texture not bound");
 
-		auto nodeOpt = this->_root->InsertNode(width, height);
+		const auto nodeOpt = this->_root->InsertNode(width, height);
 		if (!nodeOpt.has_value()) RAWRBOX_CRITICAL("Failed to add sprite with size {}, {}", width, height);
 
-		auto& node = (*nodeOpt).get();
+		auto& node = nodeOpt.value().get();
 		node.data = data; // Set the data of that node
 
 		if (!data.empty()) {

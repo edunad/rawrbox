@@ -24,9 +24,14 @@ namespace rawrbox {
 		Diligent::RefCntAutoPtr<Diligent::IBuffer> _directIndices;
 		Diligent::RefCntAutoPtr<Diligent::IBuffer> _shadowIndices;
 
+		Diligent::RefCntAutoPtr<Diligent::IShaderResourceBinding> _instanceBind;
+		uint32_t _instanceBindVersion = 0;
+
 		rawrbox::BBOX _instanceBounds = {};
 		rawrbox::DirtyRanges _dirtyInstances = {};
+		
 		uint32_t _capacity = 0;
+		uint32_t _gpuCullMin = RB_RENDER_GPU_CULL_MIN_INSTANCES;
 
 		void updateBuffers() override {
 			rawrbox::ModelBase<M>::updateBuffers();
@@ -38,6 +43,30 @@ namespace rawrbox {
 			if (this->_instances.size() > max) RAWRBOX_CRITICAL("Too many instances {}!. Max is {}! Increase 'RB_RENDER_MAX_INSTANCE_BUFFER_SIZE'", this->_instances.size(), max);
 
 			return static_cast<uint32_t>(std::clamp<uint64_t>(requested, 1U, max));
+		}
+
+		virtual void createInstanceBind() {
+			auto* buffer = this->_dataBuffer->GetBuffer();
+			if (buffer == nullptr) RAWRBOX_CRITICAL("Instance buffer not initialized");
+
+			RAWRBOX_DESTROY(this->_instanceBind);
+			rawrbox::BindlessManager::instanceSignature->CreateShaderResourceBinding(&this->_instanceBind, true);
+			if (this->_instanceBind == nullptr) RAWRBOX_CRITICAL("Failed to create instance binding");
+
+			auto* variable = this->_instanceBind->GetVariableByName(Diligent::SHADER_TYPE_VERTEX, "Instances");
+			if (variable == nullptr) RAWRBOX_CRITICAL("Failed to find instance variable");
+
+			variable->Set(buffer->GetDefaultView(Diligent::BUFFER_VIEW_SHADER_RESOURCE));
+			this->_instanceBindVersion = this->_dataBuffer->GetVersion();
+		}
+
+		virtual void bindInstances() {
+			if (this->_instanceBind == nullptr || this->_instanceBindVersion != this->_dataBuffer->GetVersion()) this->createInstanceBind();
+			rawrbox::RENDERER->context()->CommitShaderResources(this->_instanceBind, Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
+		}
+
+		[[nodiscard]] virtual bool useGPUCulling() const {
+			return this->_instances.size() >= this->_gpuCullMin;
 		}
 
 		// CULLING ---
@@ -107,10 +136,7 @@ namespace rawrbox {
 			// BIND MATERIALS + TEXTURES ----
 			this->_material->bindPipeline(*this->_mesh);
 
-			auto* instanceBind = rawrbox::BindlessManager::getInstanceBind();
-			instanceBind->GetVariableByName(Diligent::SHADER_TYPE_VERTEX, "Instances")->Set(this->_dataBuffer->GetBuffer()->GetDefaultView(Diligent::BUFFER_VIEW_SHADER_RESOURCE));
-			context->CommitShaderResources(instanceBind, Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
-
+			this->bindInstances();
 			this->_material->resetUniformBinds();
 
 			bool updated = this->_material->bindVertexUniforms(*this->_mesh, this->getMatrix());
@@ -159,6 +185,7 @@ namespace rawrbox {
 		~InstancedModel() override {
 			RAWRBOX_DESTROY(this->_directIndices);
 			RAWRBOX_DESTROY(this->_shadowIndices);
+			RAWRBOX_DESTROY(this->_instanceBind);
 
 			this->_dataBuffer.reset();
 			this->_instances.clear();
@@ -200,6 +227,9 @@ namespace rawrbox {
 		virtual std::vector<rawrbox::Instance>& instances() { return this->_instances; }
 		[[nodiscard]] virtual size_t count() const { return this->_instances.size(); }
 
+		virtual void setGPUCullThreshold(uint32_t instances) { this->_gpuCullMin = instances; }
+		[[nodiscard]] virtual uint32_t getGPUCullThreshold() const { return this->_gpuCullMin; }
+
 		void upload(rawrbox::UploadType type = rawrbox::UploadType::STATIC) override {
 			rawrbox::ModelBase<M>::upload(type);
 
@@ -229,6 +259,7 @@ namespace rawrbox {
 			// ------------
 
 			this->createCullBuffers(capacity, 2U);
+			this->createInstanceBind();
 			if (size != 0) this->updateInstances(); // Data was already added, then update the buffer
 		}
 
@@ -249,7 +280,7 @@ namespace rawrbox {
 
 			// RESIZE ----
 			if (this->_instances.size() > this->_capacity) {
-				const uint32_t capacity = this->bufferCapacity(this->_instances.size() + 16);
+				const uint32_t capacity = this->bufferCapacity(std::max<size_t>(this->_instances.size() + 16, static_cast<size_t>(this->_capacity) + this->_capacity / 2));
 				this->_instances.reserve(capacity);
 
 				this->_dataBuffer->Resize(device, context, sizeof(rawrbox::Instance) * static_cast<uint64_t>(capacity), true);
@@ -333,10 +364,7 @@ namespace rawrbox {
 				}
 				this->_material->resetUniformBinds();
 				this->bindShadowMesh(*this->_mesh, this->getMatrix());
-
-				auto* instanceBind = rawrbox::BindlessManager::getInstanceBind();
-				instanceBind->GetVariableByName(Diligent::SHADER_TYPE_VERTEX, "Instances")->Set(this->_dataBuffer->GetBuffer()->GetDefaultView(Diligent::BUFFER_VIEW_SHADER_RESOURCE));
-				rawrbox::RENDERER->context()->CommitShaderResources(instanceBind, Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
+				this->bindInstances();
 			}
 
 			const auto bounds = this->getShadowBounds();
@@ -381,6 +409,11 @@ namespace rawrbox {
 					this->drawInstances(false, 0);
 				}
 
+				return;
+			}
+
+			if (!this->useGPUCulling()) {
+				if (this->_instanceBounds.inFrustum(rawrbox::RENDERER->getPassCamera()->getViewProjMtx() * this->getMatrix())) this->drawInstances(false, 0);
 				return;
 			}
 
