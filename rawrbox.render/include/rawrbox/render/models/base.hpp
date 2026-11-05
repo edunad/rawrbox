@@ -350,16 +350,17 @@ namespace rawrbox {
 				RAWRBOX_CRITICAL("Too many items to cull ({}), max is {}", total, rawrbox::Occlusion::CULL_MAX_GROUPS * rawrbox::Occlusion::CULL_THREADS);
 
 			auto* bind = occlusion->getCullBind();
+			const auto& vars = occlusion->getCullVariables();
 
 			// BUFFERS ----
 			if (this->_visibility->GetDesc().Size < static_cast<uint64_t>(total) * sizeof(uint32_t))
 				RAWRBOX_CRITICAL("Culling buffers are smaller than the items! Recreate buffers first");
 
-			bind->GetVariableByName(Diligent::SHADER_TYPE_COMPUTE, "Instances")->Set(objects->GetDefaultView(Diligent::BUFFER_VIEW_SHADER_RESOURCE));
-			bind->GetVariableByName(Diligent::SHADER_TYPE_COMPUTE, "VisibleInstances")->Set(this->_visibleBuffer->GetDefaultView(Diligent::BUFFER_VIEW_UNORDERED_ACCESS));
-			bind->GetVariableByName(Diligent::SHADER_TYPE_COMPUTE, "Visibility")->Set(this->_visibility->GetDefaultView(Diligent::BUFFER_VIEW_UNORDERED_ACCESS));
-			bind->GetVariableByName(Diligent::SHADER_TYPE_COMPUTE, "DrawArgs")->Set(this->_argsBuffer->GetDefaultView(Diligent::BUFFER_VIEW_UNORDERED_ACCESS));
-			bind->GetVariableByName(Diligent::SHADER_TYPE_COMPUTE, "HiZ")->Set(occlusion->getHiZ());
+			vars.instances->Set(objects->GetDefaultView(Diligent::BUFFER_VIEW_SHADER_RESOURCE));
+			vars.visibleInstances->Set(this->_visibleBuffer->GetDefaultView(Diligent::BUFFER_VIEW_UNORDERED_ACCESS));
+			vars.visibility->Set(this->_visibility->GetDefaultView(Diligent::BUFFER_VIEW_UNORDERED_ACCESS));
+			vars.drawArgs->Set(this->_argsBuffer->GetDefaultView(Diligent::BUFFER_VIEW_UNORDERED_ACCESS));
+			vars.hiz->Set(occlusion->getHiZ());
 			// -----------
 
 			// CONSTANTS ----
@@ -376,7 +377,7 @@ namespace rawrbox {
 			constants.hiz = {occlusion->getSize().x, occlusion->getSize().y, this->_cullCompact ? 0U : 1U, 0U};
 
 			// Re-use the buffer, so AMD stops whining
-			bind->GetVariableByName(Diligent::SHADER_TYPE_COMPUTE, "CullConstants")->SetInlineConstants(&constants, 0, sizeof(rawrbox::CullConstants) / sizeof(uint32_t));
+			vars.constants->SetInlineConstants(&constants, 0, sizeof(rawrbox::CullConstants) / sizeof(uint32_t));
 
 			if (mode == rawrbox::CullPass::LATE) this->_resetVIS = false;
 			if (mode != rawrbox::CullPass::LATE && this->_cullCompact) context->UpdateBuffer(this->_argsBuffer, 0, this->_cullArgs.size() * sizeof(uint32_t), this->_cullArgs.data(), Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);

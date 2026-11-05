@@ -53,8 +53,6 @@ namespace rawrbox {
 
 	class BindlessManager {
 	protected:
-		static std::vector<Diligent::RefCntAutoPtr<Diligent::IShaderResourceBinding>> _instanceBinds;
-
 		static std::vector<Diligent::IDeviceObject*> _textureHandles;
 		static std::vector<Diligent::IDeviceObject*> _vertexTextureHandles;
 
@@ -86,7 +84,6 @@ namespace rawrbox {
 		static void update();
 		static void bindContext(Diligent::IDeviceContext& context);
 
-		[[nodiscard]] static Diligent::IShaderResourceBinding* getInstanceBind();
 
 		// SIGNATURES
 		static void bindSignatures();

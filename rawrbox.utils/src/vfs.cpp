@@ -67,7 +67,7 @@ namespace rawrbox {
 			const auto relative = getRelativePath(key, mount->mountPoint);
 			if (!relative.has_value()) continue;
 
-			const auto* entry = mount->vpk->getEntry(*relative);
+			const auto* entry = mount->vpk->getEntry(relative.value());
 			if (entry != nullptr) return {mount->vpk, entry};
 		}
 
@@ -126,7 +126,7 @@ namespace rawrbox {
 			const auto relative = getRelativePath(key, mount.mountPoint);
 			if (!relative.has_value()) continue;
 
-			if (mount.vpk->getEntry(*relative) != nullptr || mount.vpk->hasFolder(*relative)) return true;
+			if (mount.vpk->getEntry(relative.value()) != nullptr || mount.vpk->hasFolder(relative.value())) return true;
 		}
 
 		return false;
@@ -189,7 +189,7 @@ namespace rawrbox {
 			const auto relative = getRelativePath(key, mount->mountPoint);
 			if (!relative.has_value()) continue;
 
-			const auto prefix = relative->empty() ? "" : *relative + "/";
+			const auto prefix = relative->empty() ? "" : relative.value() + "/";
 			for (const auto& entry : mount->vpk->getEntries()) {
 				if (!entry.first.starts_with(prefix)) continue;
 

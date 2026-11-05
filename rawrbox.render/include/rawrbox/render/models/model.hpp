@@ -600,7 +600,7 @@ namespace rawrbox {
 			auto fnd = std::find_if(this->_meshes.begin(), this->_meshes.end(), [&id](auto& mesh) { return mesh->getName() == id; });
 			if (fnd == this->_meshes.end()) return nullptr;
 
-			return (*fnd).get();
+			return fnd->get();
 		}
 
 		virtual rawrbox::Mesh<typename M::vertexBufferType>* getMesh(size_t id = 0) {

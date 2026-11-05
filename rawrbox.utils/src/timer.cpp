@@ -16,7 +16,7 @@ namespace rawrbox {
 
 		const auto time = static_cast<float>(rawrbox::TimeUtils::time());
 		for (auto it = timers.begin(); it != timers.end();) {
-			auto& timer = (*it).second;
+			auto& timer = it->second;
 			if (timer == nullptr) {
 				it = timers.erase(it);
 				continue;
@@ -28,7 +28,7 @@ namespace rawrbox {
 			}
 
 			if (timer->_func != nullptr) { // Tick
-				ZoneTransientN(zone, (*it).first.c_str(), true);
+				ZoneTransientN(zone, it->first.c_str(), true);
 				timer->_func();
 			}
 

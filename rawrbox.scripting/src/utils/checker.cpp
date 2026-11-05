@@ -50,7 +50,7 @@ namespace {
 
 			const auto luaurc = fmt::format("{}/.luaurc", key);
 			if (!root && rawrbox::VFS::contains(luaurc)) {
-				if (auto error = Luau::parseConfig(readText(luaurc), config); error.has_value()) this->errors.push_back(fmt::format("{}: {}", luaurc, *error));
+				if (auto error = Luau::parseConfig(readText(luaurc), config); error.has_value()) this->errors.push_back(fmt::format("{}: {}", luaurc, error.value()));
 			}
 
 			return this->cache.emplace(key, std::move(config)).first->second;

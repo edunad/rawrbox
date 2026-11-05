@@ -116,7 +116,7 @@ namespace rawrbox {
 			args.push_back(str);
 		}
 
-		return fmt::vformat(*text, args);
+		return fmt::vformat(text.value(), args);
 	}
 
 	std::optional<rawrbox::I18NKey> I18N::parseKey(std::string_view text) {

@@ -26,6 +26,7 @@
 #include <filesystem>
 #include <functional>
 #include <map>
+#include <span>
 #include <utility>
 #include <vector>
 
@@ -210,19 +211,27 @@ namespace rawrbox {
 		virtual void setRenderThreads(uint32_t threads);
 		[[nodiscard]] virtual uint32_t getRenderThreads() const;
 
-		virtual void parallelRender(uint32_t count, const rawrbox::RenderThreadPool::RecordFunc& record);
+		virtual void parallelRender(uint32_t count, const rawrbox::RenderThreadPool::RecordFunc& record, std::span<const uint32_t> weights = {});
+
+		template <typename... T>
+			requires(sizeof...(T) > 0 && (rawrbox::ParallelRender<T> && ...))
+		void parallelRender(const std::array<uint32_t, sizeof...(T)>& weights, const T&... drawables) {
+			using DrawFn = void (*)(const void*);
+			const std::array<std::pair<const void*, DrawFn>, sizeof...(T)> items = {std::pair<const void*, DrawFn>{&drawables, &RendererBase::render<T>}...};
+
+			this->parallelRender(
+			    static_cast<uint32_t>(items.size()), [&items](Diligent::IDeviceContext& /*context*/, uint32_t begin, uint32_t end) {
+				    for (uint32_t i = begin; i < end; i++) {
+					    items[i].second(items[i].first);
+				    }
+			    },
+			    weights);
+		}
 
 		template <typename... T>
 			requires(sizeof...(T) > 0 && (rawrbox::ParallelRender<T> && ...))
 		void parallelRender(const T&... drawables) {
-			using DrawFn = void (*)(const void*);
-			const std::array<std::pair<const void*, DrawFn>, sizeof...(T)> items = {std::pair<const void*, DrawFn>{&drawables, &RendererBase::render<T>}...};
-
-			this->parallelRender(static_cast<uint32_t>(items.size()), [&items](Diligent::IDeviceContext& /*context*/, uint32_t begin, uint32_t end) {
-				for (uint32_t i = begin; i < end; i++) {
-					items[i].second(items[i].first);
-				}
-			});
+			this->parallelRender(std::array<uint32_t, sizeof...(T)>{}, drawables...);
 		}
 
 		[[nodiscard]] virtual rawrbox::RenderThreadPool* threadPool() const;

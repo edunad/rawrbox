@@ -39,6 +39,15 @@ namespace rawrbox {
 		rawrbox::Vector4u hiz = {};
 	};
 
+	struct CullVariables {
+		Diligent::IShaderResourceVariable* constants = nullptr;
+		Diligent::IShaderResourceVariable* instances = nullptr;
+		Diligent::IShaderResourceVariable* visibleInstances = nullptr;
+		Diligent::IShaderResourceVariable* visibility = nullptr;
+		Diligent::IShaderResourceVariable* drawArgs = nullptr;
+		Diligent::IShaderResourceVariable* hiz = nullptr;
+	};
+
 	class Occlusion {
 	protected:
 		Diligent::IPipelineState* _depthReduceProgram = nullptr;
@@ -62,6 +71,7 @@ namespace rawrbox {
 		// CULLING ---
 		Diligent::IPipelineState* _cullProgram = nullptr;
 		std::vector<Diligent::RefCntAutoPtr<Diligent::IShaderResourceBinding>> _cullBinds = {};
+		std::vector<rawrbox::CullVariables> _cullVariables = {};
 		// -----------
 
 		std::vector<std::vector<rawrbox::OcclusionDraw*>> _lateDraw = {};
@@ -103,6 +113,7 @@ namespace rawrbox {
 
 		[[nodiscard]] virtual Diligent::IPipelineState* getCullProgram() const;
 		[[nodiscard]] virtual Diligent::IShaderResourceBinding* getCullBind() const;
+		[[nodiscard]] virtual const rawrbox::CullVariables& getCullVariables() const;
 
 		virtual void setEnabled(bool enabled);
 		[[nodiscard]] virtual bool isEnabled() const;

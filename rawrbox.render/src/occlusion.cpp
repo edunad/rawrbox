@@ -16,6 +16,7 @@ namespace rawrbox {
 		RAWRBOX_DESTROY(this->_hiz);
 		RAWRBOX_DESTROY(this->_depthBind);
 		RAWRBOX_DESTROY(this->_reduceBind);
+		this->_cullVariables.clear();
 		this->_cullBinds.clear();
 
 		this->_depthReduceProgram = nullptr;
@@ -60,11 +61,25 @@ namespace rawrbox {
 		const uint32_t contexts = rawrbox::RENDERER->threadPool()->contextCount();
 
 		this->_cullBinds.resize(contexts);
+		this->_cullVariables.resize(contexts);
 		this->_lateDraw.resize(contexts);
 
-		for (auto& bind : this->_cullBinds) {
+		for (uint32_t i = 0; i < contexts; i++) {
+			auto& bind = this->_cullBinds[i];
+
 			this->_cullProgram->CreateShaderResourceBinding(&bind, true);
 			if (bind == nullptr) RAWRBOX_CRITICAL("Failed to create culling binding");
+
+			auto& vars = this->_cullVariables[i];
+			vars.constants = bind->GetVariableByName(Diligent::SHADER_TYPE_COMPUTE, "CullConstants");
+			vars.instances = bind->GetVariableByName(Diligent::SHADER_TYPE_COMPUTE, "Instances");
+			vars.visibleInstances = bind->GetVariableByName(Diligent::SHADER_TYPE_COMPUTE, "VisibleInstances");
+			vars.visibility = bind->GetVariableByName(Diligent::SHADER_TYPE_COMPUTE, "Visibility");
+			vars.drawArgs = bind->GetVariableByName(Diligent::SHADER_TYPE_COMPUTE, "DrawArgs");
+			vars.hiz = bind->GetVariableByName(Diligent::SHADER_TYPE_COMPUTE, "HiZ");
+
+			if (vars.constants == nullptr || vars.instances == nullptr || vars.visibleInstances == nullptr || vars.visibility == nullptr || vars.drawArgs == nullptr || vars.hiz == nullptr)
+				RAWRBOX_CRITICAL("Failed to find culling variables");
 		}
 
 		// -----------
@@ -122,7 +137,7 @@ namespace rawrbox {
 	}
 
 	void Occlusion::prepareParallel(Diligent::IDeviceContext& context) {
-		if (!this->_recording || this->_hiz == nullptr) return;
+		if (this->_hiz == nullptr || this->_hiz->GetState() == Diligent::RESOURCE_STATE_SHADER_RESOURCE) return;
 
 		Diligent::StateTransitionDesc barrier = {this->_hiz, Diligent::RESOURCE_STATE_UNKNOWN, Diligent::RESOURCE_STATE_SHADER_RESOURCE, Diligent::STATE_TRANSITION_FLAG_UPDATE_STATE};
 		context.TransitionResourceStates(1, &barrier);
@@ -209,6 +224,13 @@ namespace rawrbox {
 		if (index >= this->_cullBinds.size()) RAWRBOX_CRITICAL("Culling binding for context #{} not initialized!", index);
 
 		return this->_cullBinds[index];
+	}
+
+	const rawrbox::CullVariables& Occlusion::getCullVariables() const {
+		const uint32_t index = rawrbox::RenderThreadPool::contextIndex();
+		if (index >= this->_cullVariables.size()) RAWRBOX_CRITICAL("Culling variables for context #{} not initialized!", index);
+
+		return this->_cullVariables[index];
 	}
 
 	uint32_t Occlusion::getMips() const { return this->_built ? static_cast<uint32_t>(this->_mips.size()) : 0U; }

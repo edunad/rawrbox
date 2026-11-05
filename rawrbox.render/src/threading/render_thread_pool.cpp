@@ -43,14 +43,14 @@ namespace rawrbox {
 
 			this->_slots[i].context = std::move(context);
 			this->_slots[i].index = static_cast<uint32_t>(i + 1);
-			this->_slots[i].label = fmt::format("RawrBox::RenderJob::{}", i);
+			this->_slots[i].label = fmt::format("RawrBox::RenderJob::{}", i + 1);
 		}
 
-		const size_t workers = this->_slots.empty() ? 0 : this->_slots.size() - 1;
+		const size_t workers = this->_slots.size();
 		this->_workers.reserve(workers);
 
 		try {
-			for (size_t i = 1; i <= workers; i++) {
+			for (size_t i = 0; i < workers; i++) {
 				this->_workers.emplace_back(&RenderThreadPool::workerMain, this, i);
 			}
 		} catch (...) {
@@ -68,6 +68,7 @@ namespace rawrbox {
 		}
 
 		this->_executeList.reserve(this->_slots.size());
+		this->_bounds.reserve(this->_slots.size() + 2);
 		this->_logger->info("Recording on {} contexts -> {} worker threads", fmt::styled(this->slots(), fmt::fg(fmt::color::coral)), fmt::styled(workers, fmt::fg(fmt::color::coral)));
 	}
 
@@ -81,8 +82,6 @@ namespace rawrbox {
 		for (auto& worker : this->_workers) {
 			if (worker.joinable()) worker.join();
 		}
-
-		if (!this->_slots.empty() && this->_slots.front().dirty != NO_FRAME) this->_slots.front().context->FinishFrame();
 	}
 
 	void RenderThreadPool::workerMain(size_t slotIndex) {
@@ -145,19 +144,82 @@ namespace rawrbox {
 		}
 	}
 
-	bool RenderThreadPool::record(uint32_t count, const RecordFunc& record, const SetupFunc& setup) {
+	void RenderThreadPool::split(uint32_t count, uint32_t parts, std::span<const uint32_t> weights) {
+		this->_bounds.assign(parts + 1, count);
+		this->_bounds.front() = 0;
+
+		uint64_t total = 0;
+		uint64_t heaviest = 0;
+
+		for (const uint32_t weight : weights) {
+			total += weight;
+			heaviest = std::max<uint64_t>(heaviest, weight);
+		}
+
+		if (total == 0) {
+			for (uint32_t i = 1; i < parts; i++) {
+				this->_bounds[i] = static_cast<uint32_t>(static_cast<uint64_t>(count) * i / parts);
+			}
+
+			return;
+		}
+
+		const auto fits = [&weights, parts](uint64_t capacity) {
+			uint32_t used = 1;
+			uint64_t load = 0;
+
+			for (const uint32_t weight : weights) {
+				if (load + weight > capacity) {
+					if (++used > parts) return false;
+					load = 0;
+				}
+
+				load += weight;
+			}
+
+			return true;
+		};
+
+		uint64_t capacity = heaviest;
+		uint64_t high = total;
+
+		while (capacity < high) {
+			const uint64_t mid = capacity + (high - capacity) / 2;
+
+			if (fits(mid)) {
+				high = mid;
+			} else {
+				capacity = mid + 1;
+			}
+		}
+
+		uint32_t part = 1;
+		uint64_t load = 0;
+
+		for (uint32_t i = 0; i < count && part < parts; i++) {
+			if (load + weights[i] > capacity) {
+				this->_bounds[part++] = i;
+				load = 0;
+			}
+
+			load += weights[i];
+		}
+	}
+
+	bool RenderThreadPool::record(uint32_t count, const RecordFunc& record, const SetupFunc& setup, std::span<const uint32_t> weights) {
 		if (std::this_thread::get_id() != this->_owner) RAWRBOX_CRITICAL("'record' must be called from the owner thread");
 
 		if (RECORDING) RAWRBOX_CRITICAL("'record' cannot be called from inside a render job");
 		if (!record) RAWRBOX_CRITICAL("Invalid record callback");
+		if (!weights.empty() && weights.size() != count) RAWRBOX_CRITICAL("Expected {} weights, got {}", count, weights.size());
 
 		if (count == 0) return false;
 
-		const uint32_t used = std::min(this->slots(), count);
-		if (used <= 1) {
-			const RecordingScope scope(*this->_immediate, 0);
+		const uint32_t parts = std::min(this->slots(), count);
+		if (parts > 1) this->split(count, parts, weights);
 
-			if (setup) setup(*this->_immediate);
+		if (parts <= 1 || this->_bounds[1] >= count) {
+			const RecordingScope scope(*this->_immediate, 0);
 			record(*this->_immediate, 0, count);
 
 			return false;
@@ -169,9 +231,9 @@ namespace rawrbox {
 			slot.commandList.Release();
 			slot.error = nullptr;
 
-			if (i < used) {
-				slot.begin = static_cast<uint32_t>(static_cast<uint64_t>(count) * i / used);
-				slot.end = static_cast<uint32_t>(static_cast<uint64_t>(count) * (i + 1) / used);
+			if (i + 1 < parts) {
+				slot.begin = this->_bounds[i + 1];
+				slot.end = this->_bounds[i + 2];
 			} else {
 				slot.begin = 0;
 				slot.end = 0;
@@ -194,7 +256,17 @@ namespace rawrbox {
 		}
 
 		this->_wake.notify_all();
-		this->runSlot(this->_slots.front(), job);
+
+		std::exception_ptr error = nullptr;
+		if (this->_bounds[0] < this->_bounds[1]) {
+			const RecordingScope scope(*this->_immediate, 0);
+
+			try {
+				record(*this->_immediate, this->_bounds[0], this->_bounds[1]);
+			} catch (...) {
+				error = std::current_exception();
+			}
+		}
 
 		{
 			std::unique_lock<std::mutex> lock(this->_mutex);
@@ -202,20 +274,17 @@ namespace rawrbox {
 			this->_job = {};
 		}
 
-		std::exception_ptr error = nullptr;
 		this->_executeList.clear();
 
-		for (uint32_t i = 0; i < used; i++) {
-			auto& slot = this->_slots[i];
+		for (auto& slot : this->_slots) {
 			if (slot.error != nullptr && error == nullptr) error = slot.error;
 			slot.error = nullptr;
 
 			if (slot.commandList != nullptr) this->_executeList.push_back(slot.commandList);
 		}
 
-		if (error == nullptr && !this->_executeList.empty()) {
-			this->_immediate->ExecuteCommandLists(static_cast<uint32_t>(this->_executeList.size()), this->_executeList.data());
-		}
+		const bool executed = error == nullptr && !this->_executeList.empty();
+		if (executed) this->_immediate->ExecuteCommandLists(static_cast<uint32_t>(this->_executeList.size()), this->_executeList.data());
 
 		this->_executeList.clear();
 		for (auto& slot : this->_slots) {
@@ -223,7 +292,7 @@ namespace rawrbox {
 		}
 
 		if (error != nullptr) std::rethrow_exception(error);
-		return true;
+		return executed;
 	}
 
 	void RenderThreadPool::finishFrame() {
@@ -234,7 +303,7 @@ namespace rawrbox {
 	}
 
 	uint32_t RenderThreadPool::slots() const {
-		return std::max<uint32_t>(1U, static_cast<uint32_t>(this->_slots.size()));
+		return static_cast<uint32_t>(this->_slots.size()) + 1U;
 	}
 
 	uint32_t RenderThreadPool::contextCount() const {

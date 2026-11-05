@@ -19,8 +19,6 @@ namespace rawrbox {
 	bool BindlessManager::_updatePixelSignature = false;
 	bool BindlessManager::_updateVertexSignature = false;
 
-	std::vector<Diligent::RefCntAutoPtr<Diligent::IShaderResourceBinding>> BindlessManager::_instanceBinds = {};
-
 	std::unique_ptr<rawrbox::Logger> BindlessManager::_logger = std::make_unique<rawrbox::Logger>("RawrBox-BindlessManager");
 	// --------------
 
@@ -106,7 +104,6 @@ namespace rawrbox {
 		RAWRBOX_DESTROY(signature);
 		RAWRBOX_DESTROY(signatureBind);
 
-		_instanceBinds.clear();
 		rawrbox::UniformCache::clear();
 		RAWRBOX_DESTROY(instanceSignature);
 
@@ -164,7 +161,7 @@ namespace rawrbox {
 
 		// Instanced ---
 		constexpr Diligent::PipelineResourceDesc instances = {
-		    Diligent::SHADER_TYPE_VERTEX, "Instances", 1, Diligent::SHADER_RESOURCE_TYPE_BUFFER_SRV, Diligent::SHADER_RESOURCE_VARIABLE_TYPE_DYNAMIC, Diligent::PIPELINE_RESOURCE_FLAG_NO_DYNAMIC_BUFFERS};
+		    Diligent::SHADER_TYPE_VERTEX, "Instances", 1, Diligent::SHADER_RESOURCE_TYPE_BUFFER_SRV, Diligent::SHADER_RESOURCE_VARIABLE_TYPE_MUTABLE, Diligent::PIPELINE_RESOURCE_FLAG_NO_DYNAMIC_BUFFERS};
 
 		Diligent::PipelineResourceSignatureDesc instanceDesc;
 		instanceDesc.Name = "RawrBox::SIGNATURE::INSTANCES";
@@ -177,12 +174,6 @@ namespace rawrbox {
 
 		const uint32_t contexts = rawrbox::RENDERER->threadPool()->contextCount();
 		if (contexts > RB_RENDER_MAX_CONTEXTS) RAWRBOX_CRITICAL("Too many render contexts ({}), max is {}", contexts, RB_RENDER_MAX_CONTEXTS);
-
-		_instanceBinds.resize(contexts);
-		for (auto& bind : _instanceBinds) {
-			instanceSignature->CreateShaderResourceBinding(&bind, true);
-			if (bind == nullptr) RAWRBOX_CRITICAL("Failed to create instance binding");
-		}
 		// ----------------------
 	}
 
@@ -234,13 +225,6 @@ namespace rawrbox {
 		rawrbox::UniformCache::map(context, signatureBufferPixel, rawrbox::BindlessPixelBuffer{});
 
 		context.CommitShaderResources(signatureBind, Diligent::RESOURCE_STATE_TRANSITION_MODE_NONE);
-	}
-
-	Diligent::IShaderResourceBinding* BindlessManager::getInstanceBind() {
-		const uint32_t index = rawrbox::RenderThreadPool::contextIndex();
-		if (index >= _instanceBinds.size()) RAWRBOX_CRITICAL("Instance binding for context #{} not initialized!", index);
-
-		return _instanceBinds[index];
 	}
 
 	void BindlessManager::update() {
