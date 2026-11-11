@@ -42,7 +42,7 @@ namespace rawrbox {
 		template <class T>
 		T read() {
 			T ret;
-			read(ret);
+			this->read(ret);
 			return ret;
 		}
 
@@ -57,7 +57,7 @@ namespace rawrbox {
 					throw std::runtime_error("[RawrBox-Packet] Reading past buffer");
 				}
 
-				std::memcpy(&ret, &this->buffer.at(pos), sizeof(T));
+				std::memcpy(&ret, &this->buffer.at(this->pos), sizeof(T));
 				this->pos += sizeof(const T);
 			}
 		}
@@ -124,7 +124,7 @@ namespace rawrbox {
 			uint64_t ret = 0;
 			uint64_t bitsReceived = 0;
 			while (true) {
-				uint64_t byte = read<uint8_t>();
+				uint64_t byte = this->read<uint8_t>();
 
 				ret = ret | ((byte & maskNum) << bitsReceived);
 				bitsReceived += 7;
@@ -212,7 +212,7 @@ namespace rawrbox {
 		void writeLength(T size) {
 			if (size < 0) throw std::runtime_error("[RawrBox-Packet] invalid length");
 			if (size == 0) {
-				write<uint8_t>(0);
+				this->write<uint8_t>(0);
 				return;
 			}
 
@@ -222,7 +222,7 @@ namespace rawrbox {
 
 			while (remaining > 0) {
 				bool hasMore = (remaining >> 7) > 0;
-				write(static_cast<uint8_t>((remaining & maskNum) | (hasMore ? maskFlag : 0x00ULL)));
+				this->write(static_cast<uint8_t>((remaining & maskNum) | (hasMore ? maskFlag : 0x00ULL)));
 
 				remaining >>= 7;
 			}

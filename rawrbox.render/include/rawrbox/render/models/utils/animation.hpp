@@ -7,7 +7,11 @@
 #include <ozz/base/maths/simd_math.h>
 #include <ozz/base/maths/soa_transform.h>
 
+#include <span>
+
 namespace rawrbox {
+	class Skeleton;
+
 	struct TransformBlend {
 		rawrbox::Vector3f pos = {};
 		rawrbox::Vector4f rotation = {};
@@ -23,5 +27,7 @@ namespace rawrbox {
 	public:
 		static rawrbox::Matrix4x4 toMatrix(const ozz::math::Float4x4& mtx);
 		static void getTransform(const ozz::math::SoaTransform& transform, size_t indx, rawrbox::Vector3f& pos, rawrbox::Vector4f& rotation, rawrbox::Vector3f& scale);
+
+		static size_t boneTransforms(const rawrbox::Skeleton& skeleton, std::span<const ozz::math::Float4x4> models, std::span<rawrbox::Matrix4x4> transforms);
 	};
 } // namespace rawrbox

@@ -1,16 +1,431 @@
+#include <rawrbox/scripting/manager.hpp>
+#include <rawrbox/scripting/mod.hpp>
 #include <rawrbox/scripting/utils/lua.hpp>
 #include <rawrbox/utils/string.hpp>
 #include <rawrbox/utils/vfs.hpp>
 
 #include <fmt/format.h>
 
-/*
-namespace DFInt {
-	int LuauTypeSolverRelease = 999;
-	int LuauSolverV2 = 1;
-} // namespace DFInt
-*/
+#include <algorithm>
+#include <cmath>
+#include <mutex>
+#include <shared_mutex>
+
 namespace rawrbox {
+	// PROTECTED ---
+	std::shared_mutex LuaUtils::_jsonTypesLock;
+	std::vector<rawrbox::LuaJSONType> LuaUtils::_jsonTypes = {};
+	char LuaUtils::_cacheKey = 0;
+	// -------------
+
+	// JSON TYPES ---
+	std::optional<rawrbox::LuaJSONType> LuaUtils::findJSONType(lua_State* L, int index) {
+		const std::shared_lock lock(_jsonTypesLock);
+
+		for (const auto& type : _jsonTypes) {
+			if (type.is(L, index)) return type;
+		}
+
+		return std::nullopt;
+	}
+
+	std::optional<rawrbox::LuaJSONType> LuaUtils::findJSONType(std::string_view tag) {
+		const std::shared_lock lock(_jsonTypesLock);
+
+		const auto fnd = std::ranges::find(_jsonTypes, tag, &rawrbox::LuaJSONType::tag);
+		if (fnd == _jsonTypes.end()) return std::nullopt;
+
+		return *fnd;
+	}
+	// ---------
+
+	// ERRORS ---
+	std::unexpected<LuaUtils::JSONError> LuaUtils::valueError(std::string reason) { return std::unexpected(JSONError{.path = "", .reason = std::move(reason)}); }
+
+	LuaUtils::JSONError LuaUtils::atKey(JSONError error, const std::string& key) {
+		error.path = fmt::format(".{}{}", key, error.path);
+		return error;
+	}
+
+	LuaUtils::JSONError LuaUtils::atIndex(JSONError error, size_t index) {
+		error.path = fmt::format("[{}]{}", index, error.path);
+		return error;
+	}
+
+	std::string LuaUtils::describe(lua_State* L, int index) { return fmt::format("{}({})", luaL_typename(L, index), lua_topointer(L, index)); }
+	std::string LuaUtils::formatError(const JSONError& error) { return fmt::format("value{} {}", error.path, error.reason); }
+	// ---------
+
+	// TABLES ---
+	LuaUtils::TableKeys LuaUtils::countKeys(lua_State* L, int index) {
+		TableKeys keys = {};
+
+		lua_pushnil(L);
+		while (lua_next(L, index) != 0) {
+			++keys.count;
+
+			if (lua_type(L, -2) == LUA_TSTRING) {
+				++keys.strings;
+			} else if (lua_type(L, -2) == LUA_TNUMBER) {
+				const double key = lua_tonumber(L, -2);
+				if (key >= 1.0 && key == std::floor(key) && key <= 9007199254740992.0) {
+					++keys.numbers;
+					keys.highest = std::max(keys.highest, key);
+				}
+			}
+
+			lua_pop(L, 1);
+		}
+
+		return keys;
+	}
+
+	std::optional<std::string> LuaUtils::keyName(lua_State* L, int index, bool strict) {
+		switch (lua_type(L, index)) {
+			case LUA_TSTRING:
+				{
+					size_t length = 0;
+					const char* text = lua_tolstring(L, index, &length);
+					return std::string(text, length);
+				}
+			case LUA_TNUMBER:
+				{
+					if (strict) return std::nullopt;
+
+					const double number = lua_tonumber(L, index);
+					if (number == std::floor(number) && std::abs(number) <= 9007199254740992.0) return fmt::format("{}", static_cast<int64_t>(number));
+					return fmt::format("{}", number);
+				}
+			case LUA_TBOOLEAN:
+				if (strict) return std::nullopt;
+				return lua_toboolean(L, index) != 0 ? "true" : "false";
+			default:
+				if (strict) return std::nullopt;
+				return describe(L, index);
+		}
+	}
+
+	std::expected<glz::generic, LuaUtils::JSONError> LuaUtils::encode(lua_State* L, int index, const rawrbox::LuaJSONOptions& options, uint32_t depth) {
+		index = lua_absindex(L, index);
+
+		switch (lua_type(L, index)) {
+			case LUA_TNIL:
+			case LUA_TNONE:
+				return glz::generic(nullptr);
+			case LUA_TBOOLEAN:
+				return glz::generic(lua_toboolean(L, index) != 0);
+			case LUA_TNUMBER:
+				{
+					const double number = lua_tonumber(L, index);
+					if (!std::isfinite(number)) {
+						if (options.strict) return valueError("not a finite number");
+						return glz::generic(nullptr);
+					}
+
+					return glz::generic(number);
+				}
+			case LUA_TSTRING:
+				{
+					size_t length = 0;
+					const char* text = lua_tolstring(L, index, &length);
+					return glz::generic(std::string(text, length));
+				}
+			case LUA_TUSERDATA:
+				{
+					const auto type = findJSONType(L, index);
+					if (type.has_value()) {
+						auto json = type->encode(L, index);
+						if (!json.has_value()) return valueError(fmt::format("failed to encode '{}'", type->tag));
+
+						return glz::generic(glz::generic::object_t{{type->tag, std::move(json.value())}});
+					}
+
+					if (options.strict) return valueError("userdata without a registered JSON type");
+					return glz::generic(describe(L, index));
+				}
+			case LUA_TTABLE:
+				{
+					if (depth >= options.maxDepth) return valueError(fmt::format("is nested deeper than {} tables", options.maxDepth));
+					if (lua_checkstack(L, 4) == 0) return valueError("lua stack overflow");
+
+					const auto keys = countKeys(L, index);
+					if (keys.count == 0) return glz::generic(glz::generic::object_t{});
+
+					// ARRAY ---
+					if (keys.numbers == keys.count && static_cast<size_t>(keys.highest) == keys.count) {
+						glz::generic::array_t items = {};
+						items.reserve(keys.count);
+
+						for (size_t i = 1; i <= keys.count; i++) {
+							lua_rawgeti(L, index, static_cast<int>(i));
+							auto item = encode(L, -1, options, depth + 1);
+							lua_pop(L, 1);
+
+							if (!item.has_value()) return std::unexpected(atIndex(std::move(item.error()), i));
+							items.push_back(std::move(item.value()));
+						}
+
+						return glz::generic(std::move(items));
+					}
+					// --------
+
+					if (options.strict) {
+						if (keys.strings != keys.count && keys.strings > 0) return valueError("invalid json keys");
+						if (keys.numbers == keys.count) return valueError("invalid list");
+						if (keys.strings != keys.count) return valueError("has keys that are not names / list indexes");
+					}
+
+					// OBJECT ---
+					std::vector<std::pair<std::string, glz::generic>> fields = {};
+					fields.reserve(keys.count);
+
+					lua_pushnil(L);
+					while (lua_next(L, index) != 0) {
+						auto key = keyName(L, -2, options.strict);
+						if (!key.has_value()) {
+							lua_pop(L, 2);
+							return valueError("non-string invalid keys");
+						}
+
+						auto value = encode(L, -1, options, depth + 1);
+						lua_pop(L, 1);
+
+						if (!value.has_value()) {
+							lua_pop(L, 1);
+							return std::unexpected(atKey(std::move(value.error()), key.value()));
+						}
+
+						fields.emplace_back(std::move(key.value()), std::move(value.value()));
+					}
+
+					std::ranges::stable_sort(fields, {}, &std::pair<std::string, glz::generic>::first);
+
+					glz::generic::object_t object = {};
+					object.reserve(fields.size());
+
+					for (auto& [name, field] : fields) {
+						object.insert_or_assign(std::move(name), std::move(field));
+					}
+
+					if (options.strict && object.size() == 1U && findJSONType(object.begin()->first).has_value()) {
+						return valueError(fmt::format("has '{}' as its only field, which is how a {} is stored; rename the field", object.begin()->first, object.begin()->first));
+					}
+
+					return glz::generic(std::move(object));
+					// --------
+				}
+			default:
+				if (options.strict) return valueError(fmt::format("is a {}! Not plain data", luaL_typename(L, index)));
+				return glz::generic(describe(L, index));
+		}
+	}
+
+	std::expected<void, LuaUtils::JSONError> LuaUtils::decode(lua_State* L, const glz::generic& json, const rawrbox::LuaJSONOptions& options, uint32_t depth) {
+		if (lua_checkstack(L, 3) == 0) return valueError("lua stack overflow");
+
+		if (json.is_null()) {
+			lua_pushnil(L);
+			return {};
+		}
+
+		if (const auto* boolean = json.get_if<bool>(); boolean != nullptr) {
+			lua_pushboolean(L, *boolean ? 1 : 0);
+			return {};
+		}
+
+		if (const auto* number = json.get_if<double>(); number != nullptr) {
+			lua_pushnumber(L, *number);
+			return {};
+		}
+
+		if (const auto* text = json.get_if<std::string>(); text != nullptr) {
+			lua_pushlstring(L, text->data(), text->size());
+			return {};
+		}
+
+		if (const auto* items = json.get_if<glz::generic::array_t>(); items != nullptr) {
+			if (depth >= options.maxDepth) return valueError(fmt::format("is nested deeper than {} tables", options.maxDepth));
+			lua_createtable(L, static_cast<int>(items->size()), 0);
+
+			for (size_t i = 0; i < items->size(); i++) {
+				auto item = decode(L, (*items)[i], options, depth + 1);
+				if (!item.has_value()) {
+					lua_pop(L, 1);
+					return std::unexpected(atIndex(std::move(item.error()), i + 1));
+				}
+
+				lua_rawseti(L, -2, static_cast<int>(i + 1));
+			}
+
+			return {};
+		}
+
+		if (const auto* fields = json.get_if<glz::generic::object_t>(); fields != nullptr) {
+			if (fields->size() == 1U) {
+				const auto type = findJSONType(fields->begin()->first);
+				if (type.has_value()) {
+					if (!type->decode(L, fields->begin()->second)) return valueError(fmt::format("is not a valid {}", type->tag));
+					return {};
+				}
+			}
+
+			if (depth >= options.maxDepth) return valueError(fmt::format("is nested deeper than {} tables", options.maxDepth));
+			lua_createtable(L, 0, static_cast<int>(fields->size()));
+
+			for (const auto& [key, value] : *fields) {
+				lua_pushlstring(L, key.data(), key.size());
+
+				auto field = decode(L, value, options, depth + 1);
+				if (!field.has_value()) {
+					lua_pop(L, 2);
+					return std::unexpected(atKey(std::move(field.error()), key));
+				}
+
+				lua_rawset(L, -3);
+			}
+
+			return {};
+		}
+
+		return valueError("unknown json type");
+	}
+
+	std::expected<void, LuaUtils::JSONError> LuaUtils::copyValue(lua_State* from, int index, lua_State* to, const rawrbox::LuaJSONOptions& options, uint32_t depth) {
+		index = lua_absindex(from, index);
+		if (lua_checkstack(to, 3) == 0) return valueError("lua stack overflow");
+
+		switch (lua_type(from, index)) {
+			case LUA_TNIL:
+			case LUA_TNONE:
+				lua_pushnil(to);
+				return {};
+			case LUA_TBOOLEAN:
+				lua_pushboolean(to, lua_toboolean(from, index));
+				return {};
+			case LUA_TNUMBER:
+				lua_pushnumber(to, lua_tonumber(from, index));
+				return {};
+			case LUA_TSTRING:
+				{
+					size_t length = 0;
+					const char* text = lua_tolstring(from, index, &length);
+					lua_pushlstring(to, text, length);
+					return {};
+				}
+			case LUA_TVECTOR:
+				{
+					const auto* vec = lua_tovector(from, index);
+#if LUA_VECTOR_SIZE == 4
+					lua_pushvector(to, vec[0], vec[1], vec[2], vec[3]);
+#else
+					lua_pushvector(to, vec[0], vec[1], vec[2]);
+#endif
+					return {};
+				}
+			case LUA_TUSERDATA:
+				{
+					const auto type = findJSONType(from, index);
+					if (type.has_value()) {
+						if (!type->copy(from, index, to)) return valueError("failed to copy different types");
+						return {};
+					}
+
+					if (options.strict) return valueError("is a userdata without a registered JSON type");
+					const auto text = describe(from, index);
+					lua_pushlstring(to, text.data(), text.size());
+					return {};
+				}
+			case LUA_TTABLE:
+				{
+					if (depth >= options.maxDepth) return valueError(fmt::format("is nested deeper than {} tables", options.maxDepth));
+					if (lua_checkstack(from, 3) == 0) return valueError("lua stack overflow");
+
+					const int top = lua_gettop(to);
+					lua_createtable(to, lua_objlen(from, index), 0);
+
+					const int table = lua_gettop(to);
+					const int base = lua_gettop(from);
+
+					const auto unwind = [from, to, top, base]() {
+						if (from != to) lua_settop(from, base);
+						lua_settop(to, top);
+					};
+					// ----
+
+					lua_pushnil(from);
+					while (lua_next(from, index) != 0) {
+						const int key = lua_absindex(from, -2);
+						const int value = lua_absindex(from, -1);
+
+						const int keyType = lua_type(from, key);
+						if (keyType != LUA_TSTRING && keyType != LUA_TNUMBER && keyType != LUA_TBOOLEAN) {
+							if (!options.strict) {
+								lua_pop(from, 1);
+								continue;
+							}
+
+							const std::string reason = fmt::format("has a {} key", lua_typename(from, keyType));
+							unwind();
+							return valueError(reason);
+						}
+
+						auto copied = copyValue(from, key, to, options, depth + 1);
+						if (copied.has_value()) copied = copyValue(from, value, to, options, depth + 1);
+
+						if (!copied.has_value()) {
+							const double position = keyType == LUA_TNUMBER ? lua_tonumber(from, key) : 0.0;
+							auto error = position >= 1.0 && position == std::floor(position) ? atIndex(std::move(copied.error()), static_cast<size_t>(position)) : atKey(std::move(copied.error()), keyName(from, key, false).value_or("?"));
+
+							unwind();
+							return std::unexpected(std::move(error));
+						}
+
+						lua_rawset(to, table);
+						lua_pop(from, 1);
+					}
+
+					return {};
+				}
+			default:
+				{
+					if (options.strict) return valueError(fmt::format("is a {}. Cannot be copied", luaL_typename(from, index)));
+
+					const auto text = describe(from, index);
+					lua_pushlstring(to, text.data(), text.size());
+					return {};
+				}
+		}
+	}
+	// ---------
+
+	// CACHE ---
+	bool LuaUtils::pushCacheTable(lua_State* L, bool create) {
+		if (lua_rawgetp(L, LUA_REGISTRYINDEX, &_cacheKey) == LUA_TTABLE) return true;
+		lua_pop(L, 1);
+
+		if (!create) return false;
+
+		lua_newtable(L);
+		lua_pushvalue(L, -1);
+		lua_rawsetp(L, LUA_REGISTRYINDEX, &_cacheKey);
+		return true;
+	}
+	// ---------
+
+	// FREEZE ---
+	void LuaUtils::freezeUserdata(lua_State* L, int index) {
+		if (lua_getmetatable(L, index) == 0) return;
+
+		luabridge::lua_rawgetp_x(L, -1, luabridge::detail::getConstKey());
+		if (lua_istable(L, -1)) {
+			lua_setmetatable(L, index);
+			lua_pop(L, 1);
+			return;
+		}
+
+		lua_pop(L, 2);
+	}
+	// ---------
 
 	void LuaUtils::compileAndLoadFile(lua_State* L, const std::string& chunkID, const std::filesystem::path& path) {
 		if (L == nullptr) throw std::runtime_error("Invalid lua state");
@@ -63,22 +478,29 @@ namespace rawrbox {
 	void LuaUtils::loadBytecode(lua_State* L, const std::string& chunkID, const std::string& bytecode) {
 		if (L == nullptr) throw std::runtime_error("Invalid lua state");
 
-		// Create a new thread ----
-		auto* loadThread = lua_newthread(L);
-		// --------------
+		const int top = lua_gettop(L);
+		auto* thread = loadThread(L, chunkID, bytecode);
 
-		// Load -------
-		std::string chunk = fmt::format("={}", chunkID);
-		if (luau_load(loadThread, chunk.c_str(), bytecode.data(), bytecode.size(), 0) != 0) {
-			throw std::runtime_error(rawrbox::LuaUtils::getError(L));
+		luabridge::detail::ScopeGuard restore([L, top]() { lua_settop(L, top); });
+		rawrbox::LuaUtils::resume(thread, L);
+	}
+
+	lua_State* LuaUtils::loadThread(lua_State* L, const std::string& chunkID, const std::string& bytecode) {
+		if (L == nullptr) throw std::runtime_error("Invalid lua state");
+
+		const int top = lua_gettop(L);
+		auto* thread = lua_newthread(L);
+
+		const std::string chunk = fmt::format("={}", chunkID);
+		if (luau_load(thread, chunk.c_str(), bytecode.data(), bytecode.size(), 0) != 0) {
+			const std::string error = rawrbox::LuaUtils::getError(thread);
+			lua_settop(L, top);
+
+			throw std::runtime_error(error);
 		}
 
-		if (Luau::CodeGen::isNativeExecutionEnabled(loadThread)) Luau::CodeGen::compile(loadThread, -1, 0);
-		// -----------
-
-		// Run the thread ---
-		rawrbox::LuaUtils::resume(loadThread, L);
-		// -----------
+		if (Luau::CodeGen::isNativeExecutionEnabled(thread)) Luau::CodeGen::compile(thread, -1, 0);
+		return thread;
 	}
 
 	void LuaUtils::resume(lua_State* L, lua_State* from) {
@@ -187,84 +609,149 @@ namespace rawrbox {
 		}
 	}
 
-	luabridge::LuaRef LuaUtils::jsonToLua(lua_State* L, const glz::generic& json) {
+	// JSON ---
+	void LuaUtils::registerJSONType(rawrbox::LuaJSONType type) {
+		if (type.tag.empty()) RAWRBOX_CRITICAL("JSON type tag cannot be empty");
+		if (type.is == nullptr || type.encode == nullptr || type.decode == nullptr || type.copy == nullptr) RAWRBOX_CRITICAL("Invalid JSON type '{}'", type.tag);
+
+		const std::unique_lock lock(_jsonTypesLock);
+
+		const auto fnd = std::ranges::find(_jsonTypes, type.tag, &rawrbox::LuaJSONType::tag);
+		if (fnd != _jsonTypes.end()) {
+			*fnd = std::move(type);
+			return;
+		}
+
+		_jsonTypes.push_back(std::move(type));
+	}
+
+	std::vector<std::string> LuaUtils::getJSONTypes() {
+		const std::shared_lock lock(_jsonTypesLock);
+
+		std::vector<std::string> tags = {};
+		tags.reserve(_jsonTypes.size());
+
+		for (const auto& type : _jsonTypes) {
+			tags.push_back(type.tag);
+		}
+
+		return tags;
+	}
+
+	std::expected<glz::generic, std::string> LuaUtils::toJSON(const luabridge::LuaRef& value, const rawrbox::LuaJSONOptions& options) {
+		lua_State* L = value.state();
+		if (L == nullptr) return std::unexpected("Invalid lua state");
+
+		value.push(L);
+		auto json = toJSON(L, -1, options);
+		lua_pop(L, 1);
+
+		return json;
+	}
+
+	std::expected<glz::generic, std::string> LuaUtils::toJSON(lua_State* L, int index, const rawrbox::LuaJSONOptions& options) {
+		if (L == nullptr) return std::unexpected("Invalid lua state");
+
+		auto json = encode(L, index, options, 0);
+		if (!json.has_value()) return std::unexpected(formatError(json.error()));
+
+		return std::move(json.value());
+	}
+
+	std::expected<luabridge::LuaRef, std::string> LuaUtils::fromJSON(lua_State* L, const glz::generic& json, const rawrbox::LuaJSONOptions& options) {
+		if (L == nullptr) return std::unexpected("Invalid lua state");
+
+		const int top = lua_gettop(L);
+
+		auto pushed = decode(L, json, options, 0);
+		if (!pushed.has_value()) {
+			lua_settop(L, top);
+			return std::unexpected(formatError(pushed.error()));
+		}
+
+		auto value = luabridge::LuaRef::fromStack(L, -1);
+		lua_settop(L, top);
+
+		return value;
+	}
+
+	std::expected<void, std::string> LuaUtils::copy(lua_State* from, int index, lua_State* to, const rawrbox::LuaJSONOptions& options) {
+		if (from == nullptr || to == nullptr) return std::unexpected("Invalid lua state");
+
+		auto copied = copyValue(from, index, to, options, 0);
+		if (!copied.has_value()) return std::unexpected(formatError(copied.error()));
+
+		return {};
+	}
+	// ---------
+
+	// STATE ---
+	void LuaUtils::freeze(lua_State* L, int index) {
 		if (L == nullptr) throw std::runtime_error("Invalid lua state");
+		index = lua_absindex(L, index);
 
-		if (json.holds<glz::generic::null_t>()) {
-			return {L, luabridge::LuaNil()};
+		if (lua_type(L, index) == LUA_TUSERDATA) {
+			freezeUserdata(L, index);
+			return;
 		}
 
-		if (json.holds<bool>()) {
-			return {L, json.get<bool>()};
+		if (lua_type(L, index) != LUA_TTABLE || lua_getreadonly(L, index) != 0) return;
+		lua_setreadonly(L, index, 1);
+
+		if (lua_checkstack(L, 3) == 0) throw std::runtime_error("Lua stack overflow while freezing");
+
+		lua_pushnil(L);
+		while (lua_next(L, index) != 0) {
+			freeze(L, -1);
+			freeze(L, -2);
+
+			lua_pop(L, 1);
 		}
-
-		if (json.holds<double>()) { // Lua only works with doubles
-			return {L, json.get<double>()};
-		}
-
-		if (json.holds<std::string>()) {
-			return {L, json.get<std::string>()};
-		}
-
-		if (json.holds<glz::generic::object_t>()) {
-			auto obj = luabridge::newTable(L);
-
-			const auto& jsonObject = json.get<glz::generic::object_t>();
-			for (const auto& pair : jsonObject) {
-				obj[pair.first.c_str()] = jsonToLua(L, pair.second);
-			}
-
-			return obj;
-		}
-
-		if (json.holds<glz::generic::array_t>()) {
-			auto arr = luabridge::newTable(L);
-
-			const auto& jsonArray = json.get<glz::generic::array_t>();
-			for (size_t i = 0; i < jsonArray.size(); ++i) {
-				arr[i + 1] = jsonToLua(L, jsonArray[i]);
-			}
-
-			return arr;
-		}
-
-		throw std::runtime_error("Unknown json type");
 	}
 
-	glz::generic LuaUtils::luaToJsonObject(const luabridge::LuaRef& ref) {
-		glz::generic result = {};
-		if (!ref.isTable()) return result;
+	bool LuaUtils::pushCached(lua_State* L, std::string_view key, std::string_view version) {
+		if (!pushCacheTable(L, false)) return false;
 
-		for (auto pair : luabridge::pairs(ref)) {
-			auto key = pair.first.unsafe_cast<std::string>();
-			luabridge::LuaRef value = pair.second;
-
-			switch (value.type()) {
-				case LUA_TBOOLEAN:
-					result[key] = value.unsafe_cast<bool>();
-					break;
-				case LUA_TNUMBER:
-					result[key] = value.unsafe_cast<double>(); // Lua uses double for all numeric types
-					break;
-				case LUA_TSTRING:
-					result[key] = value.unsafe_cast<std::string>();
-					break;
-				case LUA_TVECTOR: // eeehhh, might die?
-				case LUA_TTABLE:
-					result[key] = luaToJsonObject(value);
-					break;
-				case LUA_TFUNCTION:
-					result[key] = fmt::format("function({})", lua_topointer(value, -1));
-					break;
-				case LUA_TNONE:
-				case LUA_TNIL:
-				default:
-					break;
-			}
+		lua_pushlstring(L, key.data(), key.size());
+		if (lua_rawget(L, -2) != LUA_TTABLE) {
+			lua_pop(L, 2);
+			return false;
 		}
 
-		return result;
+		lua_rawgeti(L, -1, 1);
+
+		size_t length = 0;
+		const char* stamp = lua_tolstring(L, -1, &length);
+		const bool same = stamp != nullptr && std::string_view(stamp, length) == version;
+		lua_pop(L, 1);
+
+		if (!same) {
+			lua_pop(L, 2);
+			return false;
+		}
+
+		lua_rawgeti(L, -1, 2);
+		lua_remove(L, -2);
+		lua_remove(L, -2);
+		return true;
 	}
+
+	void LuaUtils::storeCached(lua_State* L, std::string_view key, std::string_view version, const luabridge::LuaRef& value) {
+		pushCacheTable(L, true);
+
+		lua_pushlstring(L, key.data(), key.size());
+		lua_createtable(L, 2, 0);
+
+		lua_pushlstring(L, version.data(), version.size());
+		lua_rawseti(L, -2, 1);
+
+		value.push(L);
+		lua_rawseti(L, -2, 2);
+
+		lua_rawset(L, -3);
+		lua_pop(L, 1);
+	}
+	// ---------
 
 	// #/ == Root assets
 	// normal_path == current mod
@@ -272,33 +759,54 @@ namespace rawrbox {
 	std::pair<std::string, std::filesystem::path> LuaUtils::getContent(const std::filesystem::path& path, const std::filesystem::path& modPath) {
 		if (path.empty()) throw std::runtime_error("Invalid path"); // Invalid path
 
-		auto pth = path.generic_string();
-		pth = rawrbox::StrUtils::replace(pth, "\\", "/");
-		pth = rawrbox::StrUtils::replace(pth, "./", "");
-		pth = rawrbox::StrUtils::replace(pth, "../", "");
+		const auto pth = rawrbox::StrUtils::replaceAll(path.generic_string(), "\\", "/");
 
-		// #/ == Root assets
-		if (pth.front() == '#') {
-			auto slashPos = pth.find('/'); // Find the first /
-			if (slashPos == std::string::npos) throw std::runtime_error("Invalid path");
+		std::string modID = {};
+		std::filesystem::path root = modPath;
+		std::string relative = pth;
 
-			return {"", std::filesystem::path("assets") / pth.substr(slashPos + 1)};
-		}
+		if (pth.front() == '#') { // #/ == Root assets
+			const auto slash = pth.find('/');
+			if (slash == std::string::npos) throw std::runtime_error("Invalid path");
 
-		// @cats/ == `cats` mod
-		if (pth.front() == '@') {
-			pth.erase(0, 1); // Remove @
-			std::string modID = pth.substr(0, pth.find('/'));
+			root = "assets";
+			relative = pth.substr(slash + 1);
+		} else if (pth.front() == '@') { // @cats/ == `cats` mod
+			const auto slash = pth.find('/');
+
+			modID = pth.substr(1, slash == std::string::npos ? std::string::npos : slash - 1);
 			if (modID.empty()) throw std::runtime_error("Invalid mod ID");
 
-			return {modID, pth.substr(pth.find('/') + 1)};
+			root.clear();
+			relative = slash == std::string::npos ? "" : pth.substr(slash + 1);
 		}
 
-		// assets/blabalba.png = my current mod
-		if (!modPath.empty()) {
-			return {"", modPath / pth}; // Becomes mods/mymod/assets/blabalba.png
-		}
+		auto normal = std::filesystem::path(relative).lexically_normal();
+		if (normal.has_root_path() || (!normal.empty() && *normal.begin() == "..")) throw std::runtime_error(fmt::format("Path '{}' escapes its folder", path.generic_string()));
+		if (normal == ".") normal.clear();
 
-		return {"", modPath};
+		if (root.empty()) return {modID, normal};
+		return {modID, (root / normal).lexically_normal()};
+	}
+
+	std::expected<std::filesystem::path, std::string> LuaUtils::resolveContent(const std::filesystem::path& path, const rawrbox::Mod& mod) {
+		try {
+			auto content = getContent(path, mod.getFolder());
+			if (content.first.empty()) return std::move(content.second);
+
+			const auto* owner = rawrbox::SCRIPTING::getMod(content.first);
+			if (owner == nullptr) return std::unexpected(fmt::format("Mod '{}' is not loaded", content.first));
+
+			return (owner->getFolder() / content.second).lexically_normal();
+		} catch (const std::exception& err) {
+			return std::unexpected(err.what());
+		}
+	}
+
+	std::expected<std::filesystem::path, std::string> LuaUtils::resolveContent(const std::filesystem::path& path, lua_State* L) {
+		const auto* mod = rawrbox::SCRIPTING::getMod(L);
+		if (mod == nullptr) return std::unexpected("Not called from a mod");
+
+		return resolveContent(path, *mod);
 	}
 } // namespace rawrbox

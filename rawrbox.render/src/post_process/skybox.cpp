@@ -18,6 +18,6 @@ namespace rawrbox {
 	void PostProcessSkybox::init() {
 		rawrbox::PostProcessBase::init();
 
-		this->_pipeline = createPipeline("PostProcess::Skybox", "post_process/skybox.psh");
+		this->_pipeline = this->createPipeline("PostProcess::Skybox", "post_process/skybox.psh");
 	}
 } // namespace rawrbox

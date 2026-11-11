@@ -11,7 +11,7 @@ namespace rawrbox {
 	void UIGroup::sizeToContents() {
 		Vector2 totalSize = {0, 0};
 
-		for (auto& child : getChildren()) {
+		for (const auto& child : this->getChildren()) {
 			const auto& pos = child->getPos();
 			const auto& size = child->getSize();
 

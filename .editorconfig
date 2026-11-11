@@ -1,0 +1,4 @@
+root = true
+
+[*.{cpp,hpp,h,inl}]
+resharper_cpp_redundant_qualifier_highlighting = none

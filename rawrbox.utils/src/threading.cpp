@@ -19,38 +19,38 @@ namespace rawrbox {
 	// -------------
 
 	void ASYNC::init(uint32_t threads) {
-		if (_pool != nullptr) RAWRBOX_CRITICAL("ASYNC init already called!");
-		_pool = std::make_unique<BS::thread_pool<>>(threads, [](size_t index) { rawrbox::ThreadUtils::setName(fmt::format("rawrbox:async:{}", index)); });
+		if (ASYNC::_pool != nullptr) RAWRBOX_CRITICAL("ASYNC init already called!");
+		ASYNC::_pool = std::make_unique<BS::thread_pool<>>(threads, [](size_t index) { rawrbox::ThreadUtils::setName(fmt::format("rawrbox:async:{}", index)); });
 	}
 
 	void ASYNC::shutdown() {
-		if (_pool == nullptr) return;
+		if (ASYNC::_pool == nullptr) return;
 
 		// Stop queued jobs ---
 		{
-			const std::scoped_lock lock(_lock);
-			_closed = true;
+			const std::scoped_lock lock(ASYNC::_lock);
+			ASYNC::_closed = true;
 		}
 		// -----------
 
-		_pool->purge();
-		_pool->wait();
+		ASYNC::_pool->purge();
+		ASYNC::_pool->wait();
 	}
 
 	void ASYNC::run(const std::function<void()>& job) {
-		if (_pool == nullptr) RAWRBOX_CRITICAL("ASYNC not initialized!");
+		if (ASYNC::_pool == nullptr) RAWRBOX_CRITICAL("ASYNC not initialized!");
 
-		const std::scoped_lock lock(_lock);
-		if (_closed) return;
+		const std::scoped_lock lock(ASYNC::_lock);
+		if (ASYNC::_closed) return;
 
 		try {
-			_pool->detach_task([job]() {
+			ASYNC::_pool->detach_task([job]() {
 				ZoneScopedN("ASYNC::run");
 
 				try {
 					job();
 				} catch (const std::exception& e) {
-					_logger->error("Fatal error on async job\n  └── {}", e.what());
+					ASYNC::_logger->error("Fatal error on async job\n  └── {}", e.what());
 					spdlog::default_logger()->flush();
 					std::terminate();
 				}

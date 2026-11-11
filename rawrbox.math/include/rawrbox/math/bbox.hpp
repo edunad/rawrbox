@@ -112,7 +112,7 @@ namespace rawrbox {
 		// -----------
 
 		bool operator==(const BBOXType& other) const { return this->min == other.min && this->max == other.max; }
-		bool operator!=(const BBOXType& other) const { return !operator==(other); }
+		bool operator!=(const BBOXType& other) const { return !this->operator==(other); }
 
 		BBOXType operator*(NumberType other) const { return BBOXType(this->min * other, this->max * other, this->size * other); }
 		BBOXType operator*(const rawrbox::Vector3_t<NumberType>& other) const { return BBOXType(this->min * other, this->max * other, this->size * other); }

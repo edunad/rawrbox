@@ -52,6 +52,14 @@ namespace rawrbox {
 				this->pos.y <= (b.pos.y + b.size.y) && (this->pos.y + this->size.y) >= b.pos.y);
 		}
 
+		void combine(const AABBType& other) {
+			const NumberType left = std::min(this->left(), other.left());
+			const NumberType top = std::min(this->top(), other.top());
+
+			this->size = {std::max(this->right(), other.right()) - left, std::max(this->bottom(), other.bottom()) - top};
+			this->pos = {left, top};
+		}
+
 		[[nodiscard]] static AABB_t<NumberType> intersects(const AABB_t<NumberType>& a, const AABB_t<NumberType>& b) {
 			AABB_t<NumberType> result;
 
@@ -91,13 +99,13 @@ namespace rawrbox {
 		template <class ReturnType>
 			requires(!std::is_same_v<NumberType, ReturnType>)
 		AABB_t<ReturnType> cast() const {
-			return {pos.template cast<ReturnType>(), size.template cast<ReturnType>()};
+			return {this->pos.template cast<ReturnType>(), this->size.template cast<ReturnType>()};
 		}
 
 		AABBType operator*(NumberType other) const { return AABBType(this->pos * other, this->size * other); }
 
 		bool operator==(const AABBType& other) const { return this->pos == other.pos && this->size == other.size; }
-		bool operator!=(const AABBType& other) const { return !operator==(other); }
+		bool operator!=(const AABBType& other) const { return !this->operator==(other); }
 	};
 
 	using AABBd = AABB_t<double>;

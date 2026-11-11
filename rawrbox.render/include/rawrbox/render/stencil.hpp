@@ -55,7 +55,7 @@ namespace rawrbox {
 		bool worldSpace = false;
 
 		bool operator==(const Clip& other) const { return this->bbox == other.bbox && this->worldSpace == other.worldSpace; }
-		bool operator!=(const Clip& other) const { return !operator==(other); }
+		bool operator!=(const Clip& other) const { return !this->operator==(other); }
 	};
 
 	struct StencilDraw {
@@ -123,7 +123,7 @@ namespace rawrbox {
 		// NOLINTEND(hicpp-explicit-conversions)
 		StencilOutline(float _thickness, float _stipple) : thickness(_thickness), stipple(_stipple) {}
 
-		[[nodiscard]] bool isSet() const { return thickness > 0.F || stipple > 0.F; }
+		[[nodiscard]] bool isSet() const { return this->thickness > 0.F || this->stipple > 0.F; }
 
 		StencilOutline operator-(const StencilOutline& other) const {
 			return {this->thickness - other.thickness, this->stipple - other.stipple};

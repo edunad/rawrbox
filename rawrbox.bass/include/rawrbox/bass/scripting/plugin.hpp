@@ -27,16 +27,15 @@ namespace rawrbox {
 
 			    // LOAD -----
 			    .addFunction("loadSound", [](const std::string& path, std::optional<uint32_t> flags, lua_State* L) {
-				    auto modFolder = rawrbox::LuaUtils::getLuaENVVar<std::string>(L, "__mod_folder");
-				    auto fixedPath = rawrbox::LuaUtils::getContent(path, modFolder);
-				    if (!fixedPath.first.empty()) throw std::runtime_error("External mod resources loading not supported");
+				    const auto fixedPath = rawrbox::LuaUtils::resolveContent(path, L);
+				    if (!fixedPath) throw std::runtime_error(fixedPath.error());
 
 #ifdef RAWRBOX_RESOURCES
-				    if (!rawrbox::RESOURCES::isLoaded(fixedPath.second)) {
-					    fmt::print("Loading '{}' RUNTIME! You should load content on the mod's load stage!\n", fixedPath.second.generic_string());
+				    if (!rawrbox::RESOURCES::isLoaded(fixedPath.value())) {
+					    fmt::print("Loading '{}' RUNTIME! You should load content on the mod's load stage!\n", fixedPath.value().generic_string());
 				    }
 #endif
-				    auto* sound = BASS::loadSound(fixedPath.second, flags.value_or(0));
+				    auto* sound = BASS::loadSound(fixedPath.value(), flags.value_or(0));
 				    if (sound == nullptr) throw std::runtime_error(fmt::format("Failed to load sound '{}'", path));
 
 				    return sound->createInstance();

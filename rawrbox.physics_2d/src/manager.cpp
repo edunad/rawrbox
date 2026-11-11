@@ -14,33 +14,33 @@ namespace rawrbox {
 	// -----
 
 	void PHYSICS_2D::init() {
-		physWorld = std::make_unique<muli::World>(*physSettings); // Setup world
+		PHYSICS_2D::physWorld = std::make_unique<muli::World>(*PHYSICS_2D::physSettings); // Setup world
 	}
 
 	void PHYSICS_2D::shutdown() {
-		physSettings.reset();
-		physWorld.reset();
+		PHYSICS_2D::physSettings.reset();
+		PHYSICS_2D::physWorld.reset();
 	}
 
 	void PHYSICS_2D::tick() {
-		if (physWorld == nullptr) return;
+		if (PHYSICS_2D::physWorld == nullptr) return;
 		ZoneScopedN("PHYSICS_2D::tick");
 
-		physWorld->Step(rawrbox::FIXED_DELTA_TIME);
-		checkContacts();
+		PHYSICS_2D::physWorld->Step(rawrbox::FIXED_DELTA_TIME);
+		PHYSICS_2D::checkContacts();
 	}
 
 	void PHYSICS_2D::checkContacts() {
-		if (physWorld == nullptr || onContact.empty()) return;
+		if (PHYSICS_2D::physWorld == nullptr || PHYSICS_2D::onContact.empty()) return;
 
-		const muli::Contact* c = physWorld->GetContacts();
+		const muli::Contact* c = PHYSICS_2D::physWorld->GetContacts();
 		while (c != nullptr) {
 			if (!c->IsTouching()) {
 				c = c->GetNext();
 				continue;
 			}
 
-			onContact(c->GetContactManifold());
+			PHYSICS_2D::onContact(c->GetContactManifold());
 			c = c->GetNext();
 		}
 	}

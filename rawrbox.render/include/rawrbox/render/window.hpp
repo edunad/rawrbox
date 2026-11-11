@@ -2,12 +2,12 @@
 
 #include <rawrbox/math/vector2.hpp>
 #include <rawrbox/render/renderer.hpp>
-#include <rawrbox/render/static.hpp>
 #include <rawrbox/utils/event.hpp>
+#include <rawrbox/utils/keys.hpp>
 
 #include <GraphicsTypes.h>
-#include <fmt/format.h>
 
+#include <array>
 #include <atomic>
 
 struct GLFWwindow;
@@ -30,7 +30,7 @@ namespace rawrbox {
 			const uint32_t TRANSPARENT_BUFFER = 1 << 4;
 			const uint32_t RESIZABLE = 1 << 5;
 		}; // namespace Features
-	};         // namespace WindowFlags
+	}; // namespace WindowFlags
 
 	// NOLINTEND{unused-const-variable}
 	//  --------------------
@@ -59,6 +59,49 @@ namespace rawrbox {
 		std::string title = "RawrBox";
 	};
 
+	template <size_t COUNT>
+	class WindowInputState {
+	protected:
+		static constexpr size_t WORDS = (COUNT + 63U) / 64U;
+
+		std::array<std::atomic<uint64_t>, WORDS> _down = {};
+		std::array<std::atomic<uint64_t>, WORDS> _pressed = {};
+		std::array<std::atomic<uint64_t>, WORDS> _released = {};
+
+		std::array<uint64_t, WORDS> _framePressed = {};
+		std::array<uint64_t, WORDS> _frameReleased = {};
+
+		[[nodiscard]] static bool test(uint64_t word, size_t index) { return ((word >> (index % 64U)) & 1U) != 0U; }
+
+	public:
+		void press(int index) {
+			if (index < 0 || static_cast<size_t>(index) >= COUNT) return;
+
+			const uint64_t bit = 1ULL << (static_cast<size_t>(index) % 64U);
+			this->_down[static_cast<size_t>(index) / 64U].fetch_or(bit);
+			this->_pressed[static_cast<size_t>(index) / 64U].fetch_or(bit);
+		}
+
+		void release(int index) {
+			if (index < 0 || static_cast<size_t>(index) >= COUNT) return;
+
+			const uint64_t bit = 1ULL << (static_cast<size_t>(index) % 64U);
+			this->_down[static_cast<size_t>(index) / 64U].fetch_and(~bit);
+			this->_released[static_cast<size_t>(index) / 64U].fetch_or(bit);
+		}
+
+		void reset() {
+			for (size_t i = 0; i < this->WORDS; i++) {
+				this->_framePressed[i] = this->_pressed[i].exchange(0U);
+				this->_frameReleased[i] = this->_released[i].exchange(0U);
+			}
+		}
+
+		[[nodiscard]] bool isDown(int index) const { return index >= 0 && static_cast<size_t>(index) < COUNT && this->test(this->_down[static_cast<size_t>(index) / 64U].load(), static_cast<size_t>(index)); }
+		[[nodiscard]] bool isPressed(int index) const { return index >= 0 && static_cast<size_t>(index) < COUNT && this->test(this->_framePressed[static_cast<size_t>(index) / 64U], static_cast<size_t>(index)); }
+		[[nodiscard]] bool isReleased(int index) const { return index >= 0 && static_cast<size_t>(index) < COUNT && this->test(this->_frameReleased[static_cast<size_t>(index) / 64U], static_cast<size_t>(index)); }
+	};
+
 	class Window {
 
 	private:
@@ -67,13 +110,19 @@ namespace rawrbox {
 
 		// CURSOR ------
 		GLFWcursor* _cursor = nullptr;
+
 		std::array<uint8_t, 16 * 16 * 4> _cursorPixels = {};
-		rawrbox::Vector2i _mousePos = {};
+		std::atomic<uint64_t> _mousePos = 0;
+		// -----------
+
+		// INPUT ------
+		rawrbox::WindowInputState<rawrbox::KEY_LAST + 1> _keys = {};
+		rawrbox::WindowInputState<rawrbox::MOUSE_BUTTON_LAST + 1> _buttons = {};
 		// -----------
 
 		Diligent::RENDER_DEVICE_TYPE _renderType = Diligent::RENDER_DEVICE_TYPE::RENDER_DEVICE_TYPE_UNDEFINED;
 		rawrbox::WindowSettings _settings = {};
-		
+
 		std::atomic<bool> _hasFocus = false; // Window thread
 
 		// Screen Utils --
@@ -125,17 +174,17 @@ namespace rawrbox {
 		template <class T = rawrbox::RendererBase, typename... CallbackArgs>
 			requires(std::derived_from<T, rawrbox::RendererBase>)
 		rawrbox::RendererBase* createRenderer(CallbackArgs&&... args) {
-			_renderer = std::make_unique<T>(rawrbox::Window::__RENDER_TYPE, this->getHandle(), this->getSize(), this->getMonitorSize(), std::forward<CallbackArgs>(args)...);
-			_renderer->setTransparent((this->getWindowFlags() & rawrbox::WindowFlags::Features::TRANSPARENT_BUFFER) > 0);
+			this->_renderer = std::make_unique<T>(rawrbox::Window::__RENDER_TYPE, this->getHandle(), this->getSize(), this->getMonitorSize(), std::forward<CallbackArgs>(args)...);
+			this->_renderer->setTransparent((this->getWindowFlags() & rawrbox::WindowFlags::Features::TRANSPARENT_BUFFER) > 0);
 
 			// Setup resize ----
 			this->onResize += [this](auto&, auto& size, auto& monitorSize) {
-				_renderer->resize(size, monitorSize);
+				this->_renderer->resize(size, monitorSize);
 			};
 			// -----------------
 
-			setActiveRenderer(_renderer.get());
-			return _renderer.get();
+			this->setActiveRenderer(this->_renderer.get());
+			return this->_renderer.get();
 		};
 		// ---------------
 
@@ -178,7 +227,7 @@ namespace rawrbox {
 		[[nodiscard]] virtual rawrbox::Vector2u getMonitorSize() const;
 
 		[[nodiscard]] virtual float getAspectRatio() const;
-		[[nodiscard]] virtual const rawrbox::Vector2i& getMousePos() const;
+		[[nodiscard]] virtual rawrbox::Vector2i getMousePos() const;
 		[[nodiscard]] virtual uint32_t getWindowFlags() const;
 
 		[[nodiscard]] virtual GLFWwindow* getGLFWHandle() const;
@@ -187,6 +236,12 @@ namespace rawrbox {
 
 		[[nodiscard]] virtual bool isKeyDown(int key) const;
 		[[nodiscard]] virtual bool isMouseDown(int key) const;
+
+		[[nodiscard]] virtual bool isKeyPressed(int key) const;
+		[[nodiscard]] virtual bool isKeyReleased(int key) const;
+		[[nodiscard]] virtual bool isMousePressed(int key) const;
+		[[nodiscard]] virtual bool isMouseReleased(int key) const;
+		// -----------
 
 		[[nodiscard]] virtual const std::unordered_map<int, rawrbox::Vector2u>& getScreenSizes() const;
 

@@ -16,7 +16,7 @@ namespace rawrbox {
 	void PostProcessNoise::init() {
 		rawrbox::PostProcessBase::init();
 
-		this->_pipeline = createPipeline("PostProcess::Noise", "post_process/noise.psh");
+		this->_pipeline = this->createPipeline("PostProcess::Noise", "post_process/noise.psh");
 	}
 
 	void PostProcessNoise::applyEffect(const rawrbox::TextureBase& source, const rawrbox::TextureRender& target, uint32_t depthID) {

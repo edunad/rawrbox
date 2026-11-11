@@ -109,7 +109,7 @@ namespace rawrbox {
 		DXGI_SWAP_CHAIN_DESC1 scDesc = {};
 		scDesc.Width = this->_desc.Width;
 		scDesc.Height = this->_desc.Height;
-		scDesc.Format = getBufferFormat(this->_desc.ColorBufferFormat);
+		scDesc.Format = this->getBufferFormat(this->_desc.ColorBufferFormat);
 		scDesc.SampleDesc.Count = 1;
 		scDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
 		scDesc.BufferCount = this->_desc.BufferCount;

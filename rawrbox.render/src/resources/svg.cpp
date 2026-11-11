@@ -6,11 +6,11 @@ namespace rawrbox {
 	// Resource ----
 
 	bool ResourceSVG::load(const std::vector<uint8_t>& buffer) {
-		return rawrbox::SVGEngine::preLoad(filePath.generic_string(), buffer);
+		return rawrbox::SVGEngine::preLoad(this->filePath.generic_string(), buffer);
 	}
 
 	rawrbox::TextureBase* ResourceSVG::get(const rawrbox::Vector2u& size, uint32_t /*flags*/) {
-		return rawrbox::SVGEngine::load(filePath.generic_string(), size);
+		return rawrbox::SVGEngine::load(this->filePath.generic_string(), size);
 	}
 	// -------
 

@@ -44,7 +44,7 @@ namespace rawrbox {
 
 		void clearFrames() { this->frames.clear(); }
 
-		[[nodiscard]] bool valid() const { return channels != 0U && size > 0; }
+		[[nodiscard]] bool valid() const { return this->channels != 0U && this->size > 0; }
 		[[nodiscard]] bool encoded() const { return this->format != Diligent::TEX_FORMAT_UNKNOWN; }
 		[[nodiscard]] bool empty() const { return this->frames.empty(); }
 

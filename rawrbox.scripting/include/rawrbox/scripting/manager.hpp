@@ -14,10 +14,40 @@
 #include <vector>
 
 namespace rawrbox {
+	namespace ScriptingLibraries {
+		const uint32_t NONE = 0;
+
+		// LUA FILES ---
+		const uint32_t SHA2 = 1U << 0U;
+		const uint32_t JSON = 1U << 1U;
+		const uint32_t MATH = 1U << 2U;
+		const uint32_t STRING = 1U << 3U;
+		const uint32_t TABLE = 1U << 4U;
+		const uint32_t ENUMS = 1U << 5U;
+		// -------------
+
+		// GLOBALS ---
+		const uint32_t HOOKS = 1U << 6U;
+		const uint32_t TIMER = 1U << 7U;
+		const uint32_t PROFILER = 1U << 8U;
+		const uint32_t I18N = 1U << 9U;
+		const uint32_t MOD = 1U << 10U;
+		const uint32_t TIME = 1U << 11U;
+		const uint32_t ENGINE = 1U << 12U;
+		const uint32_t IO = 1U << 13U;
+		const uint32_t CONSOLE = 1U << 14U;
+		const uint32_t MATH_TYPES = 1U << 15U;
+		// -------------
+
+		const uint32_t ALL = 0xFFFFFFFFU;
+	}; // namespace ScriptingLibraries
+
 	struct ScriptingSettings {
 		uint32_t hotReloadMs = 0; // 0 = disabled
 		bool typeCheck = false;
 		bool safeEnv = true; // Luau safeenv
+
+		uint32_t libraries = rawrbox::ScriptingLibraries::ALL;
 
 		std::vector<std::filesystem::path> definitions = {}; // Luau definition files, aka .d.lua
 	};
@@ -38,6 +68,7 @@ namespace rawrbox {
 		static rawrbox::Console* _console;
 		static bool _hotReloadEnabled;
 		static bool _safeEnv;
+		static uint32_t _libraries;
 
 		// LOAD ----
 		static void loadLibraries(rawrbox::Mod& mod);
@@ -75,14 +106,14 @@ namespace rawrbox {
 			auto plugin = std::make_unique<T>(std::forward<CallbackArgs>(args)...);
 			const auto pluginName = rawrbox::StrUtils::replace(typeid(T).name(), "class ", "");
 
-			_logger->info("Registered lua plugin '{}'", fmt::styled(pluginName, fmt::fg(fmt::color::coral)));
-			_plugins.push_back(std::move(plugin));
+			SCRIPTING::_logger->info("Registered lua plugin '{}'", fmt::styled(pluginName, fmt::fg(fmt::color::coral)));
+			SCRIPTING::_plugins.push_back(std::move(plugin));
 		}
 		// -----
 
 		template <typename... CallbackArgs>
 		static void call(const std::string& hookName, CallbackArgs&&... args) {
-			for (auto& mod : _mods) {
+			for (auto& mod : SCRIPTING::_mods) {
 				mod->call(hookName, args...);
 			}
 		}
@@ -112,6 +143,7 @@ namespace rawrbox {
 		[[nodiscard]] static std::vector<std::string> getModsIds();
 		[[nodiscard]] static bool hotReloadEnabled();
 		[[nodiscard]] static bool isLuaFileMounted(const std::string& path);
+		[[nodiscard]] static bool hasLibrary(uint32_t library);
 
 #ifdef RAWRBOX_SCRIPTING_WORKSHOP_MODDING
 		[[nodiscard]] static std::vector<rawrbox::Mod*> getModsByWorkshopType(uint32_t type);

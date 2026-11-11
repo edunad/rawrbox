@@ -31,14 +31,14 @@ namespace rawrbox {
 
 		std::erase_if(this->_lights, [](const auto& entry) { return entry.light.expired(); });
 
-		const auto existing = std::ranges::find_if(this->_lights, [&light](const auto& entry) { return entry.light.lock().get() == &light; });
+		const auto& existing = std::ranges::find_if(this->_lights, [&light](const auto& entry) { return entry.light.lock().get() == &light; });
 		if (existing != this->_lights.end()) {
 			existing->settings = settings;
 			return;
 		}
 
 		const auto& lights = rawrbox::LIGHTS::getLights();
-		const auto fnd = std::ranges::find_if(lights, [&light](const auto& entry) { return entry.get() == &light; });
+		const auto& fnd = std::ranges::find_if(lights, [&light](const auto& entry) { return entry.get() == &light; });
 		if (fnd == lights.end()) RAWRBOX_CRITICAL("Light not found, did you call 'LIGHTS::add'?");
 
 		this->_lights.push_back({.light = *fnd, .settings = settings});

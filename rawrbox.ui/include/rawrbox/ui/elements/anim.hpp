@@ -132,44 +132,44 @@ namespace rawrbox {
 		};
 
 		virtual void setKeyframe(UIAnimKeyframe& frame) {
-			if (_element == nullptr) throw std::runtime_error("[RawrBox-UI] UI element not set!");
+			if (this->_element == nullptr) throw std::runtime_error("[RawrBox-UI] UI element not set!");
 			if (frame.pos.has_value()) {
 				if constexpr (isMovable<T>) {
-					_element->setPos(this->_posOffset + frame.pos.value());
+					this->_element->setPos(this->_posOffset + frame.pos.value());
 				}
 			}
 
 			if (frame.size.has_value()) {
 				if constexpr (isResizable<T>) {
-					_element->setSize(frame.size.value());
+					this->_element->setSize(frame.size.value());
 				}
 			}
 
 			if (frame.color.has_value()) {
 				if constexpr (isColorable<T>) {
-					_element->setColor(frame.color.value());
+					this->_element->setColor(frame.color.value());
 				}
 			}
 		}
 
 		virtual void lerpKeyframe(UIAnimKeyframe& prevKey, UIAnimKeyframe& newKey, float time) {
-			if (_element == nullptr) throw std::runtime_error("[RawrBox-UI] UI element not set!");
+			if (this->_element == nullptr) throw std::runtime_error("[RawrBox-UI] UI element not set!");
 			if (prevKey.pos.has_value() && newKey.pos.has_value()) {
 				if constexpr (isMovable<T>) {
-					_element->setPos(this->_posOffset + prevKey.pos.value().lerp(newKey.pos.value(), time));
+					this->_element->setPos(this->_posOffset + prevKey.pos.value().lerp(newKey.pos.value(), time));
 				}
 			}
 
 			if (prevKey.size.has_value() && newKey.size.has_value()) {
 				if constexpr (isResizable<T>) {
-					_element->setSize(prevKey.size.value().lerp(newKey.size.value(), time));
+					this->_element->setSize(prevKey.size.value().lerp(newKey.size.value(), time));
 				}
 			}
 
 			if (prevKey.color.has_value() && newKey.color.has_value()) {
 				if constexpr (isColorable<T>) {
 					auto cl = prevKey.color.value().lerp(newKey.color.value(), time);
-					_element->setColor(cl);
+					this->_element->setColor(cl);
 				}
 			}
 		}

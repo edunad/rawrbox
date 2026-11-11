@@ -86,7 +86,7 @@ namespace steamworks {
 			avatarPixels->setName(std::to_string(friends[i].GetAccountID()));
 			avatarPixels->upload();
 
-			_friendAvatars[i] = std::move(avatarPixels);
+			this->_friendAvatars[i] = std::move(avatarPixels);
 		}
 		// ------------------
 

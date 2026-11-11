@@ -332,5 +332,5 @@ add_dependencies(${output_target} copy_dxc copy_dxil)
 # ---------------------------------
 
 # TEST ----
-#include(../cmake/catch2.cmake)
+include(../cmake/catch2.cmake)
 # --------------

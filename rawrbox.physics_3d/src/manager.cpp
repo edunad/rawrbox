@@ -60,62 +60,62 @@ namespace rawrbox {
 		// Register allocation hook
 		JPH::RegisterDefaultAllocator();
 
-		_factory = std::make_unique<JPH::Factory>();
-		JPH::Factory::sInstance = _factory.get(); // Initialize singleton factory
+		PHYSICS::_factory = std::make_unique<JPH::Factory>();
+		JPH::Factory::sInstance = PHYSICS::_factory.get(); // Initialize singleton factory
 
 		// Register all Jolt physics types
 		JPH::RegisterTypes();
 
 		// Initialize allocator
-		allocator = std::make_unique<JPH::TempAllocatorImpl>(mbAlloc * 1024 * 1024); // MB
+		PHYSICS::allocator = std::make_unique<JPH::TempAllocatorImpl>(mbAlloc * 1024 * 1024); // MB
 
 		// Initialize pool
 		if (maxThreads == 0) maxThreads = std::thread::hardware_concurrency() - 1;
-		_threadPool = std::make_unique<JPH::JobSystemThreadPool>();
-		_threadPool->SetThreadInitFunction([](int index) { rawrbox::ThreadUtils::setName(fmt::format("rawrbox:physics:{}", index)); });
-		_threadPool->Init(JPH::cMaxPhysicsJobs, JPH::cMaxPhysicsBarriers, maxThreads);
+		PHYSICS::_threadPool = std::make_unique<JPH::JobSystemThreadPool>();
+		PHYSICS::_threadPool->SetThreadInitFunction([](int index) { rawrbox::ThreadUtils::setName(fmt::format("rawrbox:physics:{}", index)); });
+		PHYSICS::_threadPool->Init(JPH::cMaxPhysicsJobs, JPH::cMaxPhysicsBarriers, maxThreads);
 
-		_bodyListener = std::make_unique<rawrbox::BodyActivationListener>();
-		_contactListener = std::make_unique<rawrbox::ContactListener>();
+		PHYSICS::_bodyListener = std::make_unique<rawrbox::BodyActivationListener>();
+		PHYSICS::_contactListener = std::make_unique<rawrbox::ContactListener>();
 
 		// Initialize physics system
-		physicsSystem = std::make_unique<JPH::PhysicsSystem>();
-		physicsSystem->Init(maxBodies, maxBodyMutexes, maxBodyPairs, maxContactConstraints, *_bpLayerInterface, *_bpLayerFilter, *_layerFilter);
-		physicsSystem->SetBodyActivationListener(_bodyListener.get());
-		physicsSystem->SetContactListener(_contactListener.get());
+		PHYSICS::physicsSystem = std::make_unique<JPH::PhysicsSystem>();
+		PHYSICS::physicsSystem->Init(maxBodies, maxBodyMutexes, maxBodyPairs, maxContactConstraints, *PHYSICS::_bpLayerInterface, *PHYSICS::_bpLayerFilter, *PHYSICS::_layerFilter);
+		PHYSICS::physicsSystem->SetBodyActivationListener(PHYSICS::_bodyListener.get());
+		PHYSICS::physicsSystem->SetContactListener(PHYSICS::_contactListener.get());
 
 		// Create raycast shape --
 		// NOLINTBEGIN(*)
-		rayBoxShape = new JPH::BoxShape(JPH::Vec3(1, 1, 1) / 2.F);
+		PHYSICS::rayBoxShape = new JPH::BoxShape(JPH::Vec3(1, 1, 1) / 2.F);
 		// NOLINTEND(*)
 		//  ------------------------
 	}
 
 	void PHYSICS::shutdown() {
-		if (physicsSystem == nullptr) return;
+		if (PHYSICS::physicsSystem == nullptr) return;
 
-		rayBoxShape->Release();
-		rayBoxShape = nullptr;
+		PHYSICS::rayBoxShape->Release();
+		PHYSICS::rayBoxShape = nullptr;
 
 		JPH::UnregisterTypes();
 
-		_factory.reset();
+		PHYSICS::_factory.reset();
 		JPH::Factory::sInstance = nullptr;
 
-		allocator.reset();
-		_threadPool.reset();
+		PHYSICS::allocator.reset();
+		PHYSICS::_threadPool.reset();
 
-		_bodyListener.reset();
-		_contactListener.reset();
+		PHYSICS::_bodyListener.reset();
+		PHYSICS::_contactListener.reset();
 
-		physicsSystem.reset();
+		PHYSICS::physicsSystem.reset();
 	}
 
 	void PHYSICS::clear() {
-		JPH::BodyInterface& bodyInterface = physicsSystem->GetBodyInterface();
+		JPH::BodyInterface& bodyInterface = PHYSICS::physicsSystem->GetBodyInterface();
 
 		JPH::BodyIDVector bodies = {};
-		physicsSystem->GetBodies(bodies);
+		PHYSICS::physicsSystem->GetBodies(bodies);
 
 		for (JPH::BodyID id : bodies) {
 			bodyInterface.DeactivateBody(id);
@@ -125,13 +125,13 @@ namespace rawrbox {
 	}
 
 	void PHYSICS::tick() {
-		if (allocator == nullptr || _threadPool == nullptr || physicsSystem == nullptr || !simulate) return;
+		if (PHYSICS::allocator == nullptr || PHYSICS::_threadPool == nullptr || PHYSICS::physicsSystem == nullptr || !PHYSICS::simulate) return;
 		ZoneScopedN("PHYSICS::tick");
-		physicsSystem->Update(rawrbox::FIXED_DELTA_TIME, steps, allocator.get(), _threadPool.get());
+		PHYSICS::physicsSystem->Update(rawrbox::FIXED_DELTA_TIME, PHYSICS::steps, PHYSICS::allocator.get(), PHYSICS::_threadPool.get());
 	}
 
 	void PHYSICS::optimize() {
-		if (physicsSystem == nullptr) return;
-		physicsSystem->OptimizeBroadPhase();
+		if (PHYSICS::physicsSystem == nullptr) return;
+		PHYSICS::physicsSystem->OptimizeBroadPhase();
 	}
 } // namespace rawrbox

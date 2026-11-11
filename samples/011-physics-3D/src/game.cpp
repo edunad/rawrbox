@@ -276,7 +276,7 @@ namespace phys_3d_test {
 			JPH::BodyManager::DrawSettings settings;
 			settings.mDrawShape = true;
 
-			rawrbox::PHYSICS::physicsSystem->DrawBodies(settings, _physDebug.get());
+			rawrbox::PHYSICS::physicsSystem->DrawBodies(settings, this->_physDebug.get());
 		}
 #else
 		stencil->drawText(fmt::format("[F3]   CLEAR"), {15, 28});

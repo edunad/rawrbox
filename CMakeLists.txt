@@ -229,7 +229,16 @@ endif ()
 # -------------------------
 
 # GLOBAL PACKAGES ------
-CPMAddPackage("gh:fmtlib/fmt#12.2.0")
+CPMAddPackage(
+    NAME
+        fmt
+    GIT_TAG
+        12.2.0
+    GITHUB_REPOSITORY
+        fmtlib/fmt
+    OPTIONS
+        "FMT_MODULE OFF"
+    )
 if (fmt_ADDED)
     set_lib_runtime_mt(fmt)
 endif ()
@@ -245,7 +254,7 @@ if (RAWRBOX_BUILD_RAWRBOX_RENDER)
     endif ()
 endif ()
 
-CPMAddPackage("gh:stephenberry/glaze@6.4.1")
+CPMAddPackage("gh:stephenberry/glaze@9.1.0")
 
 add_subdirectory("rawrbox.math")
 add_subdirectory("rawrbox.utils")

@@ -1,4 +1,5 @@
 #include <rawrbox/tools/vpk/packer.hpp>
+#include <rawrbox/tools/vpk/tool.hpp>
 #include <rawrbox/utils/crc.hpp>
 #include <rawrbox/utils/md5.hpp>
 #include <rawrbox/utils/vpk.hpp>
@@ -11,8 +12,8 @@
 #include <string>
 #include <vector>
 
-namespace {
-	void printHelp() {
+namespace rawrbox {
+	void VPKTool::printHelp() {
 		fmt::print(
 		    "HELP:\n"
 		    "> rawrbox_vpk pack <output_dir.vpk> --input <prefix>=<folder> [options]\n"
@@ -25,7 +26,7 @@ namespace {
 		    "  --compress                Compress textures & models\n");
 	}
 
-	int pack(const std::vector<std::string>& args) {
+	int VPKTool::pack(const std::vector<std::string>& args) {
 		rawrbox::VPKPackSettings settings = {};
 
 		const std::map<std::string, std::vector<std::string>*> globs = {
@@ -65,7 +66,7 @@ namespace {
 		}
 
 		if (positional.size() != 1) {
-			printHelp();
+			VPKTool::printHelp();
 			return 1;
 		}
 
@@ -86,7 +87,7 @@ namespace {
 		return 0;
 	}
 
-	int list(const std::filesystem::path& path) {
+	int VPKTool::list(const std::filesystem::path& path) {
 		const rawrbox::VPK vpk = rawrbox::VPK{path};
 
 		const std::map<std::string, rawrbox::VPKEntry> entries(vpk.getEntries().begin(), vpk.getEntries().end());
@@ -99,7 +100,7 @@ namespace {
 		return 0;
 	}
 
-	int verify(const std::filesystem::path& path) {
+	int VPKTool::verify(const std::filesystem::path& path) {
 		rawrbox::VPK vpk = rawrbox::VPK{path};
 
 		size_t failed = 0;
@@ -108,14 +109,14 @@ namespace {
 			if (CRC::Calculate(data.data(), data.size(), CRC::CRC_32()) == entry.second.crc) continue;
 
 			fmt::print("CRC mismatch: {}\n", entry.first);
-			failed++;
+			++failed;
 		}
 
 		fmt::print("{} files verified, {} failed\n", vpk.getEntries().size(), failed);
 		return failed == 0 ? 0 : 1;
 	}
 
-	int extract(const std::filesystem::path& path, const std::filesystem::path& output) {
+	int VPKTool::extract(const std::filesystem::path& path, const std::filesystem::path& output) {
 		rawrbox::VPK vpk = rawrbox::VPK{path};
 
 		size_t extracted = 0;
@@ -132,41 +133,45 @@ namespace {
 			const auto data = vpk.read(entry.second);
 			std::ofstream stream(file, std::ios::binary | std::ios::trunc);
 			stream.write(std::bit_cast<const char*>(data.data()), static_cast<std::streamsize>(data.size()));
-			extracted++;
+			++extracted;
 		}
 
 		fmt::print("{} files extracted\n", extracted);
 		return 0;
 	}
-} // namespace
+
+	int VPKTool::run(const std::vector<std::string>& args) {
+		if (args.size() < 2) {
+			VPKTool::printHelp();
+			return 1;
+		}
+
+		try {
+			const std::vector<std::string> options(args.begin() + 1, args.end());
+
+			if (args[0] == "pack")
+				return VPKTool::pack(options);
+
+			if (args[0] == "list")
+				return VPKTool::list(options[0]);
+
+			if (args[0] == "verify")
+				return VPKTool::verify(options[0]);
+
+			if (args[0] == "extract" && options.size() == 2)
+				return VPKTool::extract(options[0], options[1]);
+
+		} catch (const std::exception& e) {
+			fmt::print(stderr, "Failed ---> {}\n", e.what());
+			return 1;
+		}
+
+		VPKTool::printHelp();
+		return 1;
+	}
+} // namespace rawrbox
 
 int main(int argc, char** argv) {
 	const std::vector<std::string> args(argv + 1, argv + argc);
-	if (args.size() < 2) {
-		printHelp();
-		return 1;
-	}
-
-	try {
-		const std::vector<std::string> options(args.begin() + 1, args.end());
-
-		if (args[0] == "pack")
-			return pack(options);
-
-		if (args[0] == "list")
-			return list(options[0]);
-
-		if (args[0] == "verify")
-			return verify(options[0]);
-
-		if (args[0] == "extract" && options.size() == 2)
-			return extract(options[0], options[1]);
-		
-	} catch (const std::exception& e) {
-		fmt::print(stderr, "Failed ---> {}\n", e.what());
-		return 1;
-	}
-
-	printHelp();
-	return 1;
+	return rawrbox::VPKTool::run(args);
 }

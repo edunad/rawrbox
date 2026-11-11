@@ -40,7 +40,7 @@ namespace rawrbox {
 
 	rawrbox::ImageData GIF::decode(const std::filesystem::path& path) {
 		if (!rawrbox::VFS::contains(path)) RAWRBOX_CRITICAL("Could not find file {}", path.generic_string());
-		return decode(rawrbox::VFS::read(path));
+		return GIF::decode(rawrbox::VFS::read(path));
 	}
 
 	rawrbox::ImageData GIF::decode(const std::vector<uint8_t>& data) {
@@ -54,6 +54,6 @@ namespace rawrbox {
 		int height = 0;
 
 		gifPixels = stbi_xload_mem(data.data(), static_cast<int>(data.size()), &width, &height, &frames_n, &delays);
-		return internalLoad(width, height, frames_n, gifPixels, delays);
+		return GIF::internalLoad(width, height, frames_n, gifPixels, delays);
 	}
 } // namespace rawrbox

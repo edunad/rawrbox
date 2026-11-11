@@ -146,19 +146,19 @@ namespace rawrbox {
 		if (this->_vk.getSurfaceFormats(physicalDevice, this->_surface, &formatCount, formats.data()) != VK_SUCCESS) RAWRBOX_CRITICAL("Failed to query the Vulkan surface formats");
 
 		if (formats.size() == 1 && formats.front().format == VK_FORMAT_UNDEFINED) {
-			return {getBufferFormat(this->_desc.ColorBufferFormat), formats.front().colorSpace};
+			return {this->getBufferFormat(this->_desc.ColorBufferFormat), formats.front().colorSpace};
 		}
 
 		auto find = [&formats](VkFormat format) -> const VkSurfaceFormatKHR* {
-			auto fnd = std::ranges::find_if(formats, [format](const VkSurfaceFormatKHR& f) { return f.format == format; });
+			const auto& fnd = std::ranges::find_if(formats, [format](const VkSurfaceFormatKHR& f) { return f.format == format; });
 			return fnd == formats.end() ? nullptr : &(*fnd);
 		};
 
-		if (const auto* fnd = find(getBufferFormat(this->_desc.ColorBufferFormat)); fnd != nullptr) return *fnd;
+		if (const auto* fnd = find(this->getBufferFormat(this->_desc.ColorBufferFormat)); fnd != nullptr) return *fnd;
 
-		auto swapped = getSwappedFormat(this->_desc.ColorBufferFormat);
+		const auto swapped = this->getSwappedFormat(this->_desc.ColorBufferFormat);
 		if (swapped != Diligent::TEX_FORMAT_UNKNOWN) {
-			if (const auto* fnd = find(getBufferFormat(swapped)); fnd != nullptr) {
+			if (const auto* fnd = find(this->getBufferFormat(swapped)); fnd != nullptr) {
 				this->_desc.ColorBufferFormat = swapped;
 				return *fnd;
 			}

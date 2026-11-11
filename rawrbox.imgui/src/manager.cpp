@@ -1,6 +1,7 @@
 #include <rawrbox/engine/engine.hpp>
 #include <rawrbox/imgui/manager.hpp>
 #include <rawrbox/math/utils/math.hpp>
+#include <rawrbox/render/static.hpp>
 #include <rawrbox/render/utils/barrier.hpp>
 
 // ---- IMGUI ----
@@ -28,6 +29,8 @@ namespace rawrbox {
 	// TEXTURE ----
 	std::unordered_map<int, std::unique_ptr<rawrbox::TextureImage>> IMGUIManager::_textures = {};
 	// -------
+
+	std::string IMGUIManager::_ini = {};
 	// ---------
 
 	void IMGUIManager::renderDrawData(ImDrawData* data) {
@@ -92,25 +95,31 @@ namespace rawrbox {
 	//------
 
 	// PROTECTED ---
-	void IMGUIManager::init(bool darkTheme) {
+	void IMGUIManager::init(const rawrbox::IMGUISettings& settings) {
 		const auto* window = rawrbox::Window::getWindow();
 		const auto& renderer = window->getRenderer();
 
 		// SETUP IMGUI
 		IMGUI_CHECKVERSION();
 		ImGui::CreateContext();
-		darkTheme ? ImGui::StyleColorsDark() : ImGui::StyleColorsLight();
+		settings.dark ? ImGui::StyleColorsDark() : ImGui::StyleColorsLight();
 
 #ifdef RAWRBOX_IMGUI_IMPLOT
 		ImPlot::CreateContext();
-		darkTheme ? ImPlot::StyleColorsDark() : ImPlot::StyleColorsLight();
+		settings.dark ? ImPlot::StyleColorsDark() : ImPlot::StyleColorsLight();
 #endif
 
 		ImGuiIO& IO = ImGui::GetIO();
 		IO.BackendRendererName = "RawrBox-IMGUI";
-		IO.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
+
+		IO.ConfigFlags |= settings.flags;
+		if (settings.docking) IO.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
+
 		IO.BackendFlags |= ImGuiBackendFlags_RendererHasVtxOffset;
 		IO.BackendFlags |= ImGuiBackendFlags_RendererHasTextures;
+
+		IMGUIManager::_ini = settings.ini.has_value() ? settings.ini->generic_string() : std::string();
+		IO.IniFilename = settings.ini.has_value() ? IMGUIManager::_ini.c_str() : nullptr;
 
 		switch (renderer.getRenderType()) {
 			case Diligent::RENDER_DEVICE_TYPE_D3D12:
@@ -135,29 +144,37 @@ namespace rawrbox {
 		};
 
 		RichMd::MarkdownOptions options = {};
-		options.callbacks.OnImage = [](const std::string& path) -> std::optional<RichMd::MarkdownImage> {
-			if (!rawrbox::RESOURCES::isLoaded(path)) {
-				const auto ext = std::filesystem::path(path).extension().generic_string();
-				const bool canLoad = std::ranges::any_of(rawrbox::RESOURCES::getLoaders(), [&ext](const auto& loader) {
-					return dynamic_cast<rawrbox::TextureLoader*>(loader.get()) != nullptr && loader->canLoad(ext);
-				});
+		if (settings.onLink != nullptr) {
+			options.callbacks.OnOpenLink = [onLink = settings.onLink](const std::string& url) { onLink(url); };
+		}
 
-				if (!canLoad || !rawrbox::VFS::contains(path)) return RichMd::OnImage_Default(path);
-			}
+		if (settings.onImage != nullptr) {
+			options.callbacks.OnImage = settings.onImage;
+		} else {
+			options.callbacks.OnImage = [](const std::string& path) -> std::optional<RichMd::MarkdownImage> {
+				if (!rawrbox::RESOURCES::isLoaded(path)) {
+					const auto ext = std::filesystem::path(path).extension().generic_string();
+					const bool canLoad = std::ranges::any_of(rawrbox::RESOURCES::getLoaders(), [&ext](const auto& loader) {
+						return dynamic_cast<rawrbox::TextureLoader*>(loader.get()) != nullptr && loader->canLoad(ext);
+					});
 
-			auto* texture = rawrbox::RESOURCES::loadFile<rawrbox::ResourceTexture>(path)->get();
-			const auto size = texture->getSize().cast<float>();
+					if (!canLoad || !rawrbox::VFS::contains(path)) return RichMd::OnImage_Default(path);
+				}
 
-			return RichMd::MarkdownImage{
-			    .texture_id = texture,
-			    .size = {size.x, size.y},
+				auto* texture = rawrbox::RESOURCES::loadFile<rawrbox::ResourceTexture>(path)->get();
+				const auto size = texture->getSize().cast<float>();
 
-			    .uv0 = {0.F, 0.F},
-			    .uv1 = {1.F, 1.F},
+				return RichMd::MarkdownImage{
+				    .texture_id = texture,
+				    .size = {size.x, size.y},
 
-			    .col_tint = {1.F, 1.F, 1.F, 1.F},
-			    .col_border = {0.F, 0.F, 0.F, 0.F}};
-		};
+				    .uv0 = {0.F, 0.F},
+				    .uv1 = {1.F, 1.F},
+
+				    .col_tint = {1.F, 1.F, 1.F, 1.F},
+				    .col_border = {0.F, 0.F, 0.F, 0.F}};
+			};
+		}
 
 		RichMd::SetHostServices(services);
 		RichMd::CreateContext(options);
@@ -232,7 +249,7 @@ namespace rawrbox {
 		}
 		// ------------
 
-		renderDrawData(data);
+		IMGUIManager::renderDrawData(data);
 	}
 
 	void IMGUIManager::shutdown(rawrbox::ENGINE_THREADS thread) {

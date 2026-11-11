@@ -16,8 +16,8 @@ namespace rawrbox {
 		auto size = this->getSize();
 
 		this->_closeButton->setTexture("./assets/textures/ui/icons/close.png");
-		this->_closeButton->setSize({30, TITLE_SIZE - 1});
-		this->_closeButton->setPos({size.x - 30, -TITLE_SIZE});
+		this->_closeButton->setSize({30, this->TITLE_SIZE - 1});
+		this->_closeButton->setPos({size.x - 30, -this->TITLE_SIZE});
 		this->_closeButton->setTextureSize({8, 8});
 		this->_closeButton->setTextureColor(Colors::Black());
 		this->_closeButton->setEnabled(true);
@@ -31,7 +31,7 @@ namespace rawrbox {
 	}
 
 	rawrbox::Vector2f UIFrame::getDrawOffset() const {
-		return {0, TITLE_SIZE}; // Title offset
+		return {0, this->TITLE_SIZE}; // Title offset
 	}
 
 	// UTILS -----
@@ -52,7 +52,7 @@ namespace rawrbox {
 
 	void UIFrame::setSize(const rawrbox::Vector2& size) {
 		rawrbox::UIContainer::setSize(size);
-		if (this->_closeButton != nullptr) this->_closeButton->setPos({size.x - 30, -TITLE_SIZE});
+		if (this->_closeButton != nullptr) this->_closeButton->setPos({size.x - 30, -this->TITLE_SIZE});
 	}
 	// -------
 
@@ -88,17 +88,17 @@ namespace rawrbox {
 		stencil.drawBox({}, size, Color::RGBHex(0x0C0C0C));
 
 		// Title
-		stencil.drawBox({}, {size.x, TITLE_SIZE}, this->_titleColor);
+		stencil.drawBox({}, {size.x, this->TITLE_SIZE}, this->_titleColor);
 		if (rawrbox::DEBUG_FONT_REGULAR != nullptr) {
 			stencil.drawText(*rawrbox::DEBUG_FONT_REGULAR, this->_title, {4, 8}, Color::RGBAHex(0x000000D9), rawrbox::Alignment::Left, rawrbox::Alignment::Center);
 		}
 
 		if (this->_closable) {
-			stencil.drawTexture({size.x - 36, 0}, {6, TITLE_SIZE}, *this->_stripes, Color::RGBAHex(0x0000004A), {}, {1, static_cast<float>(TITLE_SIZE) / static_cast<float>(this->_stripes->getSize().y / 2)});
+			stencil.drawTexture({size.x - 36, 0}, {6, this->TITLE_SIZE}, *this->_stripes, Color::RGBAHex(0x0000004A), {}, {1, static_cast<float>(this->TITLE_SIZE) / static_cast<float>(this->_stripes->getSize().y / 2)});
 		}
 
 		// Title bottom border
-		stencil.drawLine({0, TITLE_SIZE}, {size.x, TITLE_SIZE}, Color::RGBAHex(0x0000004A));
+		stencil.drawLine({0, this->TITLE_SIZE}, {size.x, this->TITLE_SIZE}, Color::RGBAHex(0x0000004A));
 	}
 
 	void UIFrame::afterDraw(rawrbox::Stencil& stencil) {

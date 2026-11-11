@@ -12,21 +12,21 @@ namespace rawrbox {
 
 		// Create the main group ---
 		this->_buttonGroup->setPos({0, 0});
-		this->_buttonGroup->setSize({size.x, TAB_HEIGHT});
+		this->_buttonGroup->setSize({size.x, this->TAB_HEIGHT});
 		// ------
 
 		for (size_t i = 0; i < this->_tabs.size(); i++) {
 			auto& tab = this->_tabs[i];
 
-			tab.group->setPos({0, TAB_HEIGHT});
-			tab.group->setSize({size.x, size.y - TAB_HEIGHT});
+			tab.group->setPos({0, this->TAB_HEIGHT});
+			tab.group->setSize({size.x, size.y - this->TAB_HEIGHT});
 			tab.group->setVisible(false);
 
 			// Generate buttons ---
 			tab.button = this->_buttonGroup->createChild<rawrbox::UIButton>();
-			tab.button->setText(tab.name, BUTTON_FONT_SIZE);
-			tab.button->setPos({static_cast<float>(i) * (BUTTON_WIDTH + 2.F), 0});
-			tab.button->setSize({BUTTON_WIDTH, TAB_HEIGHT});
+			tab.button->setText(tab.name, this->BUTTON_FONT_SIZE);
+			tab.button->setPos({static_cast<float>(i) * (this->BUTTON_WIDTH + 2.F), 0});
+			tab.button->setSize({this->BUTTON_WIDTH, this->TAB_HEIGHT});
 			tab.button->setEnabled(true);
 			tab.button->setTextColor(rawrbox::Colors::White());
 			tab.button->setBorder(false);
@@ -40,13 +40,13 @@ namespace rawrbox {
 
 	void UITabs::updateTabs() {
 		const auto& size = this->getSize();
-		this->_buttonGroup->setSize({size.x, TAB_HEIGHT});
+		this->_buttonGroup->setSize({size.x, this->TAB_HEIGHT});
 
-		for (auto& tab : this->_tabs) {
+		for (const auto& tab : this->_tabs) {
 			if (tab.button == nullptr || tab.group == nullptr) continue;
 
-			tab.group->setSize({size.x, size.y - TAB_HEIGHT});
-			tab.button->setSize({BUTTON_WIDTH, TAB_HEIGHT});
+			tab.group->setSize({size.x, size.y - this->TAB_HEIGHT});
+			tab.button->setSize({this->BUTTON_WIDTH, this->TAB_HEIGHT});
 		}
 	}
 	// -------------
@@ -81,7 +81,7 @@ namespace rawrbox {
 		tab.group->setVisible(true);
 
 		this->_activeTab = &tab;
-		onTabChange(tab.id);
+		this->onTabChange(tab.id);
 	}
 
 	void UITabs::setEnabled(size_t index, bool enabled) {
@@ -96,16 +96,16 @@ namespace rawrbox {
 	// ----
 
 	// FOCUS HANDLE ---
-	bool UITabs::hitTest(const rawrbox::Vector2f& point) const { return point.y >= 0 && point.y < TAB_HEIGHT; }
+	bool UITabs::hitTest(const rawrbox::Vector2f& point) const { return point.y >= 0 && point.y < this->TAB_HEIGHT; }
 	// -----
 
 	// DRAW ----
 	void UITabs::draw(rawrbox::Stencil& stencil) {
 		const auto& size = this->getSize();
 		// Top bar
-		stencil.drawBox({0, 0}, {size.x, TAB_HEIGHT}, rawrbox::Color::RGBHex(0x202226));
-		stencil.drawBox({0, TAB_HEIGHT}, {size.x, 1}, rawrbox::Color::RGBAHex(0x0000005A)); // line split
-												    // ----
+		stencil.drawBox({0, 0}, {size.x, this->TAB_HEIGHT}, rawrbox::Color::RGBHex(0x202226));
+		stencil.drawBox({0, this->TAB_HEIGHT}, {size.x, 1}, rawrbox::Color::RGBAHex(0x0000005A)); // line split
+													  // ----
 	}
 	// -------
 } // namespace rawrbox

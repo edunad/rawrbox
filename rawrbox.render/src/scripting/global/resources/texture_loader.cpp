@@ -5,22 +5,21 @@
 
 namespace rawrbox {
 	rawrbox::TextureBase* TextureLoaderGlobal::get(const std::string& path, std::optional<uint32_t> loadFlags, lua_State* L) {
-		auto modFolder = rawrbox::LuaUtils::getLuaENVVar<std::string>(L, "__mod_folder");
+		const auto resolved = rawrbox::LuaUtils::resolveContent(path, L);
+		if (!resolved) throw std::runtime_error(resolved.error());
 
-		auto fixedPath = rawrbox::LuaUtils::getContent(path, modFolder);
-		if (!fixedPath.first.empty()) throw std::runtime_error("External mod resources loading not supported");
+		const auto& fixedPath = resolved.value();
+		if (!rawrbox::RESOURCES::isLoaded(fixedPath)) {
+			fmt::print("[RawrBox-Resources] Loading '{}' RUNTIME! You should load content on the mod's load stage!\n", fixedPath.generic_string());
 
-		if (!rawrbox::RESOURCES::isLoaded(fixedPath.second)) {
-			fmt::print("[RawrBox-Resources] Loading '{}' RUNTIME! You should load content on the mod's load stage!\n", fixedPath.second.generic_string());
-
-			auto* ptr = rawrbox::RESOURCES::loadFile<rawrbox::ResourceTexture>(fixedPath.second, loadFlags.value_or(0));
-			if (ptr == nullptr) throw std::runtime_error(fmt::format("[RawrBox-Resources] '{}' not found!", fixedPath.second.generic_string()));
+			const auto* ptr = rawrbox::RESOURCES::loadFile<rawrbox::ResourceTexture>(fixedPath, loadFlags.value_or(0));
+			if (ptr == nullptr) throw std::runtime_error(fmt::format("[RawrBox-Resources] '{}' not found!", fixedPath.generic_string()));
 
 			return ptr->get();
 		}
 
-		auto* ptr = rawrbox::RESOURCES::getFile<rawrbox::ResourceTexture>(fixedPath.second);
-		if (ptr == nullptr) throw std::runtime_error(fmt::format("[RawrBox-Resources] '{}' not found!", fixedPath.second.generic_string()));
+		const auto* ptr = rawrbox::RESOURCES::getFile<rawrbox::ResourceTexture>(fixedPath);
+		if (ptr == nullptr) throw std::runtime_error(fmt::format("[RawrBox-Resources] '{}' not found!", fixedPath.generic_string()));
 
 		return ptr->get();
 	}

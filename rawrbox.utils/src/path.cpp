@@ -22,7 +22,7 @@ namespace rawrbox {
 		if (path1 == path2) return true;
 		if (rawrbox::VFS::normalize(path1) == rawrbox::VFS::normalize(path2)) return true;
 
-		return normalizePath(path1) == normalizePath(path2);
+		return PathUtils::normalizePath(path1) == PathUtils::normalizePath(path2);
 	}
 
 	// Thanks i hate it

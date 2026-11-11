@@ -33,7 +33,7 @@ namespace rawrbox {
 	rawrbox::Event<> SteamSDK::onInitialized = {};
 
 	bool SteamSDK::init() {
-		if (_initialized) RAWRBOX_CRITICAL("SteamSDK already initialized");
+		if (SteamSDK::_initialized) RAWRBOX_CRITICAL("SteamSDK already initialized");
 
 #ifdef NDEBUG
 		if (SteamAPI_RestartAppIfNecessary(STEAMWORKS_APPID)) return false;
@@ -54,8 +54,8 @@ namespace rawrbox {
 		// Storage
 		rawrbox::SteamSTORAGE::init();
 
-		_initialized = true;
-		onInitialized();
+		SteamSDK::_initialized = true;
+		SteamSDK::onInitialized();
 
 		return true;
 	}
@@ -69,7 +69,7 @@ namespace rawrbox {
 	}
 
 	void SteamSDK::update() {
-		if (!isReady()) return;
+		if (!SteamSDK::isReady()) return;
 
 		SteamAPI_RunCallbacks();
 		rawrbox::SteamINPUT::update();
@@ -78,7 +78,7 @@ namespace rawrbox {
 
 	// UTILS -----
 	bool SteamSDK::isReady() {
-		return _initialized && SteamUser() != nullptr && SteamMatchmaking() != nullptr && SteamUGC() != nullptr && SteamUtils() != nullptr;
+		return SteamSDK::_initialized && SteamUser() != nullptr && SteamMatchmaking() != nullptr && SteamUGC() != nullptr && SteamUtils() != nullptr;
 	}
 
 	std::string SteamSDK::getBuildVersion() {

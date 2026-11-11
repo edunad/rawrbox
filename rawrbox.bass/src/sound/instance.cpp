@@ -38,11 +38,10 @@ namespace rawrbox {
 	}
 
 	uint32_t SoundInstance::getNextAvailableChannel() const {
-		if (!isValid()) return 0;
+		if (!this->isValid()) return 0;
 		if (this->_stream) return this->_sample; // streams only need 1 channel instance
 
-		// no slots free, so lets kill the furthest away or oldest if we're over the 5 channels limit
-		auto newInstance = BASS_SampleGetChannel(this->_sample, this->is3D() ? BASS_SAMPLE_OVER_DIST : BASS_SAMPLE_OVER_POS);
+		const auto newInstance = BASS_SampleGetChannel(this->_sample, this->is3D() ? BASS_SAMPLE_OVER_DIST : BASS_SAMPLE_OVER_POS);
 		rawrbox::BASSUtils::checkBASSError();
 
 		return newInstance;

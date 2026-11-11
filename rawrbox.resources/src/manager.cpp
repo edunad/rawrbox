@@ -5,9 +5,14 @@ namespace rawrbox {
 	std::mutex rawrbox::RESOURCES::_threadLock;
 
 	std::unordered_set<std::string> rawrbox::RESOURCES::_loadedFiles = {};
-	
-	std::atomic<size_t> rawrbox::RESOURCES::_loadingFiles = 0;
-	std::atomic<size_t> rawrbox::RESOURCES::_loadingPreloadFiles = 0;
+
+	// PRELOAD ---
+	std::mutex rawrbox::RESOURCES::_preloadLock;
+	std::atomic<size_t> rawrbox::RESOURCES::_preloadLoaded = 0;
+	std::atomic<size_t> rawrbox::RESOURCES::_preloadTotal = 0;
+	// -----------
+
+	thread_local std::vector<std::string> rawrbox::RESOURCES::_loading = {};
 
 	std::vector<std::unique_ptr<rawrbox::Loader>> rawrbox::RESOURCES::_loaders = [] {
 		std::vector<std::unique_ptr<rawrbox::Loader>> defaults;

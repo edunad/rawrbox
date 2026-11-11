@@ -21,27 +21,27 @@ namespace rawrbox {
 	}
 
 	void SteamWORKSHOP::loadMods(const std::vector<rawrbox::WorkshopMod>& details) {
-		_logger->info("Loading workshop mods");
+		SteamWORKSHOP::_logger->info("Loading workshop mods");
 
 		std::vector<rawrbox::WorkshopMod> loadedMods = {};
 		for (const rawrbox::WorkshopMod& detail : details) {
 			auto tags = rawrbox::StrUtils::split(detail.m_rgchTags, ",");
 			if (tags.empty()) {
-				_logger->warn("Missing tags for workshop item '{}', skipping mod..", detail.m_nPublishedFileId);
+				SteamWORKSHOP::_logger->warn("Missing tags for workshop item '{}', skipping mod..", detail.m_nPublishedFileId);
 				continue;
 			}
 
-			auto status = getWorkshopModState(detail.m_nPublishedFileId);
+			auto status = SteamWORKSHOP::getWorkshopModState(detail.m_nPublishedFileId);
 			switch (status) {
 				case WorkshopStatus::INSTALLED:
-					_logger->debug("Found workshop item '{}'", detail.m_nPublishedFileId);
+					SteamWORKSHOP::_logger->debug("Found workshop item '{}'", detail.m_nPublishedFileId);
 					loadedMods.emplace_back(detail);
 					break;
 
 				case WorkshopStatus::NEEDS_UPDATE:
 					{
-						_logger->debug("Updating workshop item '{}'", detail.m_nPublishedFileId);
-						if (!downloadMod(detail.m_nPublishedFileId, true)) {
+						SteamWORKSHOP::_logger->debug("Updating workshop item '{}'", detail.m_nPublishedFileId);
+						if (!SteamWORKSHOP::downloadMod(detail.m_nPublishedFileId, true)) {
 							RAWRBOX_CRITICAL("Failed to update workshop item '{}'", detail.m_nPublishedFileId);
 						}
 					}
@@ -53,7 +53,7 @@ namespace rawrbox {
 			}
 		}
 
-		onModsLoaded(loadedMods);
+		SteamWORKSHOP::onModsLoaded(loadedMods);
 	}
 
 	// UTILS ---
@@ -61,10 +61,10 @@ namespace rawrbox {
 		auto configPath = fmt::format("{}/mod.json", rootPath.generic_string());
 		if (!std::filesystem::exists(configPath)) RAWRBOX_CRITICAL("Missing 'mod.json' file");
 
-		auto ec = glz::write_file_json<glz::opts{.comments = 1U, .prettify = 1U}>(config, configPath, std::string{});
+		const auto ec = glz::write_file_json<glz::opts{.comments = 1U, .prettify = 1U}>(config, configPath, std::string{});
 		if (ec != glz::error_code::none) RAWRBOX_CRITICAL("Failed to patch settings '{}'", configPath);
 
-		_logger->debug("Patched mod config");
+		SteamWORKSHOP::_logger->debug("Patched mod config");
 	}
 	// -------
 
@@ -138,12 +138,12 @@ namespace rawrbox {
 		// -------------
 
 		// CUSTOM CONFIG ---
-		onModUpdating(updateHandle, config);
+		SteamWORKSHOP::onModUpdating(updateHandle, config);
 		// ---------------------
 
-		std::string changelog = fmt::format("Auto-update by engine v{}", rawrbox::SteamSDK::getBuildVersion());
+		const std::string changelog = fmt::format("Auto-update by engine v{}", rawrbox::SteamSDK::getBuildVersion());
 
-		SteamAPICall_t apicall = SteamUGC()->SubmitItemUpdate(updateHandle, changelog.c_str());
+		const SteamAPICall_t apicall = SteamUGC()->SubmitItemUpdate(updateHandle, changelog.c_str());
 		if (apicall == 0) RAWRBOX_CRITICAL("Failed to update workshop item");
 
 		SteamCALLBACKS::getInstance().addUpdateItemCallback(apicall, callback);
@@ -167,37 +167,37 @@ namespace rawrbox {
 
 		// Register callback events ---
 		SteamCALLBACKS::getInstance().onModInstalled += [](PublishedFileId_t id) {
-			onModInstalled(id);
+			SteamWORKSHOP::onModInstalled(id);
 		};
 
 		SteamCALLBACKS::getInstance().onModUpdated += [](PublishedFileId_t id) {
-			onModUpdated(id);
+			SteamWORKSHOP::onModUpdated(id);
 		};
 
 		SteamCALLBACKS::getInstance().onModUnSubscribed += [](PublishedFileId_t id) {
-			onModUnSubscribed(id);
+			SteamWORKSHOP::onModUnSubscribed(id);
 		};
 
 		SteamCALLBACKS::getInstance().onModSubscribed += [](PublishedFileId_t id) {
-			onModSubscribed(id);
+			SteamWORKSHOP::onModSubscribed(id);
 		};
 		// ----------------------
 
-		std::vector<PublishedFileId_t> subs = getSubbedWorkshopMods();
+		std::vector<PublishedFileId_t> subs = SteamWORKSHOP::getSubbedWorkshopMods();
 		if (subs.empty()) {
-			_logger->info("No workshop mods found, skipping load");
-			onModsLoaded({});
+			SteamWORKSHOP::_logger->info("No workshop mods found, skipping load");
+			SteamWORKSHOP::onModsLoaded({});
 			return;
 		}
 
-		_logger->info("Loading {} workshop mods", subs.size());
-		queryMods(subs, [subs](const std::vector<rawrbox::WorkshopMod>& details) {
-			loadMods(details);
+		SteamWORKSHOP::_logger->info("Loading {} workshop mods", subs.size());
+		SteamWORKSHOP::queryMods(subs, [subs](const std::vector<rawrbox::WorkshopMod>& details) {
+			SteamWORKSHOP::loadMods(details);
 		});
 	}
 
 	void SteamWORKSHOP::shutdown() {
-		_logger.reset();
+		SteamWORKSHOP::_logger.reset();
 	}
 
 	bool SteamWORKSHOP::downloadMod(PublishedFileId_t id, bool highPriority) {
@@ -269,7 +269,7 @@ namespace rawrbox {
 		// TAGS -----
 		for (const auto& tag : tags) {
 			if (!SteamUGC()->AddRequiredTag(handle, tag.c_str())) {
-				_logger->warn("Failed to add tag '{}' to query search", tag);
+				SteamWORKSHOP::_logger->warn("Failed to add tag '{}' to query search", tag);
 				continue;
 			}
 		}
@@ -292,7 +292,7 @@ namespace rawrbox {
 		// TAGS -----
 		for (const auto& tag : tags) {
 			if (!SteamUGC()->AddRequiredTag(handle, tag.c_str())) {
-				_logger->warn("Failed to add tag '{}' to query search", tag);
+				SteamWORKSHOP::_logger->warn("Failed to add tag '{}' to query search", tag);
 				continue;
 			}
 		}
@@ -330,7 +330,7 @@ namespace rawrbox {
 		// Always override and fill id
 		if (!config.id.has_value()) {
 			config.id = rootPath.filename().generic_string();
-			_logger->warn("Missing mod id, using {}", config.id.value());
+			SteamWORKSHOP::_logger->warn("Missing mod id, using {}", config.id.value());
 		}
 		// ---------------
 
@@ -344,7 +344,7 @@ namespace rawrbox {
 		}
 		// ----------------
 
-		onModValidate(config);
+		SteamWORKSHOP::onModValidate(config);
 		return config;
 	}
 
@@ -368,8 +368,8 @@ namespace rawrbox {
 				}
 
 				// Validate file extensions against whitelist
-				if (std::find(fileWhitelist.begin(), fileWhitelist.end(), fileExtension) == fileWhitelist.end()) {
-					_logger->warn("Invalid file '{}'", fileName);
+				if (std::ranges::find(fileWhitelist, fileExtension) == fileWhitelist.end()) {
+					SteamWORKSHOP::_logger->warn("Invalid file '{}'", fileName);
 					continue;
 				}
 
@@ -404,10 +404,10 @@ namespace rawrbox {
 	void SteamWORKSHOP::updateWorkshop(PublishedFileId_t id, const rawrbox::WorkshopModConfig& config, const std::filesystem::path& rootPath, const std::vector<std::filesystem::path>& files, const std::function<void(SubmitItemUpdateResult_t*)>& onComplete) {
 		if (files.empty()) RAWRBOX_CRITICAL("Cannot upload empty mod!");
 
-		auto tempFolder = moveToTempModFolder(rootPath.generic_string(), files);
-		_logger->debug("Created temp folder '{}'", tempFolder.generic_string());
+		const auto tempFolder = SteamWORKSHOP::moveToTempModFolder(rootPath.generic_string(), files);
+		SteamWORKSHOP::_logger->debug("Created temp folder '{}'", tempFolder.generic_string());
 
-		updateItem(
+		SteamWORKSHOP::updateItem(
 		    id,
 		    config, rootPath, [onComplete](SubmitItemUpdateResult_t* result) {
 			    onComplete(result);
@@ -427,18 +427,18 @@ namespace rawrbox {
 				RAWRBOX_CRITICAL("User needs to accept steam's workshop agreement (https://steamcommunity.com/sharedfiles/workshoplegalagreement)");
 			}
 
-			auto err = checkErrors(result->m_eResult);
+			auto err = SteamWORKSHOP::checkErrors(result->m_eResult);
 			if (!err.empty()) RAWRBOX_CRITICAL("{}", err);
 
 			// PATCH CONFIG ----
 			config.__workshop_id__ = std::to_string(result->m_nPublishedFileId);
-			patchConfig(rootPath, config);
+			SteamWORKSHOP::patchConfig(rootPath, config);
 			// ------
 
-			auto tempFolder = moveToTempModFolder(rootPath.generic_string(), files);
-			_logger->debug("Created temp folder '{}'", tempFolder.generic_string());
+			const auto tempFolder = SteamWORKSHOP::moveToTempModFolder(rootPath.generic_string(), files);
+			SteamWORKSHOP::_logger->debug("Created temp folder '{}'", tempFolder.generic_string());
 
-			updateItem(
+			SteamWORKSHOP::updateItem(
 			    result->m_nPublishedFileId, config, tempFolder, [onComplete](SubmitItemUpdateResult_t* result) {
 				    onComplete(result);
 			    },

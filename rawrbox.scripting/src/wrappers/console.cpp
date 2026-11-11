@@ -7,36 +7,36 @@ namespace rawrbox {
 	rawrbox::Console* ConsoleWrapper::_console = nullptr;
 	// ------------
 
-	void ConsoleWrapper::init(rawrbox::Console* console) { _console = console; }
-	void ConsoleWrapper::shutdown() { _console = nullptr; }
+	void ConsoleWrapper::init(rawrbox::Console* console) { ConsoleWrapper::_console = console; }
+	void ConsoleWrapper::shutdown() { ConsoleWrapper::_console = nullptr; }
 
 	// UTILS ---
 	void ConsoleWrapper::clear() {
-		if (_console == nullptr) throw std::runtime_error("Console instance not set!");
-		_console->clear();
+		if (ConsoleWrapper::_console == nullptr) throw std::runtime_error("Console instance not set!");
+		ConsoleWrapper::_console->clear();
 	}
 
 	const rawrbox::ConsoleCommand& ConsoleWrapper::get(const std::string& command) {
-		if (_console == nullptr) throw std::runtime_error("Console instance not set!");
-		return _console->getCommand(command);
+		if (ConsoleWrapper::_console == nullptr) throw std::runtime_error("Console instance not set!");
+		return ConsoleWrapper::_console->getCommand(command);
 	}
 	// ---------
 
 	std::pair<bool, std::string> ConsoleWrapper::execute(lua_State* L) {
-		if (_console == nullptr) throw std::runtime_error("Console instance not set!");
-		return _console->executeCommand(rawrbox::LuaUtils::argsToString(L, true));
+		if (ConsoleWrapper::_console == nullptr) throw std::runtime_error("Console instance not set!");
+		return ConsoleWrapper::_console->executeCommand(rawrbox::LuaUtils::argsToString(L, true));
 	}
 
 	void ConsoleWrapper::print(const std::string& text, std::optional<rawrbox::PrintType> type) {
-		if (_console == nullptr) throw std::runtime_error("Console instance not set!");
-		_console->print(text, type.value_or(rawrbox::PrintType::LOG));
+		if (ConsoleWrapper::_console == nullptr) throw std::runtime_error("Console instance not set!");
+		ConsoleWrapper::_console->print(text, type.value_or(rawrbox::PrintType::LOG));
 	}
 
 	bool ConsoleWrapper::registerMethod(const std::string& command, const luabridge::LuaRef& callback, const std::optional<std::string>& description, std::optional<uint32_t> flags) {
-		if (_console == nullptr) throw std::runtime_error("Console instance not set!");
+		if (ConsoleWrapper::_console == nullptr) throw std::runtime_error("Console instance not set!");
 		if (!callback.isCallable()) throw std::runtime_error("Invalid callback argument");
 
-		return _console->registerCommand(
+		return ConsoleWrapper::_console->registerCommand(
 		    command, [callback](const std::vector<std::string>& args) -> std::pair<bool, std::string> {
 			    auto tbl = rawrbox::LuaUtils::vectorToTable(callback.state(), args);
 			    auto ret = rawrbox::LuaUtils::call(callback, tbl);
@@ -52,13 +52,13 @@ namespace rawrbox {
 	}
 
 	bool ConsoleWrapper::removeCommand(const std::string& command) {
-		if (_console == nullptr) throw std::runtime_error("Console instance not set!");
-		return _console->removeCommand(command);
+		if (ConsoleWrapper::_console == nullptr) throw std::runtime_error("Console instance not set!");
+		return ConsoleWrapper::_console->removeCommand(command);
 	}
 
 	bool ConsoleWrapper::hasCommand(const std::string& command) {
-		if (_console == nullptr) throw std::runtime_error("Console instance not set!");
-		return _console->hasCommand(command);
+		if (ConsoleWrapper::_console == nullptr) throw std::runtime_error("Console instance not set!");
+		return ConsoleWrapper::_console->hasCommand(command);
 	}
 
 	void ConsoleWrapper::registerLua(lua_State* L) {

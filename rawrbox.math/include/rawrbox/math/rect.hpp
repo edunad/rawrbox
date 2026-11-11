@@ -66,7 +66,7 @@ namespace rawrbox {
 		}
 
 		bool operator==(const RectType& other) const { return this->min == other.min && this->max == other.max; }
-		bool operator!=(const RectType& other) const { return !operator==(other); }
+		bool operator!=(const RectType& other) const { return !this->operator==(other); }
 	};
 
 	using Rectf = Rect_t<float>;

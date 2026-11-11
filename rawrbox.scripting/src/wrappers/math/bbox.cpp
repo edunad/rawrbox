@@ -3,8 +3,8 @@
 
 namespace rawrbox {
 	void BBOXWrapper::registerLua(lua_State* L) {
-		registerTemplate<int>(L, "BBOXi");
-		registerTemplate<double>(L, "BBOXd");
-		registerTemplate<float>(L, "BBOX");
+		BBOXWrapper::registerTemplate<int>(L, "BBOXi");
+		BBOXWrapper::registerTemplate<double>(L, "BBOXd");
+		BBOXWrapper::registerTemplate<float>(L, "BBOX");
 	}
 } // namespace rawrbox

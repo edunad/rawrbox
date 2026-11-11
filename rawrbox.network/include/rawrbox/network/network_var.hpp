@@ -75,7 +75,7 @@ namespace rawrbox {
 		bool set(const T& a, bool crcGen = true) {
 			if (this->_initialized) {
 				if constexpr (is_vector<T>::value) {
-					if (a.size() == _val.size() && std::equal(a.begin(), a.end(), this->_val.begin())) return false;
+					if (a.size() == this->_val.size() && std::equal(a.begin(), a.end(), this->_val.begin())) return false;
 				} else if constexpr (is_map<T>::value) {
 					// TODO: Handle map
 				} else if constexpr (is_unorderedmap<T>::value) {
@@ -97,13 +97,13 @@ namespace rawrbox {
 		}
 
 		// UTILS ---
-		[[nodiscard]] bool isInitialized() const { return _initialized; }
+		[[nodiscard]] bool isInitialized() const { return this->_initialized; }
 		bool isDirty(uint32_t crc) { return crc == this->_crc; }
 		[[nodiscard]] uint32_t getCRC() const { return this->_crc; }
 
 		void update() {
 			this->_cache.clear();
-			this->_cache.write(_val);
+			this->_cache.write(this->_val);
 			this->_crc = CRC::Calculate(this->_cache.data(), this->_cache.size() * sizeof(uint8_t), CRC::CRC_32()); // Instead of CRC should we just increase an int
 		}
 		// --------

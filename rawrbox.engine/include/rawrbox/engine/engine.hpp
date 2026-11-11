@@ -36,6 +36,9 @@ namespace rawrbox {
 
 		// Quick sleep from https://github.com/turanszkij/WickedEngine/blob/master/WickedEngine/wiHelper.cpp#L1622
 		virtual void sleep(float milliseconds);
+#ifdef _WIN32
+		[[nodiscard]] static bool preciseSleep(double seconds);
+#endif
 
 		// Create the GLFW window
 		virtual void setupGLFW();

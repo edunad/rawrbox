@@ -17,11 +17,11 @@ namespace rawrbox {
 
 		RBatch(const JPH::DebugRenderer::Vertex* vertex, int vertexCount, const JPH::uint32* index, int indicesCount) : vertices(vertex, vertex + vertexCount) {
 			if (index != nullptr) {
-				indices.assign(index, index + indicesCount);
+				this->indices.assign(index, index + indicesCount);
 			} else {
-				indices.reserve(vertexCount);
+				this->indices.reserve(vertexCount);
 				for (uint32_t i = 0; i < static_cast<uint32_t>(vertexCount); ++i) {
-					indices.push_back(i);
+					this->indices.push_back(i);
 				}
 			}
 		}

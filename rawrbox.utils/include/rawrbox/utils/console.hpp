@@ -47,22 +47,22 @@ namespace rawrbox {
 		uint32_t flags = ConsoleFlags::NONE;
 
 		[[nodiscard]] virtual bool admin() const {
-			return (flags & ConsoleFlags::ADMIN) > 0;
+			return (this->flags & ConsoleFlags::ADMIN) > 0;
 		};
 
 		[[nodiscard]] virtual bool developer() const {
-			return (flags & ConsoleFlags::DEVELOPER) > 0;
+			return (this->flags & ConsoleFlags::DEVELOPER) > 0;
 		};
 
 		[[nodiscard]] virtual bool cheat() const {
-			return (flags & ConsoleFlags::CHEAT) > 0;
+			return (this->flags & ConsoleFlags::CHEAT) > 0;
 		};
 
 		[[nodiscard]] virtual bool variable() const {
-			return var.has_value();
+			return this->var.has_value();
 		};
 
-		ConsoleCommand(std::string desc, uint32_t flags) : description(std::move(desc)), flags(flags){};
+		ConsoleCommand(std::string desc, uint32_t flags) : description(std::move(desc)), flags(flags) {};
 		ConsoleCommand() = default;
 		ConsoleCommand(const ConsoleCommand&) = default;
 		ConsoleCommand(ConsoleCommand&&) = default;
@@ -83,7 +83,7 @@ namespace rawrbox {
 
 			std::stringstream ss;
 			ss << std::put_time(std::localtime(&t_c), "%T");
-			timestamp = ss.str();
+			this->timestamp = ss.str();
 		};
 
 		ConsoleLog(const ConsoleLog&) = default;
@@ -138,28 +138,28 @@ namespace rawrbox {
 		virtual bool removeCommand(const std::string& id);
 
 		bool registerCommand(std::string key, const ConsoleFunction& func, std::string description = "", uint32_t flags = ConsoleFlags::NONE) {
-			std::transform(key.begin(), key.end(), key.begin(), [](char c) { return static_cast<char>(std::tolower(c)); });
-			if (_commands.find(key) != _commands.end()) {
-				print(fmt::format("Console command `{}` has already been registered.", key), PrintType::ERR);
+			std::ranges::transform(key, key.begin(), [](const char c) { return static_cast<char>(std::tolower(c)); });
+			if (this->_commands.contains(key)) {
+				this->print(fmt::format("Console command `{}` has already been registered.", key), PrintType::ERR);
 				return false;
 			}
 
-			_commands[key] = ConsoleCommand(std::move(description), flags);
-			_commands[key].method = func;
+			this->_commands[key] = ConsoleCommand(std::move(description), flags);
+			this->_commands[key].method = func;
 
 			return true;
 		}
 
 		template <typename T>
 		bool registerCommand(std::string key, T& ref, std::string description = "", uint32_t flags = ConsoleFlags::NONE) {
-			std::transform(key.begin(), key.end(), key.begin(), [](char c) { return static_cast<char>(std::tolower(c)); });
-			if (_commands.find(key) != _commands.end()) {
-				print(fmt::format("Console command `{}` has already been registered.", key), PrintType::ERR);
+			std::ranges::transform(key, key.begin(), [](const char c) { return static_cast<char>(std::tolower(c)); });
+			if (this->_commands.contains(key)) {
+				this->print(fmt::format("Console command `{}` has already been registered.", key), PrintType::ERR);
 				return false;
 			}
 
-			_commands[key] = ConsoleCommand(std::move(description), flags);
-			_commands[key].var = &ref;
+			this->_commands[key] = ConsoleCommand(std::move(description), flags);
+			this->_commands[key].var = &ref;
 
 			return true;
 		}

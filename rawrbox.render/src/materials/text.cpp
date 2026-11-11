@@ -10,7 +10,7 @@ namespace rawrbox {
 	// ----------------
 
 	void MaterialText3D::init() {
-		if (!_build) {
+		if (!this->_build) {
 			this->_logger->info("Building {} material..", fmt::format(fmt::fg(fmt::color::azure), "Model::3DText"));
 
 			// PIPELINE ----
@@ -30,7 +30,7 @@ namespace rawrbox {
 			settings.blending = {Diligent::BLEND_FACTOR_SRC_ALPHA, Diligent::BLEND_FACTOR_INV_SRC_ALPHA};
 			rawrbox::PipelineUtils::createPipeline("3DText::Base", settings); // ALPHA by default on text
 
-			_build = true;
+			this->_build = true;
 		}
 
 		if (this->base == nullptr) this->base = rawrbox::PipelineUtils::getPipeline("3DText::Base");

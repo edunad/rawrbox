@@ -16,16 +16,16 @@ namespace rawrbox {
 	lunasvg::Document* SVGEngine::internalLoad(const std::filesystem::path& filename) {
 		auto name = filename.generic_string();
 
-		auto fnd = _svgs.find(name);
-		if (fnd != _svgs.end()) {
+		const auto& fnd = SVGEngine::_svgs.find(name);
+		if (fnd != SVGEngine::_svgs.end()) {
 			return fnd->second.get();
 		}
 
-		auto svg = parse(rawrbox::FileUtils::getRawData(filename));
+		auto svg = SVGEngine::parse(rawrbox::FileUtils::getRawData(filename));
 		if (svg == nullptr) RAWRBOX_CRITICAL("Failed to load '{}'", name);
 
 		auto* ptr = svg.get();
-		_svgs[name] = std::move(svg);
+		SVGEngine::_svgs[name] = std::move(svg);
 		return ptr;
 	}
 
@@ -41,27 +41,27 @@ namespace rawrbox {
 	}
 
 	void SVGEngine::shutdown() {
-		_svgs.clear();
-		_renderedSVGS.clear();
+		SVGEngine::_svgs.clear();
+		SVGEngine::_renderedSVGS.clear();
 	}
 
 	bool SVGEngine::preLoad(const std::filesystem::path& filename, const std::vector<uint8_t>& buffer) {
 		auto name = filename.generic_string();
 
-		auto fnd = _svgs.find(name);
-		if (fnd != _svgs.end()) return true; // Already loaded
+		const auto& fnd = SVGEngine::_svgs.find(name);
+		if (fnd != SVGEngine::_svgs.end()) return true; // Already loaded
 
-		auto svg = parse(buffer);
+		auto svg = SVGEngine::parse(buffer);
 		if (svg == nullptr) return false;
 
-		_svgs[name] = std::move(svg);
+		SVGEngine::_svgs[name] = std::move(svg);
 		return true;
 	}
 
 	rawrbox::TextureBase* SVGEngine::load(const std::filesystem::path& filename, const rawrbox::Vector2u& size) {
 		auto id = fmt::format("{}-{}x{}", filename.generic_string(), size.x, size.y);
-		auto fnd = _renderedSVGS.find(id);
-		if (fnd != _renderedSVGS.end()) return fnd->second.get();
+		const auto& fnd = SVGEngine::_renderedSVGS.find(id);
+		if (fnd != SVGEngine::_renderedSVGS.end()) return fnd->second.get();
 
 		auto* doc = SVGEngine::internalLoad(filename);
 		if (doc == nullptr) RAWRBOX_CRITICAL("Failed to load '{}'", filename.generic_string());
@@ -72,7 +72,7 @@ namespace rawrbox {
 		texture->upload();
 
 		auto* ptr = texture.get();
-		_renderedSVGS[id] = std::move(texture);
+		SVGEngine::_renderedSVGS[id] = std::move(texture);
 
 		return ptr;
 	}

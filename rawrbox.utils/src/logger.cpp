@@ -11,21 +11,21 @@ namespace rawrbox {
 	std::shared_ptr<spdlog::logger> Logger::LOGGER = nullptr;
 
 	Logger::Logger(const std::string& title) : _title(title) {
-		if (LOGGER != nullptr) return;
+		if (this->LOGGER != nullptr) return;
 
 		auto _spdConsole = std::make_shared<spdlog::sinks::stdout_color_sink_mt>();
 
-		if (ENABLE_FILE_LOGGING) {
+		if (this->ENABLE_FILE_LOGGING) {
 			auto _spdLogFile = std::make_shared<spdlog::sinks::basic_file_sink_mt>("logs.log", true);
-			LOGGER = std::make_shared<spdlog::logger>("CONSOLE", spdlog::sinks_init_list{_spdConsole, _spdLogFile});
+			this->LOGGER = std::make_shared<spdlog::logger>("CONSOLE", spdlog::sinks_init_list{_spdConsole, _spdLogFile});
 		} else {
-			LOGGER = std::make_shared<spdlog::logger>("CONSOLE", spdlog::sinks_init_list{_spdConsole});
+			this->LOGGER = std::make_shared<spdlog::logger>("CONSOLE", spdlog::sinks_init_list{_spdConsole});
 		}
 
-		LOGGER->set_pattern("[%^%l%$%v");
-		LOGGER->set_level(rawrbox::Logger::LOG_LEVEL);
+		this->LOGGER->set_pattern("[%^%l%$%v");
+		this->LOGGER->set_level(rawrbox::Logger::LOG_LEVEL);
 
-		spdlog::set_default_logger(LOGGER);
+		spdlog::set_default_logger(this->LOGGER);
 		spdlog::set_error_handler([](const std::string& msg) { fmt::print("*** LOG ERROR: {} ***\n", msg); });
 	}
 } // namespace rawrbox

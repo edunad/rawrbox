@@ -27,13 +27,13 @@ namespace rawrbox {
 		}
 		// ----------
 
-		const auto id = ++_id;
-		_callbacks.emplace(id, callback);
+		const auto id = ++HTTPGlobal::_id;
+		HTTPGlobal::_callbacks.emplace(id, callback);
 
 		rawrbox::HTTP::request(
 		    url, static_cast<rawrbox::HTTPMethod>(method), headerMap, [id](int code, const std::map<std::string, std::string>& headerResp, const std::string& resp) {
 			    rawrbox::runOnRenderThread([resp, code, headerResp, id]() {
-				    auto node = _callbacks.extract(id);
+				    auto node = HTTPGlobal::_callbacks.extract(id);
 				    if (node.empty()) return; // Mod unloaded
 
 				    const auto& callback = node.mapped();
@@ -65,7 +65,7 @@ namespace rawrbox {
 	}
 
 	void HTTPGlobal::clear(rawrbox::Mod& mod) {
-		std::erase_if(_callbacks, [&mod](const auto& pair) { return lua_mainthread(pair.second.state()) == mod.getEnvironment(); });
+		std::erase_if(HTTPGlobal::_callbacks, [&mod](const auto& pair) { return lua_mainthread(pair.second.state()) == mod.getEnvironment(); });
 	}
 
 	void HTTPGlobal::registerLua(lua_State* L) {

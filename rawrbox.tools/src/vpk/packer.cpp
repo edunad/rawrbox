@@ -109,7 +109,7 @@ namespace rawrbox {
 				const auto& uri = images[static_cast<size_t>(index)]["uri"].get<std::string>();
 				if (uri.starts_with("data:")) continue;
 
-				auto found = indexes.find(rawrbox::VFS::normalize(folder / this->decodeURI(uri)));
+				const auto& found = indexes.find(rawrbox::VFS::normalize(folder / this->decodeURI(uri)));
 				if (found != indexes.end()) this->_files[found->second].data = true;
 			}
 		}
@@ -287,7 +287,7 @@ namespace rawrbox {
 			auto& view = views[i];
 
 			if (view.contains("buffer") && view["buffer"].as<int64_t>() == 0) {
-				auto replacement = encoded.find(i);
+				const auto& replacement = encoded.find(i);
 				if (replacement != encoded.end()) {
 					view["byteOffset"] = append(replacement->second);
 					view["byteLength"] = static_cast<int64_t>(replacement->second.size());

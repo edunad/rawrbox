@@ -24,8 +24,8 @@ namespace rawrbox {
 	}
 
 	void DebugDraw::push(size_t queue, const rawrbox::Vector3f& pos, uint32_t color) {
-		std::lock_guard<std::mutex> lock(_lock);
-		_queues[queue].push_back({pos, color});
+		std::lock_guard<std::mutex> lock(DebugDraw::_lock);
+		DebugDraw::_queues[queue].push_back({pos, color});
 	}
 
 	void DebugDraw::init() {
@@ -44,7 +44,7 @@ namespace rawrbox {
 		    Diligent::LayoutElement{0, 0, 3, Diligent::VT_FLOAT32, false},
 		    Diligent::LayoutElement{1, 0, 1, Diligent::VT_UINT32, false}};
 
-		for (size_t i = 0; i < _pipelines.size(); i++) {
+		for (size_t i = 0; i < DebugDraw::_pipelines.size(); i++) {
 			const bool line = (i & 1U) != 0;
 			const bool depthTest = (i & 2U) == 0;
 
@@ -52,7 +52,7 @@ namespace rawrbox {
 			settings.depth = depthTest ? Diligent::COMPARISON_FUNC_LESS : Diligent::COMPARISON_FUNC_ALWAYS;
 
 			const std::string name = std::string("DebugDraw::") + (depthTest ? "Depth" : "NoDepth") + (line ? "::Line" : "");
-			_pipelines[i] = rawrbox::PipelineUtils::createPipeline(name, settings);
+			DebugDraw::_pipelines[i] = rawrbox::PipelineUtils::createPipeline(name, settings);
 		}
 
 		// Buffer ---
@@ -63,40 +63,40 @@ namespace rawrbox {
 		desc.BindFlags = Diligent::BIND_VERTEX_BUFFER;
 		desc.Size = static_cast<uint64_t>(RB_RENDER_MAX_DEBUG_VERTICES * sizeof(rawrbox::DebugVertex));
 
-		rawrbox::RENDERER->device()->CreateBuffer(desc, nullptr, &_buffer);
-		if (_buffer == nullptr) RAWRBOX_CRITICAL("Failed to create debug draw buffer");
+		rawrbox::RENDERER->device()->CreateBuffer(desc, nullptr, &DebugDraw::_buffer);
+		if (DebugDraw::_buffer == nullptr) RAWRBOX_CRITICAL("Failed to create debug draw buffer");
 
-		rawrbox::BarrierUtils::barrier({{_buffer, Diligent::RESOURCE_STATE_UNKNOWN, Diligent::RESOURCE_STATE_VERTEX_BUFFER, Diligent::STATE_TRANSITION_FLAG_UPDATE_STATE}});
+		rawrbox::BarrierUtils::barrier({{DebugDraw::_buffer, Diligent::RESOURCE_STATE_UNKNOWN, Diligent::RESOURCE_STATE_VERTEX_BUFFER, Diligent::STATE_TRANSITION_FLAG_UPDATE_STATE}});
 		// -----
 	}
 	// ------------
 
 	void DebugDraw::shutdown() {
-		_queues = {};
-		RAWRBOX_DESTROY(_buffer);
-		_pipelines = {};
+		DebugDraw::_queues = {};
+		RAWRBOX_DESTROY(DebugDraw::_buffer);
+		DebugDraw::_pipelines = {};
 	}
 
 	void DebugDraw::line(const rawrbox::Vector3f& a, const rawrbox::Vector3f& b, const rawrbox::Colorf& color, bool depthTest) {
-		const size_t queue = queueIndex(true, depthTest);
+		const size_t queue = DebugDraw::queueIndex(true, depthTest);
 		const uint32_t packed = color.pack();
 
-		push(queue, a, packed);
-		push(queue, b, packed);
+		DebugDraw::push(queue, a, packed);
+		DebugDraw::push(queue, b, packed);
 	}
 
 	void DebugDraw::triangle(const rawrbox::Vector3f& a, const rawrbox::Vector3f& b, const rawrbox::Vector3f& c, const rawrbox::Colorf& color, bool depthTest) {
-		const size_t queue = queueIndex(false, depthTest);
+		const size_t queue = DebugDraw::queueIndex(false, depthTest);
 		const uint32_t packed = color.pack();
 
-		push(queue, a, packed);
-		push(queue, b, packed);
-		push(queue, c, packed);
+		DebugDraw::push(queue, a, packed);
+		DebugDraw::push(queue, b, packed);
+		DebugDraw::push(queue, c, packed);
 	}
 
 	void DebugDraw::quad(const rawrbox::Vector3f& a, const rawrbox::Vector3f& b, const rawrbox::Vector3f& c, const rawrbox::Vector3f& d, const rawrbox::Colorf& color, bool depthTest) {
-		triangle(a, b, c, color, depthTest);
-		triangle(a, c, d, color, depthTest);
+		DebugDraw::triangle(a, b, c, color, depthTest);
+		DebugDraw::triangle(a, c, d, color, depthTest);
 	}
 
 	void DebugDraw::aabb(const rawrbox::Vector3f& min, const rawrbox::Vector3f& max, const rawrbox::Colorf& color, bool depthTest) {
@@ -106,25 +106,25 @@ namespace rawrbox {
 
 		constexpr std::array<std::pair<int, int>, 12> EDGES = {{{0, 1}, {1, 2}, {2, 3}, {3, 0}, {4, 5}, {5, 6}, {6, 7}, {7, 4}, {0, 4}, {1, 5}, {2, 6}, {3, 7}}};
 
-		const size_t queue = queueIndex(true, depthTest);
+		const size_t queue = DebugDraw::queueIndex(true, depthTest);
 		const uint32_t packed = color.pack();
 
 		for (const auto& [i, j] : EDGES) {
-			push(queue, corners[i], packed);
-			push(queue, corners[j], packed);
+			DebugDraw::push(queue, corners[i], packed);
+			DebugDraw::push(queue, corners[j], packed);
 		}
 	}
 
 	void DebugDraw::bbox(const rawrbox::Vector3f& pos, const rawrbox::BBOXf& box, const rawrbox::Colorf& color, bool depthTest) {
-		aabb(pos + box.min, pos + box.max, color, depthTest);
+		DebugDraw::aabb(pos + box.min, pos + box.max, color, depthTest);
 	}
 
 	void DebugDraw::draw() {
 		if (rawrbox::RenderThreadPool::isRecording()) RAWRBOX_CRITICAL("'DebugDraw::draw' cannot be called inside 'parallelRender'");
-		std::lock_guard<std::mutex> lock(_lock);
+		std::lock_guard<std::mutex> lock(DebugDraw::_lock);
 
 		size_t total = 0;
-		for (const auto& queue : _queues) {
+		for (const auto& queue : DebugDraw::_queues) {
 			total += queue.size();
 		}
 
@@ -137,31 +137,31 @@ namespace rawrbox {
 		std::array<uint32_t, 4> offsets = {};
 		std::array<uint32_t, 4> counts = {};
 		{
-			Diligent::MapHelper<rawrbox::DebugVertex> data(context, _buffer, Diligent::MAP_WRITE, Diligent::MAP_FLAG_DISCARD);
+			Diligent::MapHelper<rawrbox::DebugVertex> data(context, DebugDraw::_buffer, Diligent::MAP_WRITE, Diligent::MAP_FLAG_DISCARD);
 			if (data == nullptr) RAWRBOX_CRITICAL("Failed to map debug draw buffer");
 			rawrbox::DebugVertex* dst = data;
 
 			size_t offset = 0;
-			for (size_t i = 0; i < _queues.size(); i++) {
+			for (size_t i = 0; i < DebugDraw::_queues.size(); i++) {
 				offsets[i] = static_cast<uint32_t>(offset);
-				counts[i] = static_cast<uint32_t>(std::min(_queues[i].size(), RB_RENDER_MAX_DEBUG_VERTICES - offset));
+				counts[i] = static_cast<uint32_t>(std::min(DebugDraw::_queues[i].size(), RB_RENDER_MAX_DEBUG_VERTICES - offset));
 				counts[i] -= counts[i] % ((i & 1U) != 0 ? 2U : 3U);
 
 				if (counts[i] == 0) continue;
 
-				std::memcpy(dst + offset, _queues[i].data(), counts[i] * sizeof(rawrbox::DebugVertex));
+				std::memcpy(dst + offset, DebugDraw::_queues[i].data(), counts[i] * sizeof(rawrbox::DebugVertex));
 				offset += counts[i];
 			}
 		}
 		// ---------------------------------
 
-		const std::array<Diligent::IBuffer*, 1> buffers = {_buffer};
+		const std::array<Diligent::IBuffer*, 1> buffers = {DebugDraw::_buffer};
 		context->SetVertexBuffers(0, 1, buffers.data(), nullptr, Diligent::RESOURCE_STATE_TRANSITION_MODE_VERIFY, Diligent::SET_VERTEX_BUFFERS_FLAG_RESET);
 
-		for (size_t i = 0; i < _queues.size(); i++) {
+		for (size_t i = 0; i < DebugDraw::_queues.size(); i++) {
 			if (counts[i] == 0) continue;
 
-			context->SetPipelineState(_pipelines[i]);
+			context->SetPipelineState(DebugDraw::_pipelines[i]);
 
 			Diligent::DrawAttribs attrs;
 			attrs.NumVertices = counts[i];
@@ -170,7 +170,7 @@ namespace rawrbox {
 			context->Draw(attrs);
 		}
 
-		for (auto& queue : _queues)
+		for (auto& queue : DebugDraw::_queues)
 			queue.clear();
 	}
 } // namespace rawrbox

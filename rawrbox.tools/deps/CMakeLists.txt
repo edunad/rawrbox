@@ -30,6 +30,10 @@ set_property(TARGET basisu_encoder PROPERTY SOURCES ${BASISU_ENCODER_SOURCES})
 target_include_directories(basisu_encoder PUBLIC ${basisu_SOURCE_DIR})
 target_link_libraries(basisu_encoder PUBLIC libzstd_static)
 set_lib_runtime_mt(basisu_encoder)
+
+if (BASISU_SSE AND MSVC AND CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+    target_compile_options(basisu_encoder PRIVATE -msse4.1)
+endif ()
 # ----
 
 # GLTFPACK ---

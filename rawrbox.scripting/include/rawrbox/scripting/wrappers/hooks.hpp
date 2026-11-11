@@ -26,20 +26,20 @@ namespace rawrbox {
 		static std::unique_ptr<rawrbox::Logger> _logger;
 		// -------------
 
-		static void callLua(const std::string& id, const luabridge::LuaRef& args);
+		static int callLua(lua_State* L);
 
 	public:
 		template <typename... Args>
 		static void call(const std::string& id, const Args&... args) {
-			const auto fnd = _hooks.find(id);
-			if (fnd == _hooks.end()) return;
+			const auto& fnd = Hooks::_hooks.find(id);
+			if (fnd == Hooks::_hooks.end()) return;
 			ZoneTransientN(zone, id.c_str(), true);
 
 			const auto hooks = fnd->second;
 			for (const auto& hook : hooks) {
 				ZoneTransientN(hookZone, hook.name.c_str(), true);
 				auto result = rawrbox::LuaUtils::call(hook.func, args...);
-				if (result.hasFailed()) _logger->error("Hook '{}' handler '{}' failed\n  └── {}", id, hook.name, result.errorMessage());
+				if (result.hasFailed()) Hooks::_logger->error("Hook '{}' handler '{}' failed\n  └── {}", id, hook.name, result.errorMessage());
 			}
 		}
 

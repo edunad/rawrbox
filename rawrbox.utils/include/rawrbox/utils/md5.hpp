@@ -62,11 +62,11 @@ namespace rawrbox {
 					g = (7 * i) % 16;
 				}
 
-				f += a + K[i] + words[g];
+				f += a + this->K[i] + words[g];
 				a = d;
 				d = c;
 				c = b;
-				b += std::rotl(f, S[i]);
+				b += std::rotl(f, this->S[i]);
 			}
 
 			this->_state[0] += a;

@@ -79,6 +79,7 @@ namespace rawrbox {
 	rawrbox::Console* SCRIPTING::_console = nullptr;
 	bool SCRIPTING::_hotReloadEnabled = false;
 	bool SCRIPTING::_safeEnv = true;
+	uint32_t SCRIPTING::_libraries = rawrbox::ScriptingLibraries::ALL;
 	// --------------
 
 	// PUBLIC ----
@@ -102,28 +103,30 @@ namespace rawrbox {
 				  //  -----
 
 		// OTHER LIBS ---
-		rawrbox::LuaUtils::compileAndLoadFile(L, "SHA", "./lua/sha2.lua");
-		rawrbox::LuaUtils::compileAndLoadFile(L, "JSON", "./lua/json.lua");
+		if (SCRIPTING::hasLibrary(rawrbox::ScriptingLibraries::SHA2)) rawrbox::LuaUtils::compileAndLoadFile(L, "SHA", "./lua/sha2.lua");
+		if (SCRIPTING::hasLibrary(rawrbox::ScriptingLibraries::JSON)) rawrbox::LuaUtils::compileAndLoadFile(L, "JSON", "./lua/json.lua");
 		// --------------
 
 		// Rawrbox LIBS ----
-		rawrbox::LuaUtils::compileAndLoadFile(L, "RawrBox::Math", "./lua/math.lua");
-		rawrbox::LuaUtils::compileAndLoadFile(L, "RawrBox::String", "./lua/string.lua");
-		rawrbox::LuaUtils::compileAndLoadFile(L, "RawrBox::Table", "./lua/table.lua");
+		if (SCRIPTING::hasLibrary(rawrbox::ScriptingLibraries::MATH)) rawrbox::LuaUtils::compileAndLoadFile(L, "RawrBox::Math", "./lua/math.lua");
+		if (SCRIPTING::hasLibrary(rawrbox::ScriptingLibraries::STRING)) rawrbox::LuaUtils::compileAndLoadFile(L, "RawrBox::String", "./lua/string.lua");
+		if (SCRIPTING::hasLibrary(rawrbox::ScriptingLibraries::TABLE)) rawrbox::LuaUtils::compileAndLoadFile(L, "RawrBox::Table", "./lua/table.lua");
 		// -----------------
 
 		// Rawrbox enums ---
-		if (_console != nullptr) rawrbox::LuaUtils::compileAndLoadFile(L, "RawrBox::Enums::Console", "./lua/enums/console.lua");
-		rawrbox::LuaUtils::compileAndLoadFile(L, "RawrBox::Enums::Input", "./lua/enums/input.lua");
+		if (SCRIPTING::hasLibrary(rawrbox::ScriptingLibraries::ENUMS)) {
+			if (SCRIPTING::_console != nullptr) rawrbox::LuaUtils::compileAndLoadFile(L, "RawrBox::Enums::Console", "./lua/enums/console.lua");
+			rawrbox::LuaUtils::compileAndLoadFile(L, "RawrBox::Enums::Input", "./lua/enums/input.lua");
+		}
 		// -----------------
 
 		// Register plugins libraries ---
-		for (auto& p : _plugins)
+		for (auto& p : SCRIPTING::_plugins)
 			p->loadLibraries(L);
 		//  -----
 
 		// Custom ----
-		onLoadLibraries(mod);
+		SCRIPTING::onLoadLibraries(mod);
 		// ----
 	}
 
@@ -133,41 +136,43 @@ namespace rawrbox {
 		// Register types, these will be read-only & sandboxed!
 
 		// Rawrbox ---
-		rawrbox::Hooks::registerLua(L);
-		rawrbox::TimerWrapper::registerLua(L);
-		rawrbox::ProfilerWrapper::registerLua(L);
-		rawrbox::I18NWrapper::registerLua(L);
-		rawrbox::MODWrapper::registerLua(L);
+		if (SCRIPTING::hasLibrary(rawrbox::ScriptingLibraries::HOOKS)) rawrbox::Hooks::registerLua(L);
+		if (SCRIPTING::hasLibrary(rawrbox::ScriptingLibraries::TIMER)) rawrbox::TimerWrapper::registerLua(L);
+		if (SCRIPTING::hasLibrary(rawrbox::ScriptingLibraries::PROFILER)) rawrbox::ProfilerWrapper::registerLua(L);
+		if (SCRIPTING::hasLibrary(rawrbox::ScriptingLibraries::I18N)) rawrbox::I18NWrapper::registerLua(L);
+		if (SCRIPTING::hasLibrary(rawrbox::ScriptingLibraries::MOD)) rawrbox::MODWrapper::registerLua(L);
 
 #ifdef RAWRBOX_SCRIPTING_UNSAFE
-		rawrbox::IOWrapper::registerLua(L); // TODO: Might have security vulnerabilities
+		if (SCRIPTING::hasLibrary(rawrbox::ScriptingLibraries::IO)) rawrbox::IOWrapper::registerLua(L); // TODO: Might have security vulnerabilities
 #endif
 
-		if (_console != nullptr) {
+		if (SCRIPTING::_console != nullptr && SCRIPTING::hasLibrary(rawrbox::ScriptingLibraries::CONSOLE)) {
 			rawrbox::ConsoleCommandWrapper::registerLua(L);
 			rawrbox::ConsoleWrapper::registerLua(L);
 		}
 		// -----------
 
 		// Rawrbox Math
-		rawrbox::Vector2Wrapper::registerLua(L);
-		rawrbox::Vector3Wrapper::registerLua(L);
-		rawrbox::Vector4Wrapper::registerLua(L);
+		if (SCRIPTING::hasLibrary(rawrbox::ScriptingLibraries::MATH_TYPES)) {
+			rawrbox::Vector2Wrapper::registerLua(L);
+			rawrbox::Vector3Wrapper::registerLua(L);
+			rawrbox::Vector4Wrapper::registerLua(L);
 
-		rawrbox::ColorWrapper::registerLua(L);
-		rawrbox::AABBWrapper::registerLua(L);
-		rawrbox::BBOXWrapper::registerLua(L);
+			rawrbox::ColorWrapper::registerLua(L);
+			rawrbox::AABBWrapper::registerLua(L);
+			rawrbox::BBOXWrapper::registerLua(L);
 
-		rawrbox::MatrixWrapper::registerLua(L);
+			rawrbox::MatrixWrapper::registerLua(L);
+		}
 		// -------------
 
 		// Register plugins types ---
-		for (auto& p : _plugins)
+		for (auto& p : SCRIPTING::_plugins)
 			p->registerTypes(L);
 		//  -----
 
 		// Custom ----
-		onRegisterTypes(mod);
+		SCRIPTING::onRegisterTypes(mod);
 		// ----
 	}
 
@@ -179,99 +184,109 @@ namespace rawrbox {
 		// OVERRIDES ----
 		luabridge::getGlobalNamespace(L)
 		    .addFunction("printTable", [](const luabridge::LuaRef& ref) {
-			    std::string output;
+			    const auto json = rawrbox::LuaUtils::toJSON(ref, {.strict = false});
+			    if (!json) throw std::runtime_error(fmt::format("Failed to printTable ──> {}", json.error()));
 
-			    glz::error_ctx ec = glz::write<glz::opts{.prettify = 1U}>(rawrbox::LuaUtils::luaToJsonObject(ref), output);
+			    std::string output;
+			    glz::error_ctx ec = glz::write<glz::opts{.prettify = 1U}>(json.value(), output);
 			    if (ec) throw std::runtime_error(fmt::format("Failed to printTable"));
 
-			    _logger->info("{}", output);
+			    SCRIPTING::_logger->info("{}", output);
 		    })
 		    .addFunction("print", [](lua_State* state) {
 			    auto args = rawrbox::LuaUtils::argsToString(state);
 			    if (args.empty()) return;
 
-			    _logger->info("{}", fmt::join(args, " "));
+			    SCRIPTING::_logger->info("{}", fmt::join(args, " "));
 		    })
 		    .addFunction("include", [&mod](lua_State* state) {
 			    if (lua_type(state, 1) != LUA_TSTRING) throw std::runtime_error("Invalid param, string expected");
 			    const auto* path = lua_tostring(state, 1);
 
-			    auto fixedPath = LuaUtils::getContent(path, mod.getFolder().generic_string());
-			    if (!fixedPath.first.empty()) throw std::runtime_error("External mod lua loading not supported");
-			    loadFile(mod, state, fixedPath.second);
+			    const auto fixedPath = LuaUtils::resolveContent(path, mod);
+			    if (!fixedPath) throw std::runtime_error(fmt::format("Failed to include '{}' ──> {}", path, fixedPath.error()));
+			    SCRIPTING::loadFile(mod, state, fixedPath.value());
 
 			    // Register file for hot-reloading
-			    registerLoadedFile(mod.getID(), fixedPath.second);
+			    SCRIPTING::registerLoadedFile(mod.getID(), fixedPath.value());
 			    // ----
 		    });
 		// ---------
 
 		// TIME UTILS ---
-		luabridge::getGlobalNamespace(L)
-		    .beginNamespace("time", {})
-		    .addFunction("curtime", []() { return rawrbox::TimeUtils::curtime(); })
-		    .addFunction("time", []() { return rawrbox::TimeUtils::time(); })
-		    .endNamespace();
+		if (SCRIPTING::hasLibrary(rawrbox::ScriptingLibraries::TIME)) {
+			luabridge::getGlobalNamespace(L)
+			    .beginNamespace("time", {})
+			    .addFunction("curtime", []() { return rawrbox::TimeUtils::curtime(); })
+			    .addFunction("time", []() { return rawrbox::TimeUtils::time(); })
+			    .endNamespace();
+		}
 		// -------------
 
 		// MODDING ---
-		luabridge::getGlobalNamespace(L)
-		    .beginNamespace("mod", {})
-		    .addFunction("exists", [](const std::string& id) {
-			    return hasMod(id);
-		    })
-		    .addFunction("get", [](const std::string& id) {
-			    auto* mod = getMod(id);
-			    if (mod == nullptr) throw std::runtime_error(fmt::format("Mod {} not found", id));
+		if (SCRIPTING::hasLibrary(rawrbox::ScriptingLibraries::MOD)) {
+			luabridge::getGlobalNamespace(L)
+			    .beginNamespace("mod", {})
+			    .addFunction("exists", [](const std::string& id) {
+				    return SCRIPTING::hasMod(id);
+			    })
+			    .addFunction("get", [](const std::string& id) {
+				    auto* modWrap = SCRIPTING::getMod(id);
+				    if (modWrap == nullptr) throw std::runtime_error(fmt::format("Mod {} not found", id));
 
-			    return rawrbox::MODWrapper(mod);
-		    })
-		    .endNamespace();
+				    return rawrbox::MODWrapper(modWrap);
+			    })
+			    .endNamespace();
+		}
 		// ----------
 
 		// STRING ----
-		luabridge::getGlobalNamespace(L)
-		    .beginNamespace("string", {})
-		    .addFunction("vformat", [](lua_State* state) {
-			    auto vars = rawrbox::LuaUtils::argsToString(state);
-			    if (vars.empty()) throw std::runtime_error("Missing params");
+		if (SCRIPTING::hasLibrary(rawrbox::ScriptingLibraries::STRING)) {
+			luabridge::getGlobalNamespace(L)
+			    .beginNamespace("string", {})
+			    .addFunction("vformat", [](lua_State* state) {
+				    const auto vars = rawrbox::LuaUtils::argsToString(state);
+				    if (vars.empty()) throw std::runtime_error("Missing params");
 
-			    fmt::dynamic_format_arg_store<fmt::format_context> fmtArgs = {};
-			    for (size_t i = 1; i < vars.size(); i++) {
-				    fmtArgs.push_back(vars[i]);
-			    }
+				    fmt::dynamic_format_arg_store<fmt::format_context> fmtArgs = {};
+				    for (size_t i = 1; i < vars.size(); i++) {
+					    fmtArgs.push_back(vars[i]);
+				    }
 
-			    return fmt::vformat(vars[0], fmtArgs);
-		    })
-		    .endNamespace();
+				    return fmt::vformat(vars[0], fmtArgs);
+			    })
+			    .endNamespace();
+		}
 		// -----------
 
 		// ENGINE ------FRAME_ALPHA
-		luabridge::getGlobalNamespace(L)
-		    .beginNamespace("engine", {})
-		    .addProperty("deltaTime", &rawrbox::DELTA_TIME)
-		    .addProperty("fixedDeltaTime", &rawrbox::FIXED_DELTA_TIME)
-		    .addProperty("frameAlpha", &rawrbox::FRAME_ALPHA)
-		    .endNamespace();
+		if (SCRIPTING::hasLibrary(rawrbox::ScriptingLibraries::ENGINE)) {
+			luabridge::getGlobalNamespace(L)
+			    .beginNamespace("engine", {})
+			    .addProperty("deltaTime", &rawrbox::DELTA_TIME)
+			    .addProperty("fixedDeltaTime", &rawrbox::FIXED_DELTA_TIME)
+			    .addProperty("frameAlpha", &rawrbox::FRAME_ALPHA)
+			    .endNamespace();
+		}
 		// -------------
 
 		// Register plugins globals ---
-		for (auto& p : _plugins)
+		for (auto& p : SCRIPTING::_plugins)
 			p->registerGlobal(L);
 		//  -----
 
 		// Custom ----
-		onRegisterGlobals(mod);
+		SCRIPTING::onRegisterGlobals(mod);
 		// -------------
 	}
 
 	void SCRIPTING::loadModifiers(rawrbox::Mod& mod) {
-		for (auto& p : _plugins) {
+		for (auto& p : SCRIPTING::_plugins) {
 			p->modifyMod(mod);
 		}
 
 		// Custom ----
-		onLoadModifiers(mod);
+		SCRIPTING::onLoadModifiers(mod);
 		// -------------
 	}
 	// -------------
@@ -287,25 +302,25 @@ namespace rawrbox {
 
 	// HOT RELOAD -----
 	void SCRIPTING::registerLoadedFile(const std::string& modId, const std::filesystem::path& filePath) {
-		auto mdFnd = _loadedLuaFiles.find(modId);
+		const auto& mdFnd = SCRIPTING::_loadedLuaFiles.find(modId);
 
-		if (mdFnd != _loadedLuaFiles.end()) {
-			auto fileFnd = std::find(mdFnd->second.begin(), mdFnd->second.end(), filePath);
+		if (mdFnd != SCRIPTING::_loadedLuaFiles.end()) {
+			const auto& fileFnd = std::ranges::find(mdFnd->second, filePath);
 			if (fileFnd != mdFnd->second.end()) return; // Already registered
 
 			mdFnd->second.push_back(filePath);
 		} else {
-			_loadedLuaFiles[modId] = {filePath};
+			SCRIPTING::_loadedLuaFiles[modId] = {filePath};
 		}
 
-		if (hotReloadEnabled()) {
-			_logger->debug("Registered {} -> {} for hot reload", fmt::styled(modId, fmt::fg(fmt::color::coral)), filePath.generic_string());
-			_watcher->watchFile(filePath);
+		if (SCRIPTING::hotReloadEnabled()) {
+			SCRIPTING::_logger->debug("Registered {} -> {} for hot reload", fmt::styled(modId, fmt::fg(fmt::color::coral)), filePath.generic_string());
+			SCRIPTING::_watcher->watchFile(filePath);
 		}
 	}
 
 	void SCRIPTING::loadFile(rawrbox::Mod& mod, lua_State* L, const std::filesystem::path& filePath) {
-		for (auto& p : _plugins) {
+		for (auto& p : SCRIPTING::_plugins) {
 			if (p->loadFile(mod, L, filePath)) return;
 		}
 
@@ -314,16 +329,16 @@ namespace rawrbox {
 
 	void SCRIPTING::hotReload(const std::filesystem::path& filePath) {
 		// Find the owner
-		for (auto& pt : _loadedLuaFiles) {
-			const auto fnd = std::ranges::find(pt.second, filePath) != pt.second.end();
+		for (auto& pt : SCRIPTING::_loadedLuaFiles) {
+			const auto& fnd = std::ranges::find(pt.second, filePath) != pt.second.end();
 			if (!fnd) continue;
 
-			auto* mod = getMod(pt.first);
+			auto* mod = SCRIPTING::getMod(pt.first);
 			if (mod == nullptr) return;
 
-			_logger->warn("Hot-reloading lua file '{}'", filePath.generic_string());
-			if (_checker != nullptr && !_checker->check(filePath).empty()) {
-				_logger->error("Hot-reload of '{}' skipped, fix the type errors above", filePath.generic_string());
+			SCRIPTING::_logger->warn("Hot-reloading lua file '{}'", filePath.generic_string());
+			if (SCRIPTING::_checker != nullptr && !SCRIPTING::_checker->check(filePath).empty()) {
+				SCRIPTING::_logger->error("Hot-reload of '{}' skipped, fix the type errors above", filePath.generic_string());
 				return;
 			}
 
@@ -331,13 +346,13 @@ namespace rawrbox {
 			mod->gc(); // Cleanup
 
 			try {
-				loadFile(*mod, mod->getEnvironment(), filePath);
+				SCRIPTING::loadFile(*mod, mod->getEnvironment(), filePath);
 			} catch (const std::exception& err) {
-				_logger->error("{}", err.what());
+				SCRIPTING::_logger->error("{}", err.what());
 			}
 			// ---------------
 
-			onModHotReload(*mod);
+			SCRIPTING::onModHotReload(*mod);
 			break;
 		};
 	}
@@ -345,32 +360,34 @@ namespace rawrbox {
 	// ----------
 
 	void SCRIPTING::init(const rawrbox::ScriptingSettings& settings) {
-		_safeEnv = settings.safeEnv;
-		_hotReloadEnabled = settings.hotReloadMs > 0;
-		if (_hotReloadEnabled) {
-			_logger->info("Enabled lua hot-reloading\n  └── Delay: {}ms", fmt::styled(settings.hotReloadMs, fmt::fg(fmt::color::gold)));
+		SCRIPTING::_safeEnv = settings.safeEnv;
+		SCRIPTING::_libraries = settings.libraries;
+		SCRIPTING::_hotReloadEnabled = settings.hotReloadMs > 0;
 
-			_watcher = std::make_unique<rawrbox::FileWatcher>(
+		if (SCRIPTING::_hotReloadEnabled) {
+			SCRIPTING::_logger->info("Enabled lua hot-reloading\n  └── Delay: {}ms", fmt::styled(settings.hotReloadMs, fmt::fg(fmt::color::gold)));
+
+			SCRIPTING::_watcher = std::make_unique<rawrbox::FileWatcher>(
 			    [](const std::string& pth, rawrbox::FileStatus status) {
 				    if (status != rawrbox::FileStatus::modified) return;
-				    rawrbox::runOnRenderThread([pth]() { hotReload(pth); });
+				    rawrbox::runOnRenderThread([pth]() { SCRIPTING::hotReload(pth); });
 			    },
 			    std::chrono::milliseconds(settings.hotReloadMs));
-			_watcher->start();
+			SCRIPTING::_watcher->start();
 		}
 
 		if (settings.typeCheck) {
 			try {
-				_checker = std::make_unique<rawrbox::LuaChecker>(settings.definitions);
+				SCRIPTING::_checker = std::make_unique<rawrbox::LuaChecker>(settings.definitions);
 			} catch (const std::runtime_error& err) {
 				RAWRBOX_CRITICAL("{}", err.what());
 			}
 
-			_logger->info("Enabled lua type checking\n  └── Definitions: {}", fmt::styled(settings.definitions.size(), fmt::fg(fmt::color::gold)));
+			SCRIPTING::_logger->info("Enabled lua type checking\n  └── Definitions: {}", fmt::styled(settings.definitions.size(), fmt::fg(fmt::color::gold)));
 		}
 
 		// Setup  --
-		if (_console != nullptr) rawrbox::ConsoleWrapper::init(_console);
+		if (SCRIPTING::_console != nullptr) rawrbox::ConsoleWrapper::init(SCRIPTING::_console);
 		// ----------------
 	}
 
@@ -383,7 +400,7 @@ namespace rawrbox {
 		for (const auto& p : std::filesystem::directory_iterator(rootFolder)) {
 			if (!p.is_directory()) continue;
 
-			const auto metadata = loadMetadata(p.path());
+			const auto metadata = SCRIPTING::loadMetadata(p.path());
 			folders.emplace_back(metadata ? metadata->priority : 0, p.path()); // Broken metadata is reported by loadMod
 		}
 
@@ -395,7 +412,7 @@ namespace rawrbox {
 
 		std::vector<rawrbox::Mod*> loaded = {};
 		for (const auto& folder : folders) {
-			auto* mod = loadMod(folder.second.filename().generic_string(), folder.second);
+			auto* mod = SCRIPTING::loadMod(folder.second.filename().generic_string(), folder.second);
 			if (mod != nullptr) loaded.push_back(mod);
 		}
 
@@ -406,49 +423,49 @@ namespace rawrbox {
 		if (id.empty()) RAWRBOX_CRITICAL("Mod ID cannot be empty");
 		if (!std::filesystem::exists(modFolder)) RAWRBOX_CRITICAL("Failed to locate mod folder '{}'", modFolder.generic_string());
 
-		if (hasMod(id)) {
-			_logger->warn("Mod {} already loaded! Mod name conflict?", id);
+		if (SCRIPTING::hasMod(id)) {
+			SCRIPTING::_logger->warn("Mod {} already loaded! Mod name conflict?", id);
 			return nullptr;
 		}
 
-		auto metadata = loadMetadata(modFolder);
+		auto metadata = SCRIPTING::loadMetadata(modFolder);
 		if (!metadata) {
-			_logger->error("Mod '{}' failed to load\n  └── {}", id, metadata.error());
+			SCRIPTING::_logger->error("Mod '{}' failed to load\n  └── {}", id, metadata.error());
 			return nullptr;
 		}
 
-		if (_checker != nullptr && !_checker->checkFolder(modFolder).empty()) {
-			_logger->error("Mod '{}' failed to load, fix the type errors above", id);
+		if (SCRIPTING::_checker != nullptr && !SCRIPTING::_checker->checkFolder(modFolder).empty()) {
+			SCRIPTING::_logger->error("Mod '{}' failed to load, fix the type errors above", id);
 			return nullptr;
 		}
 
 		auto mod = std::make_unique<rawrbox::Mod>(id, modFolder, std::move(metadata.value()));
 
 		// Prepare env ----------
-		loadLibraries(*mod);
-		loadTypes(*mod);
-		loadGlobals(*mod);
-		loadI18N(*mod);
-		loadModifiers(*mod);
+		SCRIPTING::loadLibraries(*mod);
+		SCRIPTING::loadTypes(*mod);
+		SCRIPTING::loadGlobals(*mod);
+		SCRIPTING::loadI18N(*mod);
+		SCRIPTING::loadModifiers(*mod);
 		// ----------
 
 		try {
 			mod->init(); // Sandbox env
-			if (!_safeEnv) lua_setsafeenv(mod->getEnvironment(), LUA_GLOBALSINDEX, 0);
+			if (!SCRIPTING::_safeEnv) lua_setsafeenv(mod->getEnvironment(), LUA_GLOBALSINDEX, 0);
 
 			mod->load();
 			mod->call("onInit");
 
-			_logger->info("Mod '{}' loaded", fmt::styled(id, fmt::fg(fmt::color::coral)));
-			registerLoadedFile(mod->getID(), mod->getEntryFilePath()); // Register file for hot-reloading
+			SCRIPTING::_logger->info("Mod '{}' loaded", fmt::styled(id, fmt::fg(fmt::color::coral)));
+			SCRIPTING::registerLoadedFile(mod->getID(), mod->getEntryFilePath()); // Register file for hot-reloading
 		} catch (const std::exception& err) {
-			_logger->error("{}", err.what());
+			SCRIPTING::_logger->error("{}", err.what());
 			return nullptr;
 		}
 
 		auto* modPtr = mod.get();
-		const auto rank = std::ranges::upper_bound(_mods, *modPtr, rankBefore, [](const auto& loaded) -> const rawrbox::Mod& { return *loaded; });
-		_mods.insert(rank, std::move(mod));
+		const auto rank = std::ranges::upper_bound(SCRIPTING::_mods, *modPtr, SCRIPTING::rankBefore, [](const auto& loaded) -> const rawrbox::Mod& { return *loaded; });
+		SCRIPTING::_mods.insert(rank, std::move(mod));
 
 		return modPtr;
 	}
@@ -472,35 +489,35 @@ namespace rawrbox {
 	}
 
 	bool SCRIPTING::unloadMod(const std::filesystem::path& modFolder) {
-		return unloadMod(modFolder.filename().generic_string());
+		return SCRIPTING::unloadMod(modFolder.filename().generic_string());
 	}
 
 	bool SCRIPTING::unloadMod(const std::string& modId) {
-		const auto fnd = std::ranges::find(_mods, modId, [](const auto& mod) -> const std::string& {
+		const auto& fnd = std::ranges::find(SCRIPTING::_mods, modId, [](const auto& mod) -> const std::string& {
 			return mod->getID();
 		});
 
-		if (fnd == _mods.end()) return false;
+		if (fnd == SCRIPTING::_mods.end()) return false;
 
-		const auto fndLua = _loadedLuaFiles.find(modId);
-		if (fndLua != _loadedLuaFiles.end()) {
-			if (_watcher != nullptr) {
+		const auto& fndLua = SCRIPTING::_loadedLuaFiles.find(modId);
+		if (fndLua != SCRIPTING::_loadedLuaFiles.end()) {
+			if (SCRIPTING::_watcher != nullptr) {
 				for (auto& pt : fndLua->second) {
-					_watcher->unwatchFile(pt);
+					SCRIPTING::_watcher->unwatchFile(pt);
 				}
 			}
 
-			_loadedLuaFiles.erase(fndLua);
+			SCRIPTING::_loadedLuaFiles.erase(fndLua);
 		}
 
 		auto& mod = **fnd;
-		onModUnload(mod);
+		SCRIPTING::onModUnload(mod);
 		rawrbox::Hooks::clear(mod.getEnvironment());
 
 		mod.shutdown();
-		_mods.erase(fnd);
+		SCRIPTING::_mods.erase(fnd);
 
-		_logger->info("Mod '{}' unloaded", fmt::styled(modId, fmt::fg(fmt::color::coral)));
+		SCRIPTING::_logger->info("Mod '{}' unloaded", fmt::styled(modId, fmt::fg(fmt::color::coral)));
 		return true;
 	}
 	// -----------
@@ -509,61 +526,60 @@ namespace rawrbox {
 		rawrbox::Hooks::clear();
 
 		// Shutdown mods, reverse order ---
-		for (auto& mod : std::views::reverse(_mods)) {
-			onModUnload(*mod);
+		for (auto& mod : std::views::reverse(SCRIPTING::_mods)) {
+			SCRIPTING::onModUnload(*mod);
 			mod->shutdown();
 		}
 		// ----------------
 
-		_console = nullptr;
-		_watcher.reset();
-		_checker.reset();
+		SCRIPTING::_console = nullptr;
+		SCRIPTING::_watcher.reset();
+		SCRIPTING::_checker.reset();
 
-		_loadedLuaFiles.clear();
-		_mods.clear();
-		_plugins.clear();
+		SCRIPTING::_loadedLuaFiles.clear();
+		SCRIPTING::_mods.clear();
+		SCRIPTING::_plugins.clear();
 	}
 
-	void SCRIPTING::setConsole(rawrbox::Console* console) { _console = console; }
+	void SCRIPTING::setConsole(rawrbox::Console* console) { SCRIPTING::_console = console; }
 
 	// UTILS ----
 	bool SCRIPTING::hasMod(const std::string& id) {
-		return getMod(id) != nullptr;
+		return SCRIPTING::getMod(id) != nullptr;
 	}
 
 	rawrbox::Mod* SCRIPTING::getMod(const std::string& id) {
-		const auto fnd = std::ranges::find(_mods, id, [](const auto& mod) -> const std::string& {
+		const auto& fnd = std::ranges::find(SCRIPTING::_mods, id, [](const auto& mod) -> const std::string& {
 			return mod->getID();
 		});
 
-		return fnd == _mods.end() ? nullptr : fnd->get();
+		return fnd == SCRIPTING::_mods.end() ? nullptr : fnd->get();
 	}
 
 	rawrbox::Mod* SCRIPTING::getMod(lua_State* L) {
 		if (L == nullptr) return nullptr;
-
-		auto* main = lua_mainthread(L);
-		const auto fnd = std::ranges::find_if(_mods, [main](const auto& mod) { return mod->getEnvironment() == main; });
-		return fnd == _mods.end() ? nullptr : fnd->get();
+		return rawrbox::Mod::fromState(L);
 	}
 
-	const std::vector<std::unique_ptr<rawrbox::Mod>>& SCRIPTING::getMods() { return _mods; }
+	const std::vector<std::unique_ptr<rawrbox::Mod>>& SCRIPTING::getMods() { return SCRIPTING::_mods; }
 	std::vector<std::string> SCRIPTING::getModsIds() {
 		std::vector<std::string> modNames = {};
-		modNames.reserve(_mods.size());
-		for (const auto& mod : _mods) {
+
+		modNames.reserve(SCRIPTING::_mods.size());
+		for (const auto& mod : SCRIPTING::_mods) {
 			modNames.push_back(mod->getID());
 		}
 
 		return modNames;
 	}
 
-	bool SCRIPTING::hotReloadEnabled() { return _hotReloadEnabled; }
+	bool SCRIPTING::hotReloadEnabled() { return SCRIPTING::_hotReloadEnabled; }
+	bool SCRIPTING::hasLibrary(uint32_t library) { return (SCRIPTING::_libraries & library) == library; }
 	bool SCRIPTING::isLuaFileMounted(const std::string& path) {
 		const std::filesystem::path filePath = path;
 
-		for (auto& pt : _loadedLuaFiles) {
-			const auto fnd = std::ranges::find(pt.second, filePath) != pt.second.end();
+		for (auto& pt : SCRIPTING::_loadedLuaFiles) {
+			const auto& fnd = std::ranges::find(pt.second, filePath) != pt.second.end();
 			if (fnd) return true;
 		};
 
@@ -573,7 +589,7 @@ namespace rawrbox {
 #ifdef RAWRBOX_SCRIPTING_WORKSHOP_MODDING
 	std::vector<rawrbox::Mod*> SCRIPTING::getModsByWorkshopType(uint32_t type) {
 		std::vector<rawrbox::Mod*> mods = {};
-		for (auto& mod : _mods) {
+		for (auto& mod : SCRIPTING::_mods) {
 			if (mod->getWorkshopType() == type) mods.push_back(mod.get());
 		}
 
@@ -581,7 +597,7 @@ namespace rawrbox {
 	}
 
 	rawrbox::Mod* SCRIPTING::getModByWorkshopId(uint64_t id) {
-		for (const auto& mod : _mods) {
+		for (const auto& mod : SCRIPTING::_mods) {
 			if (mod->getWorkshopId() == id) return mod.get();
 		}
 

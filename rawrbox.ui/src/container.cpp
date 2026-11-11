@@ -4,7 +4,7 @@
 
 namespace rawrbox {
 	UIContainer::UIContainer(rawrbox::UIRoot* root) : _root(root) {
-		if (_root == nullptr) RAWRBOX_CRITICAL("UI root cannot be null!");
+		if (this->_root == nullptr) RAWRBOX_CRITICAL("UI root cannot be null!");
 	}
 
 	UIContainer::UIContainer(rawrbox::UIContainer&& other) noexcept : _parent(other._parent), _children(std::move(other._children)), _alwaysOnTop(other._alwaysOnTop), _aabb(other._aabb) {}
@@ -105,7 +105,7 @@ namespace rawrbox {
 	bool UIContainer::alwaysOnTop() const { return this->_alwaysOnTop; }
 	void UIContainer::bringToFront() {
 		auto& children = this->_root->getChildren();
-		auto pivot = std::find_if(children.begin(), children.end(), [this](auto& el) -> bool {
+		const auto& pivot = std::ranges::find_if(children, [this](auto& el) -> bool {
 			return el.get() == this;
 		});
 

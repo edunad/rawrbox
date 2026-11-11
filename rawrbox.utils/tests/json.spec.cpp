@@ -15,22 +15,22 @@ TEST_CASE("JSONUtils should behave as expected", "[rawrbox::JSONUtils]") {
 		REQUIRE(diff.size() == 5);
 
 		REQUIRE(diff[0].op == rawrbox::JSONDiffOp::REPLACE);
-		REQUIRE(diff[0].path == "/data/knife");
-		REQUIRE(diff[0].value.get<bool>() == false);
+		REQUIRE(diff[0].path == "/test");
+		REQUIRE(diff[0].value.get<std::string>() == "ola");
 
-		REQUIRE(diff[1].op == rawrbox::JSONDiffOp::REPLACE);
-		REQUIRE(diff[1].path == "/data2/0/g");
-		REQUIRE(diff[1].value.get<double>() == 5);
+		REQUIRE(diff[1].op == rawrbox::JSONDiffOp::REMOVE);
+		REQUIRE(diff[1].path == "/oke");
 
-		REQUIRE(diff[2].op == rawrbox::JSONDiffOp::ADD);
-		REQUIRE(diff[2].path == "/data2/1");
+		REQUIRE(diff[2].op == rawrbox::JSONDiffOp::REPLACE);
+		REQUIRE(diff[2].path == "/data/knife");
+		REQUIRE(diff[2].value.get<bool>() == false);
 
-		REQUIRE(diff[3].op == rawrbox::JSONDiffOp::REMOVE);
-		REQUIRE(diff[3].path == "/oke");
+		REQUIRE(diff[3].op == rawrbox::JSONDiffOp::REPLACE);
+		REQUIRE(diff[3].path == "/data2/0/g");
+		REQUIRE(diff[3].value.get<double>() == 5);
 
-		REQUIRE(diff[4].op == rawrbox::JSONDiffOp::REPLACE);
-		REQUIRE(diff[4].path == "/test");
-		REQUIRE(diff[4].value.get<std::string>() == "ola");
+		REQUIRE(diff[4].op == rawrbox::JSONDiffOp::ADD);
+		REQUIRE(diff[4].path == "/data2/1");
 	}
 
 	SECTION("rawrbox::JSONUtils::patch") {

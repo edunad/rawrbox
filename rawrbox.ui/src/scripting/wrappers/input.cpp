@@ -42,11 +42,10 @@ namespace rawrbox {
 			    self.setFont(fnt);
 		    })
 		    .addFunction("setFontPath", [](rawrbox::UIInput& self, const std::string& path, std::optional<uint16_t> size, lua_State* L) {
-			    auto modFolder = rawrbox::LuaUtils::getLuaENVVar<std::string>(L, "__mod_folder");
-			    auto fixedPath = rawrbox::LuaUtils::getContent(path, modFolder);
-			    if (!fixedPath.first.empty()) throw std::runtime_error("External mod resources loading not supported");
+			    const auto fixedPath = rawrbox::LuaUtils::resolveContent(path, L);
+			    if (!fixedPath) throw std::runtime_error(fixedPath.error());
 
-			    self.setFont(fixedPath.second, size.value_or(11));
+			    self.setFont(fixedPath.value(), size.value_or(11));
 		    })
 
 		    .addFunction("getFont", &rawrbox::UIInput::getFont)

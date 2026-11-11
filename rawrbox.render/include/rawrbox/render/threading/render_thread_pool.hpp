@@ -48,6 +48,20 @@ namespace rawrbox {
 			uint64_t frame = 0;
 		};
 
+		class RecordingScope {
+		public:
+			RecordingScope(Diligent::IDeviceContext& context, uint32_t index);
+			RecordingScope(const RecordingScope&) = delete;
+			RecordingScope(RecordingScope&&) = delete;
+			RecordingScope& operator=(const RecordingScope&) = delete;
+			RecordingScope& operator=(RecordingScope&&) = delete;
+			~RecordingScope();
+		};
+
+		static thread_local bool RECORDING;
+		static thread_local Diligent::IDeviceContext* CONTEXT;
+		static thread_local uint32_t CONTEXT_INDEX;
+
 		Diligent::RefCntAutoPtr<Diligent::IDeviceContext> _immediate;
 
 		std::vector<Slot> _slots = {};

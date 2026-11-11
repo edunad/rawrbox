@@ -30,6 +30,7 @@ Checks:
   -readability-identifier-length
   -readability-function-cognitive-complexity
   -readability-convert-member-functions-to-static
+  -readability-static-accessed-through-instance
   -cppcoreguidelines-pro-type-union-access
 WarningsAsErrors: "*"
 HeaderFilterRegex: ""

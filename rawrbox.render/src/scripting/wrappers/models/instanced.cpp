@@ -4,7 +4,7 @@
 
 namespace rawrbox {
 	void InstancedModelWrapper::registerLua(lua_State* L) {
-		registerTemplate<rawrbox::MaterialInstanced>(L, "InstancedModel");
-		registerTemplate<rawrbox::MaterialInstancedLit>(L, "InstancedModelLit");
+		InstancedModelWrapper::registerTemplate<rawrbox::MaterialInstanced>(L, "InstancedModel");
+		InstancedModelWrapper::registerTemplate<rawrbox::MaterialInstancedLit>(L, "InstancedModelLit");
 	}
 } // namespace rawrbox

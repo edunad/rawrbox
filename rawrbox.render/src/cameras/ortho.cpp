@@ -13,9 +13,13 @@ namespace rawrbox {
 
 	void CameraOrtho::updateMtx() {
 		const auto forward = this->getForward();
-		const auto eye = this->_pos - forward * this->_eyeDistance;
+		const auto eye = this->getEyePos();
 
 		this->_view = rawrbox::Matrix4x4::mtxLookAt(eye, eye + forward, this->getUp());
+	}
+
+	rawrbox::Vector3f CameraOrtho::getEyePos() const {
+		return this->_pos - this->getForward() * this->_eyeDistance;
 	}
 
 	void CameraOrtho::setExtent(const rawrbox::Vector2f& extent) {

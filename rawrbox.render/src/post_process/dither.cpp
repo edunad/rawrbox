@@ -33,6 +33,6 @@ namespace rawrbox {
 	void PostProcessDither::init() {
 		rawrbox::PostProcessBase::init();
 
-		this->_pipeline = createPipeline("PostProcess::Dither", "post_process/dither.psh");
+		this->_pipeline = this->createPipeline("PostProcess::Dither", "post_process/dither.psh");
 	}
 } // namespace rawrbox

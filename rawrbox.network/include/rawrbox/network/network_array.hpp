@@ -41,11 +41,11 @@ namespace rawrbox {
 
 		typename std::vector<T>::const_iterator find(const T& key) const { return std::find(begin(), end(), key); }
 		bool operator==(const VectorDelta<T>& other) const { return other.size() == size() && std::equal(other.begin(), other.end(), begin()); }
-		bool operator!=(const VectorDelta<T>& other) { return !operator==(other); }
+		bool operator!=(const VectorDelta<T>& other) { return !this->operator==(other); }
 
 		void push_back(const T& a, bool track = true) {
 			std::vector<T>::push_back(a);
-			if (track) this->changelog.push_back({true, size() - 1});
+			if (track) this->changelog.push_back({true, this->size() - 1});
 		}
 
 		void insert(typename std::vector<T>::const_iterator index, const T& a, bool track = true) {
@@ -57,7 +57,7 @@ namespace rawrbox {
 			DeltaData<size_t, T> diff = {};
 			for (auto& indx : this->changelog) {
 				if (indx.first)
-					diff.push_back({indx.second, at(indx.second)});
+					diff.push_back({indx.second, this->at(indx.second)});
 				else
 					diff.push_back({indx.second, std::nullopt});
 			}
@@ -129,9 +129,9 @@ namespace rawrbox {
 
 		DeltaData<KEY, VAL> calculate() {
 			DeltaData<KEY, VAL> diff = {};
-			for (auto& indx : changelog) {
+			for (auto& indx : this->changelog) {
 				if (indx.first)
-					diff.push_back({indx.second, at(indx.second)});
+					diff.push_back({indx.second, this->at(indx.second)});
 				else
 					diff.push_back({indx.second, std::nullopt});
 			}
@@ -145,7 +145,7 @@ namespace rawrbox {
 				if (change.second.has_value())
 					insert_or_assign(change.first, change.second.value());
 				else
-					erase(change.first, false);
+					this->erase(change.first, false);
 			}
 		}
 
@@ -194,7 +194,7 @@ namespace rawrbox {
 			DeltaData<KEY, VAL> diff = {};
 			for (auto& indx : this->changelog) {
 				if (indx.first)
-					diff.push_back({indx.second, at(indx.second)});
+					diff.push_back({indx.second, this->at(indx.second)});
 				else
 					diff.push_back({indx.second, std::nullopt});
 			}
@@ -208,7 +208,7 @@ namespace rawrbox {
 				if (change.second.has_value())
 					insert_or_assign(change.first, change.second.value());
 				else
-					erase(change.first, false);
+					this->erase(change.first, false);
 			}
 		}
 

@@ -39,7 +39,7 @@ namespace rawrbox {
 
 		this->registerCommand(
 		    "list", [this](const std::vector<std::string>& /*args*/) {
-			    for (const auto& cmd : getCommands()) {
+			    for (const auto& cmd : this->getCommands()) {
 				    if (!cmd.second.variable()) continue;
 				    this->print(fmt::format("{}: [#ffffff]{}[/] ", cmd.first, this->getCommandValue(cmd.second)), PrintType::LOG);
 			    }
@@ -166,7 +166,7 @@ namespace rawrbox {
 			}
 		}
 
-		onPrint();
+		this->onPrint();
 	}
 
 	void Console::clear() {
@@ -180,11 +180,11 @@ namespace rawrbox {
 	}
 
 	bool Console::hasCommand(const std::string& cmd) const {
-		return this->_commands.find(cmd) != this->_commands.end();
+		return this->_commands.contains(cmd);
 	}
 
 	const rawrbox::ConsoleCommand& Console::getCommand(const std::string& id) {
-		auto fnd = this->_commands.find(id);
+		const auto& fnd = this->_commands.find(id);
 		if (fnd == this->_commands.end()) throw std::runtime_error(fmt::format("[RawrBox-Console] Command '{}' not found!", id));
 
 		return fnd->second;
@@ -196,7 +196,7 @@ namespace rawrbox {
 
 		// easiest flow
 		if (command.method.has_value()) {
-			onExecute(cmd, args);
+			this->onExecute(cmd, args);
 			return command.method.value()(args);
 		}
 
@@ -243,17 +243,17 @@ namespace rawrbox {
 		if (args.empty()) return {false, "Command not found"};
 
 		const auto& cmd = args[0];
-		if (cmd.empty() || !hasCommand(cmd)) return {false, "Command not found"};
+		if (cmd.empty() || !this->hasCommand(cmd)) return {false, "Command not found"};
 
 		if (this->validate != nullptr) {
 			return this->validate(this->_commands[cmd]);
 		}
 
-		return run(args);
+		return this->run(args);
 	}
 
 	bool Console::removeCommand(const std::string& id) {
-		auto fnd = this->_commands.find(id);
+		const auto& fnd = this->_commands.find(id);
 		if (fnd == this->_commands.end()) return false;
 		this->_commands.erase(fnd);
 

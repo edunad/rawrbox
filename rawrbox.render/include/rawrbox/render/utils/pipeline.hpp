@@ -132,7 +132,7 @@ namespace rawrbox {
 
 		template <typename T = std::string>
 		static void registerGlobalMacro(const Diligent::SHADER_TYPE type, const std::string& macro, const T& val) {
-			_globalMacros[type].Add(macro.c_str(), val);
+			PipelineUtils::_globalMacros[type].Add(macro.c_str(), val);
 		}
 
 		[[nodiscard]] static Diligent::ISampler* getSampler(uint32_t id);

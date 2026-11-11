@@ -20,10 +20,10 @@ namespace rawrbox {
 
 		public:
 			void call(CallbackArgs... args) {
-				if (map == nullptr) return;
+				if (this->map == nullptr) return;
 
-				auto cb = map->find(name);
-				if (cb == map->end()) return;
+				const auto& cb = this->map->find(this->name);
+				if (cb == this->map->end()) return;
 
 				cb->second(args...);
 			}
@@ -32,38 +32,38 @@ namespace rawrbox {
 		EventNamed() = default;
 
 		std::shared_ptr<EventScoped> add(Func callback) {
-			std::string name = "__" + std::to_string(uniqueId++) + "__";
-			calls[name] = callback;
+			std::string name = "__" + std::to_string(this->uniqueId++) + "__";
+			this->calls[name] = callback;
 
 			return std::make_shared<EventScoped>(this, name);
 		}
 
 		void add(const std::string& name, Func callback) {
-			calls[name] = callback;
+			this->calls[name] = callback;
 		}
 
-		Func& operator[](const std::string& name) { return calls[name]; }
-		auto find(const std::string& name) { return calls.find(name); }
-		auto begin() { return calls.begin(); }
-		auto end() { return calls.end(); }
+		Func& operator[](const std::string& name) { return this->calls[name]; }
+		auto find(const std::string& name) { return this->calls.find(name); }
+		auto begin() { return this->calls.begin(); }
+		auto end() { return this->calls.end(); }
 
-		size_t size() { return calls.size(); }
+		size_t size() { return this->calls.size(); }
 
 		void clear() {
-			calls.clear();
+			this->calls.clear();
 		}
 
 		bool remove(const std::string& name) {
-			auto found = calls.find(name);
-			if (found == calls.end()) return false;
+			const auto& found = this->calls.find(name);
+			if (found == this->calls.end()) return false;
 
-			calls.erase(found);
+			this->calls.erase(found);
 			return true;
 		}
 
 		void operator()(CallbackArgs... args) {
 			// copy it so we can += and -= inside the callback
-			auto callsCopy = calls;
+			auto callsCopy = this->calls;
 			for (const auto& pair : callsCopy) {
 				pair.second(args...);
 			}

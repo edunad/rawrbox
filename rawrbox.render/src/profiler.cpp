@@ -13,13 +13,6 @@
 	#include <thread>
 
 namespace rawrbox {
-	namespace {
-		rawrbox::GPUProfiler* activeProfiler() {
-			if (rawrbox::RENDERER == nullptr || rawrbox::RenderThreadPool::isRecording() || std::this_thread::get_id() != rawrbox::RENDER_THREAD_ID) return nullptr;
-			return rawrbox::RENDERER->profiler();
-		}
-	} // namespace
-
 	// GPU PROFILER ---
 	GPUProfiler::GPUProfiler(Diligent::IRenderDevice& device, Diligent::IDeviceContext& context) : _context(&context) {
 		Diligent::QueryDesc desc{Diligent::QUERY_TYPE_TIMESTAMP};
@@ -122,6 +115,11 @@ namespace rawrbox {
 	// ----------------
 
 	// RENDER ZONE ---
+	rawrbox::GPUProfiler* RenderZone::activeProfiler() {
+		if (rawrbox::RENDERER == nullptr || rawrbox::RenderThreadPool::isRecording() || std::this_thread::get_id() != rawrbox::RENDER_THREAD_ID) return nullptr;
+		return rawrbox::RENDERER->profiler();
+	}
+
 	RenderZone::RenderZone(std::string_view name, uint32_t line, std::string_view file, std::string_view function) : _zone(line, file.data(), file.size(), function.data(), function.size(), name.data(), name.size(), 0U), _profiler(activeProfiler()) {
 		if (this->_profiler == nullptr) return;
 

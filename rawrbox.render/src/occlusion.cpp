@@ -54,7 +54,7 @@ namespace rawrbox {
 		    {Diligent::SHADER_TYPE_COMPUTE, "DrawArgs", Diligent::SHADER_RESOURCE_VARIABLE_TYPE_DYNAMIC, Diligent::SHADER_VARIABLE_FLAG_NO_DYNAMIC_BUFFERS},
 		    {Diligent::SHADER_TYPE_COMPUTE, "HiZ", Diligent::SHADER_RESOURCE_VARIABLE_TYPE_DYNAMIC}};
 
-		cull.macros.AddShaderMacro("CULL_THREADS", CULL_THREADS);
+		cull.macros.AddShaderMacro("CULL_THREADS", this->CULL_THREADS);
 
 		this->_cullProgram = rawrbox::PipelineUtils::createComputePipeline("Model::Cull", cull);
 

@@ -50,7 +50,7 @@ namespace rawrbox {
 			const int index = ozz::animation::FindJoint(this->_skeleton->getSkeleton(), id.c_str());
 			if (index < 0) return false;
 
-			const auto fnd = this->_ik.find(index);
+			const auto& fnd = this->_ik.find(index);
 			if (fnd != this->_ik.end() && typeid(*fnd->second) == typeid(T)) {
 				T& current = *static_cast<T*>(fnd->second.get());
 				T copy = ik;

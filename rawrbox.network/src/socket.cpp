@@ -32,8 +32,8 @@
 
 namespace rawrbox {
 	Socket::Socket(bool ipv6) : ipv6(ipv6) {
-		memset(&addr, 0, sizeof(addr));
-		memset(&addr6, 0, sizeof(addr6));
+		memset(&this->addr, 0, sizeof(this->addr));
+		memset(&this->addr6, 0, sizeof(this->addr6));
 
 #ifdef _MSC_VER
 		WSAStartup(MAKEWORD(1, 1), &this->_wsda);
@@ -47,11 +47,11 @@ namespace rawrbox {
 
 	Socket::~Socket() {
 		if (this->check())
-			close();
+			this->close();
 	}
 
 	bool Socket::check() const {
-		return sock > SOCKET_NONE;
+		return this->sock > SOCKET_NONE;
 	}
 
 	bool Socket::create() {
@@ -70,26 +70,26 @@ namespace rawrbox {
 		if (this->check())
 			return false;
 
-		state = SockState::skDISCONNECTED;
-		sock = static_cast<int>(::socket(ipv6 ? AF_INET6 : AF_INET, Type, Protocol));
-		lastCode = sock;
+		this->state = SockState::skDISCONNECTED;
+		this->sock = static_cast<int>(::socket(this->ipv6 ? AF_INET6 : AF_INET, Type, Protocol));
+		this->lastCode = this->sock;
 
-		return sock > SOCKET_NONE;
+		return this->sock > SOCKET_NONE;
 	}
 
 	bool Socket::bind(uint16_t port) {
-		if (!check()) return false;
+		if (!this->check()) return false;
 
-		if (ipv6) {
-			addr6.sin6_family = AF_INET6;
-			addr6.sin6_addr = in6addr_any;
-			addr6.sin6_port = htons(port);
-			lastCode = ::bind(sock, std::bit_cast<struct sockaddr*>(&addr6), sizeof(addr6));
+		if (this->ipv6) {
+			this->addr6.sin6_family = AF_INET6;
+			this->addr6.sin6_addr = in6addr_any;
+			this->addr6.sin6_port = htons(port);
+			this->lastCode = ::bind(this->sock, std::bit_cast<struct sockaddr*>(&this->addr6), sizeof(this->addr6));
 		} else {
-			addr.sin_family = AF_INET;
-			addr.sin_addr.s_addr = htonl(INADDR_ANY);
-			addr.sin_port = htons(port);
-			lastCode = ::bind(sock, std::bit_cast<struct sockaddr*>(&addr), sizeof(addr));
+			this->addr.sin_family = AF_INET;
+			this->addr.sin_addr.s_addr = htonl(INADDR_ANY);
+			this->addr.sin_port = htons(port);
+			this->lastCode = ::bind(this->sock, std::bit_cast<struct sockaddr*>(&this->addr), sizeof(this->addr));
 		}
 
 		return this->lastCode == 0;
@@ -97,30 +97,30 @@ namespace rawrbox {
 
 	std::string Socket::getIpAddress() {
 		std::array<char, INET6_ADDRSTRLEN> buff = {};
-		inet_ntop(ipv6 ? AF_INET6 : AF_INET, ipv6 ? std::bit_cast<void*>(&addr6.sin6_addr) : std::bit_cast<void*>(&addr.sin_addr), buff.data(), sizeof(buff));
+		inet_ntop(this->ipv6 ? AF_INET6 : AF_INET, this->ipv6 ? std::bit_cast<void*>(&this->addr6.sin6_addr) : std::bit_cast<void*>(&this->addr.sin_addr), buff.data(), sizeof(buff));
 		return buff.data();
 	}
 
 	bool Socket::listen() {
-		lastCode = ::listen(sock, this->_MAXCON);
-		if (lastCode == SOCKET_ERROR) return false;
+		this->lastCode = ::listen(this->sock, this->_MAXCON);
+		if (this->lastCode == SOCKET_ERROR) return false;
 
-		state = SockState::skLISTENING;
+		this->state = SockState::skLISTENING;
 		return true;
 	}
 
 	bool Socket::accept(Socket* socket) {
-		if (!blocking && !canRead()) return false;
+		if (!this->blocking && !this->canRead()) return false;
 		ZoneScopedN("Socket::accept");
 
 #ifdef _MSC_VER
-		int length = ipv6 ? sizeof(socket->addr6) : sizeof(socket->addr);
+		int length = this->ipv6 ? sizeof(socket->addr6) : sizeof(socket->addr);
 #else
 		auto length = static_cast<socklen_t>(ipv6 ? sizeof(socket->addr6) : sizeof(socket->addr));
 #endif
-		socket->sock = static_cast<int>(::accept(sock, ipv6 ? std::bit_cast<struct sockaddr*>(&socket->addr6) : std::bit_cast<struct sockaddr*>(&socket->addr), &length));
+		socket->sock = static_cast<int>(::accept(this->sock, this->ipv6 ? std::bit_cast<struct sockaddr*>(&socket->addr6) : std::bit_cast<struct sockaddr*>(&socket->addr), &length));
 
-		lastCode = socket->sock;
+		this->lastCode = socket->sock;
 		if (socket->sock == SOCKET_ERROR)
 			return false;
 
@@ -129,27 +129,27 @@ namespace rawrbox {
 	}
 
 	void Socket::close() {
-		state = SockState::skDISCONNECTED;
+		this->state = SockState::skDISCONNECTED;
 
 #ifdef _MSC_VER
-		::closesocket(sock);
+		::closesocket(this->sock);
 #else
 		::shutdown(sock, SHUT_RDWR);
 		::close(sock);
 #endif
 
-		memset(&addr, 0, sizeof(addr));
-		memset(&addr6, 0, sizeof(addr6));
-		sock = static_cast<int>(INVALID_SOCKET);
+		memset(&this->addr, 0, sizeof(this->addr));
+		memset(&this->addr6, 0, sizeof(this->addr6));
+		this->sock = static_cast<int>(INVALID_SOCKET);
 	}
 
 	uint64_t Socket::uAddr() const {
-		return addr.sin_addr.s_addr;
+		return this->addr.sin_addr.s_addr;
 	}
 
 	SocketError Socket::connect(const std::string& host, uint16_t port) {
 		ZoneScopedN("Socket::connect");
-		if (!check())
+		if (!this->check())
 			return SocketError::invalidSocket;
 
 		struct addrinfo* result = nullptr;
@@ -167,60 +167,60 @@ namespace rawrbox {
 
 		// check if we need to switch between ipv4 and ipv6
 		bool targetIsIpv6 = result->ai_family == AF_INET6;
-		if (targetIsIpv6 != ipv6) {
-			close();
+		if (targetIsIpv6 != this->ipv6) {
+			this->close();
 
-			ipv6 = targetIsIpv6;
-			create();
+			this->ipv6 = targetIsIpv6;
+			this->create();
 		}
 
 		int connectResult = 0;
-		if (ipv6) {
-			if (result->ai_addrlen <= sizeof(addr6)) {
-				std::memcpy(&addr6, result->ai_addr, result->ai_addrlen);
+		if (this->ipv6) {
+			if (result->ai_addrlen <= sizeof(this->addr6)) {
+				std::memcpy(&this->addr6, result->ai_addr, result->ai_addrlen);
 			} else {
 				throw std::runtime_error("Not enough space for ipv6 address");
 			}
 
-			addr6.sin6_family = AF_INET6;
-			addr6.sin6_port = htons(port);
-			connectResult = ::connect(sock, std::bit_cast<struct sockaddr*>(&addr6), sizeof(addr6));
+			this->addr6.sin6_family = AF_INET6;
+			this->addr6.sin6_port = htons(port);
+			connectResult = ::connect(this->sock, std::bit_cast<struct sockaddr*>(&this->addr6), sizeof(this->addr6));
 		} else {
-			if (result->ai_addrlen <= sizeof(addr)) {
-				std::memcpy(&addr, result->ai_addr, result->ai_addrlen);
+			if (result->ai_addrlen <= sizeof(this->addr)) {
+				std::memcpy(&this->addr, result->ai_addr, result->ai_addrlen);
 			} else {
 				throw std::runtime_error("Not enough space for ipv4 address");
 			}
 
-			addr.sin_family = AF_INET;
-			addr.sin_port = htons(port);
-			connectResult = ::connect(sock, std::bit_cast<struct sockaddr*>(&addr), sizeof(addr));
+			this->addr.sin_family = AF_INET;
+			this->addr.sin_port = htons(port);
+			connectResult = ::connect(this->sock, std::bit_cast<struct sockaddr*>(&this->addr), sizeof(this->addr));
 		}
 
 		if (connectResult == SOCKET_ERROR) return SocketError::failed;
 
-		state = SockState::skCONNECTED;
+		this->state = SockState::skCONNECTED;
 		return SocketError::success;
 	}
 
 	bool Socket::canRead() {
 		FD_ZERO(&this->_scks);
-		FD_SET(static_cast<unsigned>(sock), &this->_scks);
+		FD_SET(static_cast<unsigned>(this->sock), &this->_scks);
 
-		return select(sock + 1, &this->_scks, nullptr, nullptr, &this->_times) > 0;
+		return select(this->sock + 1, &this->_scks, nullptr, nullptr, &this->_times) > 0;
 	}
 
 	bool Socket::isError() {
-		if (state == SockState::skERROR || sock == -1)
+		if (this->state == SockState::skERROR || this->sock == -1)
 			return true;
 
 		FD_ZERO(&this->_scks);
-		FD_SET(static_cast<unsigned>(sock), &this->_scks);
+		FD_SET(static_cast<unsigned>(this->sock), &this->_scks);
 
-		if (select(sock + 1, nullptr, nullptr, &this->_scks, &this->_times) >= 0)
+		if (select(this->sock + 1, nullptr, nullptr, &this->_scks, &this->_times) >= 0)
 			return false;
 
-		state = SockState::skERROR;
+		this->state = SockState::skERROR;
 		return true;
 	}
 
@@ -266,11 +266,11 @@ namespace rawrbox {
 	}
 
 	int Socket::sendUDP(const uint8_t* buffer, int size, sockaddr_in* to) const {
-		return ::sendto(sock, std::bit_cast<const char*>(buffer), size, 0, std::bit_cast<struct sockaddr*>(&to), sizeof(struct sockaddr_in));
+		return ::sendto(this->sock, std::bit_cast<const char*>(buffer), size, 0, std::bit_cast<struct sockaddr*>(&to), sizeof(struct sockaddr_in));
 	}
 
 	int Socket::send(const uint8_t* data, int dataSize) const {
-		return ::send(sock, std::bit_cast<const char*>(data), dataSize, 0);
+		return ::send(this->sock, std::bit_cast<const char*>(data), dataSize, 0);
 	}
 
 	bool Socket::sendAll(const uint8_t* data, int dataSize) const {
@@ -278,7 +278,7 @@ namespace rawrbox {
 		int sent = 0;
 
 		while (sent != dataSize) {
-			int ret = ::send(sock, std::bit_cast<const char*>(data) + sent, dataSize - sent, 0);
+			int ret = ::send(this->sock, std::bit_cast<const char*>(data) + sent, dataSize - sent, 0);
 			if (ret <= 0) return false;
 
 			sent += ret;

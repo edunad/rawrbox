@@ -13,7 +13,7 @@ namespace rawrbox {
 	// -------------
 
 	void RenderUtils::init() {
-		if (_pipe != nullptr) RAWRBOX_CRITICAL("Pipeline already initialized!");
+		if (RenderUtils::_pipe != nullptr) RAWRBOX_CRITICAL("Pipeline already initialized!");
 
 		rawrbox::PipeSettings settings;
 		settings.cull = Diligent::CULL_MODE_BACK;
@@ -24,13 +24,13 @@ namespace rawrbox {
 		settings.blending = {Diligent::BLEND_FACTOR_SRC_ALPHA, Diligent::BLEND_FACTOR_INV_SRC_ALPHA};
 		settings.signatures = {rawrbox::BindlessManager::signature}; // Use bindless
 
-		_pipe = rawrbox::PipelineUtils::createPipeline("Utils::QUAD", settings);
-		_logger->info("Initializing");
+		RenderUtils::_pipe = rawrbox::PipelineUtils::createPipeline("Utils::QUAD", settings);
+		RenderUtils::_logger->info("Initializing");
 	}
 
 	void RenderUtils::renderQUAD(const rawrbox::TextureBase& texture) {
 		auto* context = rawrbox::RENDERER->context();
-		context->SetPipelineState(_pipe);
+		context->SetPipelineState(RenderUtils::_pipe);
 
 		// SETUP VERTEX UNIFORMS ----------------------------
 		// NOTE: DISCARD maps return uninitialized memory, always write the full struct

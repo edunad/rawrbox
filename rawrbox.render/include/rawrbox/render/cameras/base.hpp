@@ -28,7 +28,7 @@ namespace rawrbox {
 			return this->gProjection == other.gProjection && this->gProjectionInv == other.gProjectionInv && this->gViewport == other.gViewport;
 		}
 
-		bool operator!=(const CameraStaticUniforms& other) const { return !operator==(other); }
+		bool operator!=(const CameraStaticUniforms& other) const { return !this->operator==(other); }
 	};
 
 	namespace CameraLayers {
@@ -51,7 +51,7 @@ namespace rawrbox {
 			return this->gView == other.gView && this->gViewProj == other.gViewProj && this->gPos == other.gPos;
 		}
 
-		bool operator!=(const CameraUniforms& other) const { return !operator==(other); }
+		bool operator!=(const CameraUniforms& other) const { return !this->operator==(other); }
 	};
 
 	class CameraBase {
@@ -118,6 +118,8 @@ namespace rawrbox {
 		// UTILS -----
 		virtual void setPos(const rawrbox::Vector3f& pos);
 		[[nodiscard]] virtual const rawrbox::Vector3f& getPos() const;
+
+		[[nodiscard]] virtual rawrbox::Vector3f getEyePos() const;
 
 		virtual void setAngle(const rawrbox::Vector4f& ang);
 		[[nodiscard]] virtual const rawrbox::Vector4f& getAngle() const;

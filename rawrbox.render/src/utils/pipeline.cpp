@@ -32,15 +32,15 @@ namespace rawrbox {
 	// -----------------
 
 	void PipelineUtils::init(Diligent::IRenderDevice& device) {
-		if (initialized) return;
-		_logger->info("Initializing pipeline utils");
+		if (PipelineUtils::initialized) return;
+		PipelineUtils::_logger->info("Initializing pipeline utils");
 
 		uint32_t id = Diligent::TEXTURE_ADDRESS_WRAP << 6 | Diligent::TEXTURE_ADDRESS_WRAP << 3 | Diligent::TEXTURE_ADDRESS_WRAP;
 		Diligent::SamplerDesc desc{
 		    Diligent::FILTER_TYPE_POINT, Diligent::FILTER_TYPE_POINT, Diligent::FILTER_TYPE_POINT,
 		    Diligent::TEXTURE_ADDRESS_WRAP, Diligent::TEXTURE_ADDRESS_WRAP, Diligent::TEXTURE_ADDRESS_WRAP};
 
-		defaultSampler = registerSampler(id, desc);
+		PipelineUtils::defaultSampler = PipelineUtils::registerSampler(id, desc);
 
 		// Initialize pipeline cache -----
 		Diligent::RenderStateCacheCreateInfo CacheCI;
@@ -48,8 +48,8 @@ namespace rawrbox {
 		CacheCI.pArchiverFactory = Diligent::LoadAndGetArchiverFactory();
 		CacheCI.LogLevel = Diligent::RENDER_STATE_CACHE_LOG_LEVEL_DISABLED;
 
-		Diligent::CreateRenderStateCache(CacheCI, &_stateCache);
-		if (_stateCache == nullptr) RAWRBOX_CRITICAL("Failed to initialize PSO shader cache");
+		Diligent::CreateRenderStateCache(CacheCI, &PipelineUtils::_stateCache);
+		if (PipelineUtils::_stateCache == nullptr) RAWRBOX_CRITICAL("Failed to initialize PSO shader cache");
 		// -------------------------
 
 		// Load cache -----
@@ -59,111 +59,111 @@ namespace rawrbox {
 		}
 
 #ifdef _DEBUG
-		_stateCachePath = cacheRoot / fmt::format("{}_d.bin", magic_enum::enum_name(rawrbox::RENDERER->getRenderType()));
+		PipelineUtils::_stateCachePath = cacheRoot / fmt::format("{}_d.bin", magic_enum::enum_name(rawrbox::RENDERER->getRenderType()));
 #else
 		_stateCachePath = cacheRoot / fmt::format("{}_r.bin", magic_enum::enum_name(rawrbox::RENDERER->getRenderType()));
 #endif
 
-		const auto pString = _stateCachePath.generic_string();
-		if (std::filesystem::exists(_stateCachePath)) {
+		const auto pString = PipelineUtils::_stateCachePath.generic_string();
+		if (std::filesystem::exists(PipelineUtils::_stateCachePath)) {
 			Diligent::FileWrapper CacheDataFile(pString.c_str());
 			auto pCacheData = Diligent::DataBlobImpl::Create();
 
 			if (CacheDataFile->Read(pCacheData)) {
-				_logger->debug("Loaded pipeline cache from '{}'", pString);
-				_stateCache->Load(pCacheData);
+				PipelineUtils::_logger->debug("Loaded pipeline cache from '{}'", pString);
+				PipelineUtils::_stateCache->Load(pCacheData);
 			}
 		}
 		// ------------------
 
-		initialized = true;
+		PipelineUtils::initialized = true;
 	}
 
 	void PipelineUtils::shutdown() {
 		// Save cache -----
 		Diligent::RefCntAutoPtr<Diligent::IDataBlob> pCacheData;
 
-		if (_stateCache->WriteToBlob(0, &pCacheData)) {
+		if (PipelineUtils::_stateCache->WriteToBlob(0, &pCacheData)) {
 			if (pCacheData != nullptr) {
-				const auto pString = _stateCachePath.generic_string();
+				const auto pString = PipelineUtils::_stateCachePath.generic_string();
 				Diligent::FileWrapper CacheDataFile{pString.c_str(), Diligent::EFileAccessMode::Overwrite};
 				if (CacheDataFile->Write(pCacheData->GetConstDataPtr(), pCacheData->GetSize())) {
-					_logger->debug("Saved pipeline cache to '{}'", pString);
+					PipelineUtils::_logger->debug("Saved pipeline cache to '{}'", pString);
 				} else {
-					_logger->error("Failed to save pipeline cache to '{}'", pString);
+					PipelineUtils::_logger->error("Failed to save pipeline cache to '{}'", pString);
 				}
 			}
 		}
 		// ------
 
-		_compiling.clear();
-		_compilingTotal = 0;
+		PipelineUtils::_compiling.clear();
+		PipelineUtils::_compilingTotal = 0;
 
-		_pipelines.clear();
-		_binds.clear();
-		_shaders.clear();
-		_samplers.clear();
-		_globalMacros.clear();
+		PipelineUtils::_pipelines.clear();
+		PipelineUtils::_binds.clear();
+		PipelineUtils::_shaders.clear();
+		PipelineUtils::_samplers.clear();
+		PipelineUtils::_globalMacros.clear();
 
-		RAWRBOX_DESTROY(_stateCache);
+		RAWRBOX_DESTROY(PipelineUtils::_stateCache);
 
-		_logger.reset();
+		PipelineUtils::_logger.reset();
 
-		defaultSampler = nullptr;
-		initialized = false;
+		PipelineUtils::defaultSampler = nullptr;
+		PipelineUtils::initialized = false;
 	}
 
 	// ASYNC COMPILE ---
 	bool PipelineUtils::isCompiling() {
-		std::erase_if(_compiling, [](const auto& pipe) {
+		std::erase_if(PipelineUtils::_compiling, [](const auto& pipe) {
 			const auto status = pipe.first->GetStatus();
 			if (status == Diligent::PIPELINE_STATE_STATUS_FAILED) RAWRBOX_CRITICAL("Failed to compile pipeline '{}'", pipe.second);
 
 			return status == Diligent::PIPELINE_STATE_STATUS_READY;
 		});
 
-		if (_compiling.empty()) _compilingTotal = 0;
-		return !_compiling.empty();
+		if (PipelineUtils::_compiling.empty()) PipelineUtils::_compilingTotal = 0;
+		return !PipelineUtils::_compiling.empty();
 	}
 
 	float PipelineUtils::getCompileProgress() {
-		if (_compilingTotal == 0) return 1.F;
-		return 1.F - static_cast<float>(_compiling.size()) / static_cast<float>(_compilingTotal);
+		if (PipelineUtils::_compilingTotal == 0) return 1.F;
+		return 1.F - static_cast<float>(PipelineUtils::_compiling.size()) / static_cast<float>(PipelineUtils::_compilingTotal);
 	}
 
 	std::string PipelineUtils::getCompilingName() {
-		if (_compiling.empty()) return "";
-		return _compiling.front().second;
+		if (PipelineUtils::_compiling.empty()) return "";
+		return PipelineUtils::_compiling.front().second;
 	}
 
 	void PipelineUtils::waitCompiling() {
-		for (const auto& pipe : _compiling) {
+		for (const auto& pipe : PipelineUtils::_compiling) {
 			if (pipe.first->GetStatus(true) != Diligent::PIPELINE_STATE_STATUS_READY)
 				RAWRBOX_CRITICAL("Failed to compile pipeline '{}'", pipe.second);
 		}
 
-		_compiling.clear();
-		_compilingTotal = 0;
+		PipelineUtils::_compiling.clear();
+		PipelineUtils::_compilingTotal = 0;
 	}
 	// ------
 
 	Diligent::ISampler* PipelineUtils::registerSampler(uint32_t id, Diligent::SamplerDesc desc) {
-		auto fnd = _samplers.find(id);
-		if (fnd != _samplers.end()) {
+		const auto& fnd = PipelineUtils::_samplers.find(id);
+		if (fnd != PipelineUtils::_samplers.end()) {
 			return fnd->second;
 		}
 
 		Diligent::RefCntAutoPtr<Diligent::ISampler> sampler;
 		rawrbox::RENDERER->device()->CreateSampler(desc, &sampler);
 
-		_samplers[id] = std::move(sampler);
-		return _samplers[id];
+		PipelineUtils::_samplers[id] = std::move(sampler);
+		return PipelineUtils::_samplers[id];
 	}
 
 	Diligent::IShader* PipelineUtils::compileShader(const std::string& name, Diligent::SHADER_TYPE type, const Diligent::ShaderMacroHelper& macros, const std::string& entry) {
 		if (name.empty()) return nullptr;
 
-		Diligent::ShaderMacroHelper helper = _globalMacros[type] + macros;
+		Diligent::ShaderMacroHelper helper = PipelineUtils::_globalMacros[type] + macros;
 		Diligent::ShaderMacroArray macroArray = helper;
 
 		std::string id = fmt::format("{}:{}-{}", name, entry, magic_enum::enum_name(type));
@@ -171,8 +171,8 @@ namespace rawrbox {
 			id += fmt::format("|{}={}", macroArray.Elements[i].Name, macroArray.Elements[i].Definition);
 		}
 
-		auto fnd = _shaders.find(id);
-		if (fnd != _shaders.end()) {
+		auto fnd = PipelineUtils::_shaders.find(id);
+		if (fnd != PipelineUtils::_shaders.end()) {
 			return fnd->second;
 		}
 
@@ -194,22 +194,22 @@ namespace rawrbox {
 		ShaderCI.Macros = helper;
 
 		Diligent::RefCntAutoPtr<Diligent::IShader> shader;
-		_stateCache->CreateShader(ShaderCI, &shader);
+		PipelineUtils::_stateCache->CreateShader(ShaderCI, &shader);
 
 		const std::string label = entry == "main" ? name : fmt::format("{}::{}", name, entry);
 		if (shader != nullptr) {
 			if (shader->GetStatus() == Diligent::SHADER_STATUS_READY) {
-				_logger->info("Shader '{}' {}", fmt::styled(label, fmt::fg(fmt::color::coral)), fmt::styled(" [✓ OK]", fmt::fg(fmt::color::green_yellow)));
+				PipelineUtils::_logger->info("Shader '{}' {}", fmt::styled(label, fmt::fg(fmt::color::coral)), fmt::styled(" [✓ OK]", fmt::fg(fmt::color::green_yellow)));
 			} else {
-				_logger->info("Shader '{}' {}", fmt::styled(label, fmt::fg(fmt::color::coral)), fmt::styled(" [⧗ COMPILING]", fmt::fg(fmt::color::yellow)));
+				PipelineUtils::_logger->info("Shader '{}' {}", fmt::styled(label, fmt::fg(fmt::color::coral)), fmt::styled(" [⧗ COMPILING]", fmt::fg(fmt::color::yellow)));
 			}
 		} else {
 			RAWRBOX_CRITICAL("Shader '{}' {}", fmt::styled(label, fmt::fg(fmt::color::coral)), fmt::styled(" [✖ FAILED]", fmt::fg(fmt::color::red)));
 		}
 
 		if (shader == nullptr) RAWRBOX_CRITICAL("Failed to compile shader '{}'", label);
-		_shaders[id] = std::move(shader);
-		return _shaders[id];
+		PipelineUtils::_shaders[id] = std::move(shader);
+		return PipelineUtils::_shaders[id];
 	}
 
 	std::vector<Diligent::ImmutableSamplerDesc> PipelineUtils::compileSamplers(const std::vector<rawrbox::PipeSampler>& samplers) {
@@ -230,8 +230,8 @@ namespace rawrbox {
 	Diligent::IPipelineState* PipelineUtils::createComputePipeline(const std::string& name, rawrbox::PipeComputeSettings settings) {
 		if (settings.pCS.empty()) RAWRBOX_CRITICAL("Failed to create shader {}, pCS shader cannot be empty!", name);
 
-		auto fnd = _pipelines.find(name);
-		if (fnd != _pipelines.end()) return fnd->second;
+		const auto& fnd = PipelineUtils::_pipelines.find(name);
+		if (fnd != PipelineUtils::_pipelines.end()) return fnd->second;
 
 		Diligent::RefCntAutoPtr<Diligent::IPipelineState> pipe;
 
@@ -256,13 +256,13 @@ namespace rawrbox {
 		PSOCreateInfo.pCS = rawrbox::PipelineUtils::compileShader(settings.pCS, Diligent::SHADER_TYPE_COMPUTE, settings.macros, settings.entry);
 		PSOCreateInfo.Flags = Diligent::PSO_CREATE_FLAG_ASYNCHRONOUS;
 
-		_stateCache->CreateComputePipelineState(PSOCreateInfo, &pipe);
+		PipelineUtils::_stateCache->CreateComputePipelineState(PSOCreateInfo, &pipe);
 		if (pipe == nullptr) RAWRBOX_CRITICAL("Failed to create pipeline '{}'", name);
 
-		_compiling.emplace_back(pipe, name);
-		_compilingTotal++;
+		PipelineUtils::_compiling.emplace_back(pipe, name);
+		PipelineUtils::_compilingTotal++;
 
-		if (settings.signatures.empty()) waitCompiling(); // Static variables & binds need compiled
+		if (settings.signatures.empty()) PipelineUtils::waitCompiling(); // Static variables & binds need compiled
 		if (settings.signatures.empty()) {
 			for (auto& uni : settings.uniforms) {
 				if (uni.uniform == nullptr) continue;
@@ -275,17 +275,17 @@ namespace rawrbox {
 
 		// Bind ----
 		if (!settings.bind.empty() && settings.signatures.empty()) {
-			pipe->CreateShaderResourceBinding(&_binds[settings.bind], true);
+			pipe->CreateShaderResourceBinding(&PipelineUtils::_binds[settings.bind], true);
 		}
 		//-----
 
-		_pipelines[name] = std::move(pipe);
-		return _pipelines[name];
+		PipelineUtils::_pipelines[name] = std::move(pipe);
+		return PipelineUtils::_pipelines[name];
 	}
 
 	Diligent::IPipelineState* PipelineUtils::createPipeline(const std::string& name, rawrbox::PipeSettings settings) {
-		auto fnd = _pipelines.find(name);
-		if (fnd != _pipelines.end()) return fnd->second;
+		const auto& fnd = PipelineUtils::_pipelines.find(name);
+		if (fnd != PipelineUtils::_pipelines.end()) return fnd->second;
 
 		const auto& desc = rawrbox::RENDERER->swapChain()->GetDesc();
 
@@ -358,7 +358,7 @@ namespace rawrbox {
 		// ----
 
 		// Resources ----
-		auto samplers = compileSamplers(settings.immutableSamplers);
+		auto samplers = PipelineUtils::compileSamplers(settings.immutableSamplers);
 		if (!settings.resources.empty()) {
 			info.PSODesc.ResourceLayout.Variables = settings.resources.data();
 			info.PSODesc.ResourceLayout.NumVariables = static_cast<uint32_t>(settings.resources.size());
@@ -372,13 +372,13 @@ namespace rawrbox {
 		// ---------------------
 		info.Flags = Diligent::PSO_CREATE_FLAG_ASYNCHRONOUS;
 
-		_stateCache->CreateGraphicsPipelineState(info, &pipe);
+		PipelineUtils::_stateCache->CreateGraphicsPipelineState(info, &pipe);
 		if (pipe == nullptr) RAWRBOX_CRITICAL("Failed to create pipeline '{}'", name);
 
-		_compiling.emplace_back(pipe, name);
-		_compilingTotal++;
+		PipelineUtils::_compiling.emplace_back(pipe, name);
+		PipelineUtils::_compilingTotal++;
 
-		if (settings.signatures.empty()) waitCompiling(); //  Static variables & binds need compiled
+		if (settings.signatures.empty()) PipelineUtils::waitCompiling(); //  Static variables & binds need compiled
 		if (settings.signatures.empty()) {
 			for (auto& uni : settings.uniforms) {
 				if (uni.uniform == nullptr) continue;
@@ -392,29 +392,29 @@ namespace rawrbox {
 
 		// Bind ----
 		if (!settings.bind.empty() && settings.signatures.empty()) {
-			pipe->CreateShaderResourceBinding(&_binds[settings.bind], true);
+			pipe->CreateShaderResourceBinding(&PipelineUtils::_binds[settings.bind], true);
 		}
 		//-----
 
-		_pipelines[name] = std::move(pipe);
-		return _pipelines[name];
+		PipelineUtils::_pipelines[name] = std::move(pipe);
+		return PipelineUtils::_pipelines[name];
 	}
 
 	Diligent::IShaderResourceBinding* PipelineUtils::getBind(const std::string& bindName) {
-		auto fnd = _binds.find(bindName);
-		if (fnd == _binds.end()) return nullptr;
+		const auto& fnd = PipelineUtils::_binds.find(bindName);
+		if (fnd == PipelineUtils::_binds.end()) return nullptr;
 		return fnd->second;
 	}
 
 	Diligent::ISampler* PipelineUtils::getSampler(uint32_t id) {
-		auto fnd = _samplers.find(id);
-		if (fnd == _samplers.end()) return nullptr;
+		const auto& fnd = PipelineUtils::_samplers.find(id);
+		if (fnd == PipelineUtils::_samplers.end()) return nullptr;
 		return fnd->second;
 	}
 
 	Diligent::IPipelineState* PipelineUtils::getPipeline(const std::string& pipe) {
-		auto fnd = _pipelines.find(pipe);
-		if (fnd == _pipelines.end()) return nullptr;
+		const auto& fnd = PipelineUtils::_pipelines.find(pipe);
+		if (fnd == PipelineUtils::_pipelines.end()) return nullptr;
 		return fnd->second;
 	}
 

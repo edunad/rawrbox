@@ -62,7 +62,7 @@ namespace rawrbox {
 		const int index = ozz::animation::FindJoint(this->_skeleton->getSkeleton(), id.c_str());
 		if (index < 0) return nullptr;
 
-		const auto fnd = this->_ik.find(index);
+		const auto& fnd = this->_ik.find(index);
 		return fnd == this->_ik.end() ? nullptr : fnd->second.get();
 	}
 

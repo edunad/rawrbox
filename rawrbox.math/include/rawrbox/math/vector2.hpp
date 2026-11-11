@@ -36,29 +36,29 @@ namespace rawrbox {
 
 		[[nodiscard]] bool isNAN() const
 			requires(std::is_same_v<NumberType, float> || std::is_same_v<NumberType, double>)
-		{ return std::isnan<NumberType>(x) && std::isnan<NumberType>(y); }
+		{ return std::isnan<NumberType>(this->x) && std::isnan<NumberType>(this->y); }
 
-		[[nodiscard]] std::string toString() const { return std::to_string(x) + "," + std::to_string(y); }
+		[[nodiscard]] std::string toString() const { return std::to_string(this->x) + "," + std::to_string(this->y); }
 		[[nodiscard]] int size() const { return 2; }
 
-		[[nodiscard]] Vector2_t<NumberType> yx() const { return Vector2_t<NumberType>(y, x); }
-		[[nodiscard]] std::array<NumberType, 2> data() const { return {x, y}; }
+		[[nodiscard]] Vector2_t<NumberType> yx() const { return Vector2_t<NumberType>(this->y, this->x); }
+		[[nodiscard]] std::array<NumberType, 2> data() const { return {this->x, this->y}; }
 
 		// UTILS ---
 		[[nodiscard]] NumberType distance(const VecType& other) const {
-			return static_cast<NumberType>(std::sqrt(((x - other.x) * (x - other.x)) + ((y - other.y) * (y - other.y))));
+			return static_cast<NumberType>(std::sqrt(((this->x - other.x) * (this->x - other.x)) + ((this->y - other.y) * (this->y - other.y))));
 		}
 
 		[[nodiscard]] NumberType length() const {
-			return static_cast<NumberType>(std::sqrt(std::pow(x, 2) + std::pow(y, 2)));
+			return static_cast<NumberType>(std::sqrt(std::pow(this->x, 2) + std::pow(this->y, 2)));
 		}
 
 		[[nodiscard]] NumberType angle(const VecType& target) const {
-			return static_cast<NumberType>(std::atan2(target.x - x, target.y - y));
+			return static_cast<NumberType>(std::atan2(target.x - this->x, target.y - this->y));
 		}
 
 		[[nodiscard]] VecType abs() const {
-			return {std::abs(x), std::abs(y)};
+			return {std::abs(this->x), std::abs(this->y)};
 		}
 
 		[[nodiscard]] VecType lerp(const VecType& other, float timestep) const
@@ -66,26 +66,26 @@ namespace rawrbox {
 		{
 			VecType ret;
 
-			ret.x = static_cast<NumberType>(static_cast<float>(x) + static_cast<float>(other.x - x) * timestep);
-			ret.y = static_cast<NumberType>(static_cast<float>(y) + static_cast<float>(other.y - y) * timestep);
+			ret.x = static_cast<NumberType>(static_cast<float>(this->x) + static_cast<float>(other.x - this->x) * timestep);
+			ret.y = static_cast<NumberType>(static_cast<float>(this->y) + static_cast<float>(other.y - this->y) * timestep);
 
 			return ret;
 		}
 
 		[[nodiscard]] VecType clamp(NumberType min, NumberType max) const {
 			return {
-			    std::clamp(x, min, max),
-			    std::clamp(y, min, max)};
+			    std::clamp(this->x, min, max),
+			    std::clamp(this->y, min, max)};
 		}
 
 		[[nodiscard]] VecType clamp(VecType min, VecType max) const {
 			return {
-			    std::clamp(x, min.x, max.x),
-			    std::clamp(y, min.y, max.y)};
+			    std::clamp(this->x, min.x, max.x),
+			    std::clamp(this->y, min.y, max.y)};
 		}
 
 		[[nodiscard]] NumberType sqrMagnitude() const {
-			return static_cast<NumberType>(std::pow(x, 2) + std::pow(y, 2));
+			return static_cast<NumberType>(std::pow(this->x, 2) + std::pow(this->y, 2));
 		}
 
 		[[nodiscard]] VecType clampMagnitude(NumberType max) const {
@@ -103,15 +103,15 @@ namespace rawrbox {
 		}
 
 		[[nodiscard]] VecType min(const VecType& other) const {
-			return {std::min(x, other.x), std::min(y, other.y)};
+			return {std::min(this->x, other.x), std::min(this->y, other.y)};
 		}
 
 		[[nodiscard]] VecType max(const VecType& other) const {
-			return {std::max(x, other.x), std::max(y, other.y)};
+			return {std::max(this->x, other.x), std::max(this->y, other.y)};
 		}
 
 		[[nodiscard]] NumberType atan2() const {
-			return static_cast<NumberType>(std::atan2(y, x));
+			return static_cast<NumberType>(std::atan2(this->y, this->x));
 		}
 
 		// UTILS uint16_t --
@@ -172,7 +172,7 @@ namespace rawrbox {
 			VecType u = *this - origin;
 			if (u == VecType()) return *this;
 
-			u = cosSin(u.atan2() + rads) * static_cast<NumberType>(u.length());
+			u = this->cosSin(u.atan2() + rads) * static_cast<NumberType>(u.length());
 			u.x += origin.x;
 			u.y += origin.y;
 
@@ -182,119 +182,119 @@ namespace rawrbox {
 		template <class ReturnType>
 			requires(!std::is_same_v<NumberType, ReturnType>)
 		Vector2_t<ReturnType> cast() const {
-			return {static_cast<ReturnType>(x), static_cast<ReturnType>(y)};
+			return {static_cast<ReturnType>(this->x), static_cast<ReturnType>(this->y)};
 		}
 		// ------
 
 		[[nodiscard]] NumberType dot(const VecType& other) const {
-			return x * other.x + y * other.y;
+			return this->x * other.x + this->y * other.y;
 		}
 
 		// UTILS - FLOAT ---
 		[[nodiscard]] VecType normalized() const
 			requires(std::is_same_v<NumberType, float> || std::is_same_v<NumberType, double>)
 		{
-			auto l = length();
+			auto l = this->length();
 			return l == rawrbox::ZERO<NumberType> ? VecType() : (*this) / l;
 		}
 
 		[[nodiscard]] NumberType cross(const VecType& other) const
 			requires(std::is_same_v<NumberType, float> || std::is_same_v<NumberType, double>)
 		{
-			return x * other.y - y * other.x;
+			return this->x * other.y - this->y * other.x;
 		}
 
 		[[nodiscard]] Vector2_t<NumberType> floor() const
 			requires(std::is_same_v<NumberType, float> || std::is_same_v<NumberType, double>)
 		{
-			return {std::floor(x), std::floor(y)};
+			return {std::floor(this->x), std::floor(this->y)};
 		}
 
 		[[nodiscard]] Vector2_t<NumberType> round() const
 			requires(std::is_same_v<NumberType, float> || std::is_same_v<NumberType, double>)
 		{
-			return {std::round(x), std::round(y)};
+			return {std::round(this->x), std::round(this->y)};
 		}
 
 		[[nodiscard]] Vector2_t<NumberType> ceil() const
 			requires(std::is_same_v<NumberType, float> || std::is_same_v<NumberType, double>)
 		{
-			return {std::ceil(x), std::ceil(y)};
+			return {std::ceil(this->x), std::ceil(this->y)};
 		}
 
-		[[nodiscard]] std::array<NumberType, 2> toArray() const { return {x, y}; }
+		[[nodiscard]] std::array<NumberType, 2> toArray() const { return {this->x, this->y}; }
 		// ----
 
 		// OPERATORS ---
 		// numberic typed operators
-		VecType operator-(NumberType other) const { return VecType(x - other, y - other); }
-		VecType operator+(NumberType other) const { return VecType(x + other, y + other); }
-		VecType operator*(NumberType other) const { return VecType(x * other, y * other); }
-		VecType operator/(NumberType other) const { return VecType(x / other, y / other); }
+		VecType operator-(NumberType other) const { return VecType(this->x - other, this->y - other); }
+		VecType operator+(NumberType other) const { return VecType(this->x + other, this->y + other); }
+		VecType operator*(NumberType other) const { return VecType(this->x * other, this->y * other); }
+		VecType operator/(NumberType other) const { return VecType(this->x / other, this->y / other); }
 
 		VecType& operator-=(NumberType other) {
-			x = x - other;
-			y = y - other;
+			this->x = this->x - other;
+			this->y = this->y - other;
 			return *this;
 		}
 		VecType& operator+=(NumberType other) {
-			x = x + other;
-			y = y + other;
+			this->x = this->x + other;
+			this->y = this->y + other;
 			return *this;
 		}
 		VecType& operator*=(NumberType other) {
-			x = x * other;
-			y = y * other;
+			this->x = this->x * other;
+			this->y = this->y * other;
 			return *this;
 		}
 		VecType& operator/=(NumberType other) {
-			x = x / other;
-			y = y / other;
+			this->x = this->x / other;
+			this->y = this->y / other;
 			return *this;
 		}
 
-		bool operator==(NumberType other) const { return x == other && y == other; }
-		bool operator!=(NumberType other) const { return !operator==(other); }
-		bool operator<(NumberType other) const { return x < other && y < other; }
-		bool operator<=(NumberType other) const { return x <= other && y <= other; }
-		bool operator>(NumberType other) const { return x > other && y > other; }
-		bool operator>=(NumberType other) const { return x >= other && y >= other; }
+		bool operator==(NumberType other) const { return this->x == other && this->y == other; }
+		bool operator!=(NumberType other) const { return !this->operator==(other); }
+		bool operator<(NumberType other) const { return this->x < other && this->y < other; }
+		bool operator<=(NumberType other) const { return this->x <= other && this->y <= other; }
+		bool operator>(NumberType other) const { return this->x > other && this->y > other; }
+		bool operator>=(NumberType other) const { return this->x >= other && this->y >= other; }
 
 		// vector typed operators
-		VecType operator-(const VecType& other) const { return VecType(x - other.x, y - other.y); }
-		VecType operator+(const VecType& other) const { return VecType(x + other.x, y + other.y); }
-		VecType operator*(const VecType& other) const { return VecType(x * other.x, y * other.y); }
-		VecType operator/(const VecType& other) const { return VecType(x / other.x, y / other.y); }
+		VecType operator-(const VecType& other) const { return VecType(this->x - other.x, this->y - other.y); }
+		VecType operator+(const VecType& other) const { return VecType(this->x + other.x, this->y + other.y); }
+		VecType operator*(const VecType& other) const { return VecType(this->x * other.x, this->y * other.y); }
+		VecType operator/(const VecType& other) const { return VecType(this->x / other.x, this->y / other.y); }
 
 		VecType& operator-=(const VecType& other) {
-			x = x - other.x;
-			y = y - other.y;
+			this->x = this->x - other.x;
+			this->y = this->y - other.y;
 			return *this;
 		}
 		VecType& operator+=(const VecType& other) {
-			x = x + other.x;
-			y = y + other.y;
+			this->x = this->x + other.x;
+			this->y = this->y + other.y;
 			return *this;
 		}
 		VecType& operator*=(const VecType& other) {
-			x = x * other.x;
-			y = y * other.y;
+			this->x = this->x * other.x;
+			this->y = this->y * other.y;
 			return *this;
 		}
 		VecType& operator/=(const VecType& other) {
-			x = x / other.x;
-			y = y / other.y;
+			this->x = this->x / other.x;
+			this->y = this->y / other.y;
 			return *this;
 		}
 
-		bool operator==(const VecType& other) const { return x == other.x && y == other.y; }
-		bool operator!=(const VecType& other) const { return !operator==(other); }
-		bool operator<(const VecType& other) const { return x < other.x && y < other.y; }
-		bool operator<=(const VecType& other) const { return x <= other.x && y <= other.y; }
-		bool operator>(const VecType& other) const { return x > other.x && y > other.y; }
-		bool operator>=(const VecType& other) const { return x >= other.x && y >= other.y; }
+		bool operator==(const VecType& other) const { return this->x == other.x && this->y == other.y; }
+		bool operator!=(const VecType& other) const { return !this->operator==(other); }
+		bool operator<(const VecType& other) const { return this->x < other.x && this->y < other.y; }
+		bool operator<=(const VecType& other) const { return this->x <= other.x && this->y <= other.y; }
+		bool operator>(const VecType& other) const { return this->x > other.x && this->y > other.y; }
+		bool operator>=(const VecType& other) const { return this->x >= other.x && this->y >= other.y; }
 
-		VecType operator-() const { return VecType(-x, -y); }
+		VecType operator-() const { return VecType(-this->x, -this->y); }
 		// -------
 	};
 

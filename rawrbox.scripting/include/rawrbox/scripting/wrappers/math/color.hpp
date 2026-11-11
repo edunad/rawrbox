@@ -48,8 +48,8 @@ namespace rawrbox {
 			    .addFunction("__ne", &CL::operator!=)
 			    .addFunction("__unm", [](CL& color) { return -color; })
 
-			    .addStaticFunction("RGBHex", [](double hex) { return CL::RGBHex(toHEX(hex)); })
-			    .addStaticFunction("RGBAHex", [](double hex) { return CL::RGBAHex(toHEX(hex)); })
+			    .addStaticFunction("RGBHex", [](double hex) { return CL::RGBHex(ColorWrapper::toHEX(hex)); })
+			    .addStaticFunction("RGBAHex", [](double hex) { return CL::RGBAHex(ColorWrapper::toHEX(hex)); })
 
 			    .addStaticFunction("black", &CLS::Black)
 			    .addStaticFunction("white", &CLS::White)
@@ -64,6 +64,8 @@ namespace rawrbox {
 			    .addStaticFunction("transparent", &CLS::Transparent)
 
 			    .endClass();
+
+			rawrbox::LuaUtils::registerJSONType<CL>(name);
 		}
 
 	public:

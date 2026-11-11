@@ -9,7 +9,7 @@ namespace rawrbox {
 	}
 
 	void PostProcessFog::setColor(const rawrbox::Colorf& color) {
-		this->_data[0] = color.array(); // Color
+		this->_data[0] = color.data(); // Color
 	}
 
 	void PostProcessFog::setType(rawrbox::FOG_TYPE type) {
@@ -27,6 +27,6 @@ namespace rawrbox {
 	void PostProcessFog::init() {
 		rawrbox::PostProcessBase::init();
 
-		this->_pipeline = createPipeline("PostProcess::Fog", "post_process/fog.psh");
+		this->_pipeline = this->createPipeline("PostProcess::Fog", "post_process/fog.psh");
 	}
 } // namespace rawrbox

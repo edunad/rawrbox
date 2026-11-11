@@ -352,7 +352,7 @@ namespace stencil {
 		// ---
 
 		// Markdown ---
-		_markdown->render(*stencil, {0, 90});
+		this->_markdown->render(*stencil, {0, 90});
 		// -----
 
 		stencil->popOffset();

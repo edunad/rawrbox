@@ -4,8 +4,9 @@
 #include <rawrbox/utils/threading.hpp>
 #include <rawrbox/utils/timer.hpp>
 
-#include <fmt/format.h>
 #include <tracy/Tracy.hpp>
+
+#include <fmt/format.h>
 
 #include <algorithm>
 #include <array>
@@ -22,31 +23,24 @@ extern char** environ;
 #endif
 
 namespace rawrbox {
-	namespace {
-#ifdef _WIN32
-		HANDLE hiResTimer() {
-			static HANDLE handle = CreateWaitableTimerExW(nullptr, nullptr, CREATE_WAITABLE_TIMER_HIGH_RESOLUTION, TIMER_ALL_ACCESS);
-			return handle;
-		}
-
-		bool preciseSleep(double seconds) {
-			HANDLE timer = hiResTimer();
-			if (timer == nullptr) return false;
-
-			LARGE_INTEGER due = {};
-			due.QuadPart = -static_cast<LONGLONG>(seconds * 1e7);
-
-			if (due.QuadPart >= 0) return true;
-			if (SetWaitableTimer(timer, &due, 0, nullptr, nullptr, FALSE) == FALSE) return false;
-
-			WaitForSingleObject(timer, INFINITE);
-
-			return true;
-		}
-#endif
-	} // namespace
-
 	// INTERNAL ---
+#ifdef _WIN32
+	bool Engine::preciseSleep(double seconds) {
+		static HANDLE timer = CreateWaitableTimerExW(nullptr, nullptr, CREATE_WAITABLE_TIMER_HIGH_RESOLUTION, TIMER_ALL_ACCESS);
+		if (timer == nullptr) return false;
+
+		LARGE_INTEGER due = {};
+		due.QuadPart = -static_cast<LONGLONG>(seconds * 1e7);
+
+		if (due.QuadPart >= 0) return true;
+		if (SetWaitableTimer(timer, &due, 0, nullptr, nullptr, FALSE) == FALSE) return false;
+
+		WaitForSingleObject(timer, INFINITE);
+
+		return true;
+	}
+#endif
+
 	void Engine::sleep(float milliseconds) {
 		using clock = std::chrono::steady_clock;
 		constexpr double SLOP_SEC = 0.001;
@@ -63,7 +57,7 @@ namespace rawrbox {
 
 			if (remaining > SLOP_SEC) {
 #ifdef _WIN32
-				if (preciseSleep(remaining - SLOP_SEC)) continue;
+				if (this->preciseSleep(remaining - SLOP_SEC)) continue;
 				std::this_thread::sleep_for(std::chrono::milliseconds(1));
 #else
 				std::this_thread::sleep_for(std::chrono::duration<double>(remaining - SLOP_SEC));
@@ -88,7 +82,7 @@ namespace rawrbox {
 
 	void Engine::shutdown() {
 		if (this->_shutdown != ENGINE_THREADS::NONE) return;
-		
+
 		rawrbox::ASYNC::shutdown();                      // Finish all jobs
 		this->_shutdown = ENGINE_THREADS::THREAD_RENDER; // Stop render first
 	}
@@ -142,7 +136,7 @@ namespace rawrbox {
 				const float target_deltaTime = 1.0F / this->_fps;
 				if (rawrbox::DELTA_TIME < target_deltaTime) {
 					ZoneScopedN("Engine::sleep");
-					sleep((target_deltaTime - rawrbox::DELTA_TIME) * 1000);
+					this->sleep((target_deltaTime - rawrbox::DELTA_TIME) * 1000);
 					rawrbox::DELTA_TIME += static_cast<float>(std::max(0.0, this->_timer.record_elapsed_seconds()));
 				}
 
@@ -155,7 +149,7 @@ namespace rawrbox {
 
 				// Fixed time update --------
 				rawrbox::FIXED_DELTA_TIME = 1.0F / static_cast<float>(this->_tps);
-				this->_deltaTimeAccumulator += std::min(rawrbox::DELTA_TIME, MAX_FRAME_TIME);
+				this->_deltaTimeAccumulator += std::min(rawrbox::DELTA_TIME, this->MAX_FRAME_TIME);
 
 				while (this->_deltaTimeAccumulator >= rawrbox::FIXED_DELTA_TIME) {
 					ZoneScopedN("Engine::fixedUpdate");

@@ -10,12 +10,12 @@ namespace rawrbox {
 	std::vector<rawrbox::LoadingTask> LoadingUtils::_tasks = {};
 
 	void LoadingUtils::add(const std::string& id, const std::string& title, size_t done, size_t total, const std::string& detail) {
-		const auto fnd = std::ranges::find_if(_tasks, [&id](const auto& task) {
+		const auto& fnd = std::ranges::find_if(LoadingUtils::_tasks, [&id](const auto& task) {
 			return task.id == id;
 		});
 
-		if (fnd == _tasks.end()) {
-			_tasks.push_back({.id = id, .title = title, .detail = detail, .done = done, .total = total});
+		if (fnd == LoadingUtils::_tasks.end()) {
+			LoadingUtils::_tasks.push_back({.id = id, .title = title, .detail = detail, .done = done, .total = total});
 			return;
 		}
 
@@ -26,21 +26,21 @@ namespace rawrbox {
 	}
 
 	void LoadingUtils::remove(const std::string& id) {
-		std::erase_if(_tasks, [&id](const auto& task) {
+		std::erase_if(LoadingUtils::_tasks, [&id](const auto& task) {
 			return task.id == id;
 		});
 	}
 
 	void LoadingUtils::clear() {
-		_tasks.clear();
+		LoadingUtils::_tasks.clear();
 	}
 
 	bool LoadingUtils::hasTasks() {
-		return !_tasks.empty();
+		return !LoadingUtils::_tasks.empty();
 	}
 
 	const std::vector<rawrbox::LoadingTask>& LoadingUtils::getTasks() {
-		return _tasks;
+		return LoadingUtils::_tasks;
 	}
 
 	void LoadingUtils::draw(rawrbox::Stencil& stencil, const rawrbox::Vector2f& size) {
@@ -53,8 +53,8 @@ namespace rawrbox {
 			title = "COMPILING SHADERS";
 			detail = rawrbox::PipelineUtils::getCompilingName();
 			progress = rawrbox::PipelineUtils::getCompileProgress();
-		} else if (!_tasks.empty()) { // Custom tasks
-			const auto& task = _tasks.front();
+		} else if (!LoadingUtils::_tasks.empty()) { // Custom tasks
+			const auto& task = LoadingUtils::_tasks.front();
 
 			title = task.title;
 			detail = task.detail.empty() ? fmt::format("{}/{}", task.done, task.total) : task.detail;

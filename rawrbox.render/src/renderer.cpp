@@ -679,7 +679,7 @@ namespace rawrbox {
 			std::array<float, 4> clear = {0, 0, 0, 1};
 			this->_context->ClearRenderTarget(pRTV, clear.data(), Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
 		} else {
-			this->_context->ClearRenderTarget(pRTV, this->_clearColor.array().data(), Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
+			this->_context->ClearRenderTarget(pRTV, this->_clearColor.data().data(), Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
 		}
 
 		this->_context->ClearDepthStencil(pDSV, Diligent::CLEAR_DEPTH_FLAG, 1.F, 0, Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
@@ -885,8 +885,8 @@ namespace rawrbox {
 		auto pipeName = fmt::format("{}::PIPELINE", query);
 		auto durationName = fmt::format("{}::DURATION", query);
 
-		auto fndPipeline = this->_query.find(pipeName);
-		auto fndDuration = this->_query.find(durationName);
+		const auto& fndPipeline = this->_query.find(pipeName);
+		const auto& fndDuration = this->_query.find(durationName);
 
 		if (fndPipeline->second == nullptr || fndDuration->second == nullptr) {
 			RAWRBOX_CRITICAL("Failed to end query '{}', not found!", query);
@@ -977,51 +977,64 @@ namespace rawrbox {
 		this->_transparent = transparent;
 	}
 
-	void RendererBase::gpuPick(const rawrbox::Vector2i& windowPos, const std::function<void(uint32_t)>& callback) {
+	rawrbox::PickRequest RendererBase::gpuPick(const rawrbox::Vector2i& windowPos, const std::function<void(uint32_t)>& callback) {
 		if (rawrbox::MAIN_CAMERA == nullptr) RAWRBOX_CRITICAL("Main camera not initialized");
 		if (callback == nullptr) RAWRBOX_CRITICAL("Invalid callback");
+		if (this->_GPUBlit == nullptr) RAWRBOX_CRITICAL("Renderer not initialized! Did you call 'init' ?");
 
-		const auto max = MAIN_CAMERA->getRenderTarget()->getSize().cast<int>() - static_cast<int>(RB_RENDER_GPU_PICK_SAMPLE_SIZE);
-		const auto pos = MAIN_CAMERA->windowToTarget(windowPos.cast<float>()).cast<int>().clamp({}, max);
+		const auto& size = rawrbox::MAIN_CAMERA->getRenderTarget()->getSize();
+		const auto max = size.cast<int>() - static_cast<int>(RB_RENDER_GPU_PICK_SAMPLE_SIZE);
+		const auto pos = rawrbox::MAIN_CAMERA->windowToTarget(windowPos.cast<float>()).cast<int>().clamp({}, max.max({}));
 
-		Diligent::Box MapRegion;
-		MapRegion.MinX = pos.x;
-		MapRegion.MinY = pos.y;
-		MapRegion.MaxX = MapRegion.MinX + RB_RENDER_GPU_PICK_SAMPLE_SIZE;
-		MapRegion.MaxY = MapRegion.MinY + RB_RENDER_GPU_PICK_SAMPLE_SIZE;
+		const Diligent::Box region = {
+		    static_cast<uint32_t>(pos.x), std::min<uint32_t>(static_cast<uint32_t>(pos.x) + RB_RENDER_GPU_PICK_SAMPLE_SIZE, size.x),
+		    static_cast<uint32_t>(pos.y), std::min<uint32_t>(static_cast<uint32_t>(pos.y) + RB_RENDER_GPU_PICK_SAMPLE_SIZE, size.y)};
 
-		auto* tex = rawrbox::MAIN_CAMERA->getRenderTarget()->getTexture(1); // GPU pick texture
-		this->_GPUBlit->copy(tex, &MapRegion, [this, callback]() {
-			this->_GPUBlit->blit(nullptr, [callback](const uint8_t* pixels, const uint64_t stride) {
-				uint32_t max = 0;
-				uint32_t id = 0;
-				std::unordered_map<uint32_t, uint32_t> ids = {};
+		auto state = std::make_shared<rawrbox::PickState>(callback);
+		const auto pick = [weak = std::weak_ptr<rawrbox::PickState>(state)](std::span<const uint8_t> pixels, uint64_t stride, const rawrbox::Vector2u& area) {
+			const auto picked = weak.lock();
+			if (picked == nullptr) return;
 
-				for (size_t y = 0; y < RB_RENDER_GPU_PICK_SAMPLE_SIZE; y++) {
-					for (size_t x = 0; x < RB_RENDER_GPU_PICK_SAMPLE_SIZE; x++) {
-						size_t pixelIndex = x * 4 + y * stride;
+			uint32_t best = 0;
+			uint32_t id = 0;
+			std::unordered_map<uint32_t, uint32_t> ids = {};
 
-						uint8_t r = pixels[pixelIndex];
-						uint8_t g = pixels[pixelIndex + 1];
-						uint8_t b = pixels[pixelIndex + 2];
+			for (size_t y = 0; y < area.y; y++) {
+				for (size_t x = 0; x < area.x; x++) {
+					const size_t pixelIndex = x * 4 + y * stride;
 
-						if ((r | g | b) == 0) continue;
+					const uint8_t r = pixels[pixelIndex];
+					const uint8_t g = pixels[pixelIndex + 1];
+					const uint8_t b = pixels[pixelIndex + 2];
+					if ((r | g | b) == 0) continue;
 
-						uint32_t hashKey = rawrbox::PackUtils::toRGBA(r, g, b, 255);
-						auto& v = ids[hashKey];
-						v++;
+					const uint32_t hashKey = rawrbox::PackUtils::toRGBA(r, g, b, 255);
+					auto& count = ids[hashKey];
+					count++;
 
-						// Get the average pixel
-						if (v > max) {
-							max = v;
-							id = hashKey;
-						}
+					// Get the average pixel
+					if (count > best) {
+						best = count;
+						id = hashKey;
 					}
 				}
+			}
 
-				callback(id >> 8U);
-			});
-		});
+			picked->done = true;
+			picked->callback(id >> 8U);
+		};
+
+		auto* tex = rawrbox::MAIN_CAMERA->getRenderTarget()->getTexture(1); // GPU pick texture
+		this->_GPUBlit->read(*tex, pick, region);
+
+		return rawrbox::PickRequest(std::move(state));
 	}
+	// ------
+
+	// PICK REQUEST ------
+	PickRequest::PickRequest(std::shared_ptr<rawrbox::PickState> state) : _state(std::move(state)) {}
+
+	void PickRequest::cancel() { this->_state.reset(); }
+	bool PickRequest::isPending() const { return this->_state != nullptr && !this->_state->done; }
 	// ------
 } // namespace rawrbox

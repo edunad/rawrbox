@@ -66,80 +66,67 @@ namespace rawrbox {
 	}
 
 	bool PackNode::canInsertNode(uint32_t insertedWidth, uint32_t insertedHeight) {
-		if (!data.empty()) return false;
+		if (!this->data.empty()) return false;
 
-		if (left && right) {
-			if (left->canInsertNode(insertedWidth, insertedHeight)) return true;
-			if (right->canInsertNode(insertedWidth, insertedHeight)) return true;
+		if (this->left && this->right) {
+			if (this->left->canInsertNode(insertedWidth, insertedHeight)) return true;
+			if (this->right->canInsertNode(insertedWidth, insertedHeight)) return true;
 
 			return false;
 		}
 
-		if (insertedWidth > width || insertedHeight > height) return false;
-		if (width == insertedWidth && height == insertedHeight) return true;
+		if (insertedWidth > this->width || insertedHeight > this->height) return false;
+		if (this->width == insertedWidth && this->height == insertedHeight) return true;
 
-		// if all of the above didn't return, the current leaf is large enough,
-		// with some space to spare, so we split up the current node so we have
-		// one prefectly fitted node and some spare nodes
-		int remainingWidth = std::max<int>(0, static_cast<int>(width) - static_cast<int>(insertedWidth));
-		int remainingHeight = std::max<int>(0, static_cast<int>(height) - static_cast<int>(insertedHeight));
+		int remainingWidth = std::max<int>(0, static_cast<int>(this->width) - static_cast<int>(insertedWidth));
+		int remainingHeight = std::max<int>(0, static_cast<int>(this->height) - static_cast<int>(insertedHeight));
 
-		bool isRemainderWiderThanHigh = remainingWidth > remainingHeight;
-
-		if (isRemainderWiderThanHigh) { // if wider than high, split verticallly
-			left = std::make_unique<rawrbox::PackNode>(x, y, insertedWidth, height);
-			right = std::make_unique<rawrbox::PackNode>(x + insertedWidth, y, remainingWidth, height);
-		} else { // That'd make the remainder higher than it's wide, split horizontally
-			left = std::make_unique<rawrbox::PackNode>(x, y, width, insertedHeight);
-			right = std::make_unique<rawrbox::PackNode>(x, y + insertedHeight, width, remainingHeight);
+		if (remainingWidth > remainingHeight) {
+			this->left = std::make_unique<rawrbox::PackNode>(this->x, this->y, insertedWidth, this->height);
+			this->right = std::make_unique<rawrbox::PackNode>(this->x + insertedWidth, this->y, remainingWidth, this->height);
+		} else {
+			this->left = std::make_unique<rawrbox::PackNode>(this->x, this->y, this->width, insertedHeight);
+			this->right = std::make_unique<rawrbox::PackNode>(this->x, this->y + insertedHeight, this->width, remainingHeight);
 		}
 
-		return left->canInsertNode(insertedWidth, insertedHeight);
+		return this->left->canInsertNode(insertedWidth, insertedHeight);
 	}
 
 	std::optional<std::reference_wrapper<rawrbox::PackNode>> PackNode::InsertNode(uint32_t insertedWidth, uint32_t insertedHeight) {
-		if (!data.empty()) return std::nullopt;
+		if (!this->data.empty()) return std::nullopt;
 
-		if (left && right) {
-			// both children exist, which means this node is full, try left then right
-			if (auto node = left->InsertNode(insertedWidth, insertedHeight); node != std::nullopt) {
+		if (this->left && this->right) {
+			if (const auto node = this->left->InsertNode(insertedWidth, insertedHeight); node != std::nullopt) {
 				return node;
 			}
 
-			if (auto node = right->InsertNode(insertedWidth, insertedHeight); node != std::nullopt) {
+			if (const auto node = this->right->InsertNode(insertedWidth, insertedHeight); node != std::nullopt) {
 				return node;
 			}
 
 			return std::nullopt;
 		}
 
-		if (insertedWidth > width || insertedHeight > height) {
-			// to be insterted node is too big, can't fit here
+		if (insertedWidth > this->width || insertedHeight > this->height) {
 			return std::nullopt;
 		}
 
-		if (width == insertedWidth && height == insertedHeight) {
-			// fits perfectly
+		if (this->width == insertedWidth && this->height == insertedHeight) {
 			return *this;
 		}
 
-		// if all of the above didn't return, the current leaf is large enough,
-		// with some space to spare, so we split up the current node so we have
-		// one prefectly fitted node and some spare nodes
-		int remainingWidth = width - insertedWidth;
-		int remainingHeight = height - insertedHeight;
+		int remainingWidth = this->width - insertedWidth;
+		int remainingHeight = this->height - insertedHeight;
 
-		bool isRemainderWiderThanHigh = remainingWidth > remainingHeight;
-
-		if (isRemainderWiderThanHigh) { // if wider than high, split verticallly
-			left = std::make_unique<rawrbox::PackNode>(x, y, insertedWidth, height);
-			right = std::make_unique<rawrbox::PackNode>(x + insertedWidth, y, remainingWidth, height);
-		} else { // That'd make the remainder higher than it's wide, split horizontally
-			left = std::make_unique<rawrbox::PackNode>(x, y, width, insertedHeight);
-			right = std::make_unique<rawrbox::PackNode>(x, y + insertedHeight, width, remainingHeight);
+		if (remainingWidth > remainingHeight) {
+			this->left = std::make_unique<rawrbox::PackNode>(this->x, this->y, insertedWidth, this->height);
+			this->right = std::make_unique<rawrbox::PackNode>(this->x + insertedWidth, this->y, remainingWidth, this->height);
+		} else {
+			this->left = std::make_unique<rawrbox::PackNode>(this->x, this->y, this->width, insertedHeight);
+			this->right = std::make_unique<rawrbox::PackNode>(this->x, this->y + insertedHeight, this->width, remainingHeight);
 		}
 
-		return left->InsertNode(insertedWidth, insertedHeight);
+		return this->left->InsertNode(insertedWidth, insertedHeight);
 	}
 
 	void TexturePack::resize(const rawrbox::Vector2u& /*size*/) {

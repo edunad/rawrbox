@@ -2,6 +2,9 @@
 
 #include <rawrbox/scripting/utils/lua.hpp>
 
+#include <optional>
+#include <string>
+
 namespace rawrbox {
 	class I18NWrapper {
 	public:
@@ -9,6 +12,7 @@ namespace rawrbox {
 		static void setLanguage(const std::string& language);
 
 		static std::string get(const luabridge::LuaRef& ref);
+		static std::optional<std::string> find(const luabridge::LuaRef& ref);
 		static std::string resolve(const std::string& text, lua_State* L);
 
 		static void registerLua(lua_State* L);

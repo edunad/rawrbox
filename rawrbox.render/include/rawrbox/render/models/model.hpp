@@ -37,6 +37,7 @@ namespace rawrbox {
 		rawrbox::BBOX _bbox = {};
 		std::vector<rawrbox::BBOX> _meshBounds = {};
 		std::vector<std::vector<std::pair<uint32_t, rawrbox::BBOX>>> _boneBounds = {};
+		inline static const std::vector<std::pair<uint32_t, rawrbox::BBOX>> NO_BONES = {};
 
 		// OCCLUSION ---
 		Diligent::RefCntAutoPtr<Diligent::IBuffer> _cullMeshes;
@@ -74,7 +75,7 @@ namespace rawrbox {
 		}
 
 		rawrbox::AnimationBlender* getBlender(rawrbox::Skeleton* skeleton) {
-			auto fnd = this->_blenders.find(skeleton);
+			const auto& fnd = this->_blenders.find(skeleton);
 			if (fnd != this->_blenders.end()) return fnd->second.get();
 
 			auto blender = std::make_unique<rawrbox::AnimationBlender>(skeleton);
@@ -119,10 +120,10 @@ namespace rawrbox {
 		void applyAnimations() {
 			// Vertex ----
 			for (auto& vertex : this->_vertexBlends) {
-				auto fnd = this->_animatedMeshes.find(vertex.first);
+				const auto& fnd = this->_animatedMeshes.find(vertex.first);
 				if (fnd == this->_animatedMeshes.end()) continue;
 
-				const auto space = this->_vertexSpaces.find(vertex.first);
+				const auto& space = this->_vertexSpaces.find(vertex.first);
 				const rawrbox::Matrix4x4 mtx = space == this->_vertexSpaces.end() ? vertex.second.toMatrix() : space->second.first * vertex.second.toMatrix() * space->second.second;
 				for (auto* mesh : fnd->second) {
 					mesh->matrix = mtx;
@@ -145,10 +146,7 @@ namespace rawrbox {
 			if (skinJoints > RB_RENDER_MAX_BONES_PER_MODEL) return;
 
 			std::array<rawrbox::Matrix4x4, RB_RENDER_MAX_BONES_PER_MODEL> palette = {};
-			for (size_t i = 0; i < skinJoints; i++) {
-				const auto joint = static_cast<size_t>(skeleton.getJointIndex(i));
-				palette[i] = rawrbox::AnimationUtils::toMatrix(output[joint]) * skeleton.getInverseBindMatrix(i);
-			}
+			rawrbox::AnimationUtils::boneTransforms(skeleton, std::span<const ozz::math::Float4x4>(output.data(), output.size()), palette);
 
 			for (auto& mesh : this->_meshes) {
 				if (mesh == nullptr || mesh->skeleton != &skeleton) continue;
@@ -372,7 +370,7 @@ namespace rawrbox {
 
 		// ANIMATIONS ----
 		virtual bool blendAnimation(const std::string& name, float weight) {
-			auto fnd = this->_playingAnimations.find(name);
+			const auto& fnd = this->_playingAnimations.find(name);
 			if (fnd == this->_playingAnimations.end() || fnd->second == nullptr) return false;
 
 			fnd->second->setWeight(weight);
@@ -476,7 +474,7 @@ namespace rawrbox {
 		}
 
 		virtual bool stopAnimation(const std::string& name) {
-			auto fnd = this->_playingAnimations.find(name);
+			const auto& fnd = this->_playingAnimations.find(name);
 			if (fnd == this->_playingAnimations.end()) return false;
 
 			this->_playingAnimations.erase(fnd);
@@ -597,7 +595,7 @@ namespace rawrbox {
 		}
 
 		virtual rawrbox::Mesh<typename M::vertexBufferType>* getMeshByName(const std::string& id) {
-			auto fnd = std::find_if(this->_meshes.begin(), this->_meshes.end(), [&id](auto& mesh) { return mesh->getName() == id; });
+			const auto& fnd = std::find_if(this->_meshes.begin(), this->_meshes.end(), [&id](auto& mesh) { return mesh->getName() == id; });
 			if (fnd == this->_meshes.end()) return nullptr;
 
 			return fnd->get();
@@ -678,7 +676,7 @@ namespace rawrbox {
 				auto& mesh = this->_meshes[i];
 				if (mesh == nullptr || mesh->empty()) continue;
 
-				const auto meshBounds = this->_meshBounds[i].transform(this->getMatrix() * mesh->getMatrix());
+				const auto meshBounds = this->getMeshBounds(i).transform(this->getMatrix() * mesh->getMatrix());
 				if (empty) {
 					bounds = meshBounds;
 				} else {
@@ -706,7 +704,7 @@ namespace rawrbox {
 				if (mesh == nullptr || mesh->empty() || !this->canCastShadows(*mesh)) continue;
 
 				const auto matrix = this->getMatrix() * mesh->getMatrix();
-				const auto bounds = i < this->_meshBounds.size() ? this->_meshBounds[i].transform(matrix) : rawrbox::BBOX::infinite();
+				const auto bounds = i < this->_meshBounds.size() ? this->getMeshBounds(i).transform(matrix) : rawrbox::BBOX::infinite();
 				if (draw.isVisible && !draw.isVisible(bounds)) continue;
 
 				if (draw.bind) this->bindShadowMesh(*mesh, matrix);
@@ -719,6 +717,10 @@ namespace rawrbox {
 	protected:
 		[[nodiscard]] virtual bool isCullable(size_t index) const {
 			return index < this->_meshBounds.size() && this->_meshes[index]->isCullable();
+		}
+
+		[[nodiscard]] const rawrbox::BBOX& getMeshBounds(size_t index) const {
+			return this->_cullBounds.has_value() ? this->_cullBounds.value() : this->_meshBounds[index];
 		}
 
 		// CULL  ---
@@ -857,9 +859,9 @@ namespace rawrbox {
 				if (mesh == nullptr || mesh->empty() || !this->isCullable(i)) continue;
 
 				auto& bounds = this->_frameBounds[i];
-				bounds = this->_meshBounds[i];
+				bounds = this->getMeshBounds(i);
 
-				const auto& bones = this->_boneBounds[i];
+				const auto& bones = this->_cullBounds.has_value() ? this->NO_BONES : this->_boneBounds[i];
 				for (size_t bone = 0; bone < bones.size(); bone++) {
 					const auto& [joint, box] = bones[bone];
 					const auto posed = joint < RB_RENDER_MAX_BONES_PER_MODEL ? box.transform(mesh->boneTransforms[joint]) : box;

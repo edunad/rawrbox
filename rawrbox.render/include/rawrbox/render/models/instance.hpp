@@ -22,8 +22,8 @@ namespace rawrbox {
 			if (id != 0) this->setId(id);
 		}
 
-		[[nodiscard]] rawrbox::Colorf getColor() const { return rawrbox::Color::RGBAHex(data.x); }
-		void setColor(const rawrbox::Colorf& cl) { data.x = cl.pack(); }
+		[[nodiscard]] rawrbox::Colorf getColor() const { return rawrbox::Color::RGBAHex(this->data.x); }
+		void setColor(const rawrbox::Colorf& cl) { this->data.x = cl.pack(); }
 
 		[[nodiscard]] rawrbox::Matrix4x4 getMatrix() const {
 			return rawrbox::Matrix4x4{std::array<float, 16>{
@@ -39,10 +39,10 @@ namespace rawrbox {
 			}
 		}
 
-		[[nodiscard]] uint32_t getSlice() const { return data.y; }
-		void setSlice(const uint32_t slice) { data.y = slice; }
+		[[nodiscard]] uint32_t getSlice() const { return this->data.y; }
+		void setSlice(const uint32_t slice) { this->data.y = slice; }
 
-		[[nodiscard]] uint32_t getId() const { return data.z >> 8; }
-		void setId(const uint32_t id) { data.z = id == 0 ? 0 : (id << 8) | 0xFF; }
+		[[nodiscard]] uint32_t getId() const { return this->data.z >> 8; }
+		void setId(const uint32_t id) { this->data.z = id == 0 ? 0 : (id << 8) | 0xFF; }
 	};
 } // namespace rawrbox
