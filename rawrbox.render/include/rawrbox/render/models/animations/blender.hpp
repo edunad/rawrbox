@@ -51,8 +51,9 @@ namespace rawrbox {
 			if (index < 0) return false;
 
 			const auto& fnd = this->_ik.find(index);
-			if (fnd != this->_ik.end() && typeid(*fnd->second) == typeid(T)) {
-				T& current = *static_cast<T*>(fnd->second.get());
+			rawrbox::AnimationIKBase* existing = fnd != this->_ik.end() ? fnd->second.get() : nullptr;
+			if (existing != nullptr && typeid(*existing) == typeid(T)) {
+				T& current = *static_cast<T*>(existing);
 				T copy = ik;
 				if (!copy.setup(*this, static_cast<uint32_t>(index))) return false;
 
