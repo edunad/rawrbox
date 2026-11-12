@@ -7,6 +7,7 @@ struct PostProcessConstantsStruct {
 	uint textureID;
 	uint textureDepthID;
 	uint textureExtraID;
+	uint textureExtra2ID;
 };
 
 ConstantBuffer<PostProcessConstantsStruct> PostProcessConstants;
