@@ -171,7 +171,7 @@ namespace rawrbox {
 			id += fmt::format("|{}={}", macroArray.Elements[i].Name, macroArray.Elements[i].Definition);
 		}
 
-		auto fnd = PipelineUtils::_shaders.find(id);
+		const auto& fnd = PipelineUtils::_shaders.find(id);
 		if (fnd != PipelineUtils::_shaders.end()) {
 			return fnd->second;
 		}
@@ -185,7 +185,7 @@ namespace rawrbox {
 
 		const std::string shaderPath = rawrbox::VFS::normalize(name);
 		const std::string shaderName = fmt::format("RawrBox::SHADER::{}::{}", name, entry);
-		
+
 		ShaderCI.Desc.ShaderType = type;
 		ShaderCI.Desc.UseCombinedTextureSamplers = false;
 		ShaderCI.EntryPoint = entry.c_str();

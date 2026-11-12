@@ -16,7 +16,7 @@ namespace rawrbox {
 	}
 
 	void SHADOWS::remove(rawrbox::ShadowCaster& caster) {
-		const auto fnd = std::ranges::find(SHADOWS::_casters, &caster, &rawrbox::ShadowCasterEntry::caster);
+		const auto& fnd = std::ranges::find(SHADOWS::_casters, &caster, &rawrbox::ShadowCasterEntry::caster);
 
 		if (fnd == SHADOWS::_casters.end()) return;
 		if (fnd->cached) SHADOWS::_invalid.push_back(fnd->bounds);

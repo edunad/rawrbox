@@ -65,10 +65,10 @@ namespace rawrbox {
 	}
 
 	rawrbox::Font* TextEngine::load(const std::filesystem::path& filename, uint16_t size, uint32_t index) {
-		std::string key = fmt::format("{}-{}", filename.generic_string(), size);
+		const std::string key = fmt::format("{}-{}", filename.generic_string(), size);
 
 		// Check cache
-		auto fnd = TextEngine::_fonts.find(key);
+		const auto& fnd = TextEngine::_fonts.find(key);
 		if (fnd != TextEngine::_fonts.end()) return fnd->second.get();
 		// ------
 

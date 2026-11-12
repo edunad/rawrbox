@@ -193,7 +193,7 @@ namespace rawrbox {
 	}
 
 	const rawrbox::VPKEntry* VPK::getEntry(const std::string& path) const {
-		const auto entry = this->_entries.find(path);
+		const auto& entry = this->_entries.find(path);
 		if (entry == this->_entries.end()) return nullptr;
 
 		return &entry->second;

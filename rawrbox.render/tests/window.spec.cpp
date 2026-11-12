@@ -45,6 +45,31 @@ TEST_CASE("WindowInputState should behave as expected", "[rawrbox::WindowInputSt
 		REQUIRE_FALSE(keys.isDown(rawrbox::KEY_SPACE));
 	}
 
+	SECTION("rawrbox::WindowInputState::inject") {
+		keys.inject(rawrbox::KEY_E, true);
+		REQUIRE(keys.isPressed(rawrbox::KEY_E));
+		REQUIRE(keys.isDown(rawrbox::KEY_E));
+
+		keys.reset();
+		REQUIRE_FALSE(keys.isPressed(rawrbox::KEY_E));
+		REQUIRE(keys.isDown(rawrbox::KEY_E));
+
+		keys.inject(rawrbox::KEY_E, false);
+		keys.inject(rawrbox::KEY_Q, true);
+		keys.inject(rawrbox::KEY_Q, false);
+		REQUIRE(keys.isReleased(rawrbox::KEY_E));
+		REQUIRE(keys.isPressed(rawrbox::KEY_Q));
+		REQUIRE(keys.isReleased(rawrbox::KEY_Q));
+		REQUIRE_FALSE(keys.isDown(rawrbox::KEY_Q));
+
+		keys.reset();
+		REQUIRE_FALSE(keys.isReleased(rawrbox::KEY_E));
+		REQUIRE_FALSE(keys.isPressed(rawrbox::KEY_Q));
+
+		keys.inject(-1, true);
+		REQUIRE_FALSE(keys.isDown(-1));
+	}
+
 	SECTION("rawrbox::WindowInputState from another thread") {
 		std::jthread input([&keys]() {
 			for (int i = 0; i < 1000; i++) {

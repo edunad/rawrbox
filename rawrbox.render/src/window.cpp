@@ -518,6 +518,8 @@ namespace rawrbox {
 	bool Window::isMousePressed(int key) const { return this->_buttons.isPressed(key); }
 	bool Window::isMouseReleased(int key) const { return this->_buttons.isReleased(key); }
 
+	void Window::injectMouseButton(int key, bool down) { this->_buttons.inject(key, down); }
+
 	const std::unordered_map<int, rawrbox::Vector2u>& Window::getScreenSizes() const {
 		return this->_screenSizes;
 	}

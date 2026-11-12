@@ -20,9 +20,9 @@ namespace rawrbox {
 
 	// JSON TYPES ---
 	std::optional<rawrbox::LuaJSONType> LuaUtils::findJSONType(lua_State* L, int index) {
-		const std::shared_lock lock(_jsonTypesLock);
+		const std::shared_lock lock(LuaUtils::_jsonTypesLock);
 
-		for (const auto& type : _jsonTypes) {
+		for (const auto& type : LuaUtils::_jsonTypes) {
 			if (type.is(L, index)) return type;
 		}
 
@@ -30,10 +30,10 @@ namespace rawrbox {
 	}
 
 	std::optional<rawrbox::LuaJSONType> LuaUtils::findJSONType(std::string_view tag) {
-		const std::shared_lock lock(_jsonTypesLock);
+		const std::shared_lock lock(LuaUtils::_jsonTypesLock);
 
-		const auto fnd = std::ranges::find(_jsonTypes, tag, &rawrbox::LuaJSONType::tag);
-		if (fnd == _jsonTypes.end()) return std::nullopt;
+		const auto& fnd = std::ranges::find(LuaUtils::_jsonTypes, tag, &rawrbox::LuaJSONType::tag);
+		if (fnd == LuaUtils::_jsonTypes.end()) return std::nullopt;
 
 		return *fnd;
 	}
@@ -53,7 +53,7 @@ namespace rawrbox {
 	}
 
 	std::string LuaUtils::describe(lua_State* L, int index) { return fmt::format("{}({})", luaL_typename(L, index), lua_topointer(L, index)); }
-	std::string LuaUtils::formatError(const JSONError& error) { return fmt::format("value{} {}", error.path, error.reason); }
+	std::string LuaUtils::formatError(const JSONError& error, std::string_view root) { return fmt::format("{}{} {}", root, error.path, error.reason); }
 	// ---------
 
 	// TABLES ---
@@ -101,7 +101,7 @@ namespace rawrbox {
 				return lua_toboolean(L, index) != 0 ? "true" : "false";
 			default:
 				if (strict) return std::nullopt;
-				return describe(L, index);
+				return LuaUtils::describe(L, index);
 		}
 	}
 
@@ -118,7 +118,7 @@ namespace rawrbox {
 				{
 					const double number = lua_tonumber(L, index);
 					if (!std::isfinite(number)) {
-						if (options.strict) return valueError("not a finite number");
+						if (options.strict) return LuaUtils::valueError("not a finite number");
 						return glz::generic(nullptr);
 					}
 
@@ -132,23 +132,23 @@ namespace rawrbox {
 				}
 			case LUA_TUSERDATA:
 				{
-					const auto type = findJSONType(L, index);
+					const auto type = LuaUtils::findJSONType(L, index);
 					if (type.has_value()) {
 						auto json = type->encode(L, index);
-						if (!json.has_value()) return valueError(fmt::format("failed to encode '{}'", type->tag));
+						if (!json.has_value()) return LuaUtils::valueError(fmt::format("failed to encode '{}'", type->tag));
 
 						return glz::generic(glz::generic::object_t{{type->tag, std::move(json.value())}});
 					}
 
-					if (options.strict) return valueError("userdata without a registered JSON type");
-					return glz::generic(describe(L, index));
+					if (options.strict) return LuaUtils::valueError("userdata without a registered JSON type");
+					return glz::generic(LuaUtils::describe(L, index));
 				}
 			case LUA_TTABLE:
 				{
-					if (depth >= options.maxDepth) return valueError(fmt::format("is nested deeper than {} tables", options.maxDepth));
-					if (lua_checkstack(L, 4) == 0) return valueError("lua stack overflow");
+					if (depth >= options.maxDepth) return LuaUtils::valueError(fmt::format("is nested deeper than {} tables", options.maxDepth));
+					if (lua_checkstack(L, 4) == 0) return LuaUtils::valueError("lua stack overflow");
 
-					const auto keys = countKeys(L, index);
+					const auto keys = LuaUtils::countKeys(L, index);
 					if (keys.count == 0) return glz::generic(glz::generic::object_t{});
 
 					// ARRAY ---
@@ -158,10 +158,10 @@ namespace rawrbox {
 
 						for (size_t i = 1; i <= keys.count; i++) {
 							lua_rawgeti(L, index, static_cast<int>(i));
-							auto item = encode(L, -1, options, depth + 1);
+							auto item = LuaUtils::encode(L, -1, options, depth + 1);
 							lua_pop(L, 1);
 
-							if (!item.has_value()) return std::unexpected(atIndex(std::move(item.error()), i));
+							if (!item.has_value()) return std::unexpected(LuaUtils::atIndex(std::move(item.error()), i));
 							items.push_back(std::move(item.value()));
 						}
 
@@ -170,9 +170,9 @@ namespace rawrbox {
 					// --------
 
 					if (options.strict) {
-						if (keys.strings != keys.count && keys.strings > 0) return valueError("invalid json keys");
-						if (keys.numbers == keys.count) return valueError("invalid list");
-						if (keys.strings != keys.count) return valueError("has keys that are not names / list indexes");
+						if (keys.strings != keys.count && keys.strings > 0) return LuaUtils::valueError("invalid json keys");
+						if (keys.numbers == keys.count) return LuaUtils::valueError("invalid list");
+						if (keys.strings != keys.count) return LuaUtils::valueError("has keys that are not names / list indexes");
 					}
 
 					// OBJECT ---
@@ -181,18 +181,18 @@ namespace rawrbox {
 
 					lua_pushnil(L);
 					while (lua_next(L, index) != 0) {
-						auto key = keyName(L, -2, options.strict);
+						auto key = LuaUtils::keyName(L, -2, options.strict);
 						if (!key.has_value()) {
 							lua_pop(L, 2);
-							return valueError("non-string invalid keys");
+							return LuaUtils::valueError("non-string invalid keys");
 						}
 
-						auto value = encode(L, -1, options, depth + 1);
+						auto value = LuaUtils::encode(L, -1, options, depth + 1);
 						lua_pop(L, 1);
 
 						if (!value.has_value()) {
 							lua_pop(L, 1);
-							return std::unexpected(atKey(std::move(value.error()), key.value()));
+							return std::unexpected(LuaUtils::atKey(std::move(value.error()), key.value()));
 						}
 
 						fields.emplace_back(std::move(key.value()), std::move(value.value()));
@@ -207,21 +207,21 @@ namespace rawrbox {
 						object.insert_or_assign(std::move(name), std::move(field));
 					}
 
-					if (options.strict && object.size() == 1U && findJSONType(object.begin()->first).has_value()) {
-						return valueError(fmt::format("has '{}' as its only field, which is how a {} is stored; rename the field", object.begin()->first, object.begin()->first));
+					if (options.strict && object.size() == 1U && LuaUtils::findJSONType(object.begin()->first).has_value()) {
+						return LuaUtils::valueError(fmt::format("has '{}' as its only field, which is how a {} is stored; rename the field", object.begin()->first, object.begin()->first));
 					}
 
 					return glz::generic(std::move(object));
 					// --------
 				}
 			default:
-				if (options.strict) return valueError(fmt::format("is a {}! Not plain data", luaL_typename(L, index)));
-				return glz::generic(describe(L, index));
+				if (options.strict) return LuaUtils::valueError(fmt::format("is a {}! Not plain data", luaL_typename(L, index)));
+				return glz::generic(LuaUtils::describe(L, index));
 		}
 	}
 
 	std::expected<void, LuaUtils::JSONError> LuaUtils::decode(lua_State* L, const glz::generic& json, const rawrbox::LuaJSONOptions& options, uint32_t depth) {
-		if (lua_checkstack(L, 3) == 0) return valueError("lua stack overflow");
+		if (lua_checkstack(L, 3) == 0) return LuaUtils::valueError("lua stack overflow");
 
 		if (json.is_null()) {
 			lua_pushnil(L);
@@ -244,14 +244,14 @@ namespace rawrbox {
 		}
 
 		if (const auto* items = json.get_if<glz::generic::array_t>(); items != nullptr) {
-			if (depth >= options.maxDepth) return valueError(fmt::format("is nested deeper than {} tables", options.maxDepth));
+			if (depth >= options.maxDepth) return LuaUtils::valueError(fmt::format("is nested deeper than {} tables", options.maxDepth));
 			lua_createtable(L, static_cast<int>(items->size()), 0);
 
 			for (size_t i = 0; i < items->size(); i++) {
-				auto item = decode(L, (*items)[i], options, depth + 1);
+				auto item = LuaUtils::decode(L, (*items)[i], options, depth + 1);
 				if (!item.has_value()) {
 					lua_pop(L, 1);
-					return std::unexpected(atIndex(std::move(item.error()), i + 1));
+					return std::unexpected(LuaUtils::atIndex(std::move(item.error()), i + 1));
 				}
 
 				lua_rawseti(L, -2, static_cast<int>(i + 1));
@@ -262,23 +262,23 @@ namespace rawrbox {
 
 		if (const auto* fields = json.get_if<glz::generic::object_t>(); fields != nullptr) {
 			if (fields->size() == 1U) {
-				const auto type = findJSONType(fields->begin()->first);
+				const auto type = LuaUtils::findJSONType(fields->begin()->first);
 				if (type.has_value()) {
-					if (!type->decode(L, fields->begin()->second)) return valueError(fmt::format("is not a valid {}", type->tag));
+					if (!type->decode(L, fields->begin()->second)) return LuaUtils::valueError(fmt::format("is not a valid {}", type->tag));
 					return {};
 				}
 			}
 
-			if (depth >= options.maxDepth) return valueError(fmt::format("is nested deeper than {} tables", options.maxDepth));
+			if (depth >= options.maxDepth) return LuaUtils::valueError(fmt::format("is nested deeper than {} tables", options.maxDepth));
 			lua_createtable(L, 0, static_cast<int>(fields->size()));
 
 			for (const auto& [key, value] : *fields) {
 				lua_pushlstring(L, key.data(), key.size());
 
-				auto field = decode(L, value, options, depth + 1);
+				auto field = LuaUtils::decode(L, value, options, depth + 1);
 				if (!field.has_value()) {
 					lua_pop(L, 2);
-					return std::unexpected(atKey(std::move(field.error()), key));
+					return std::unexpected(LuaUtils::atKey(std::move(field.error()), key));
 				}
 
 				lua_rawset(L, -3);
@@ -287,12 +287,12 @@ namespace rawrbox {
 			return {};
 		}
 
-		return valueError("unknown json type");
+		return LuaUtils::valueError("unknown json type");
 	}
 
 	std::expected<void, LuaUtils::JSONError> LuaUtils::copyValue(lua_State* from, int index, lua_State* to, const rawrbox::LuaJSONOptions& options, uint32_t depth) {
 		index = lua_absindex(from, index);
-		if (lua_checkstack(to, 3) == 0) return valueError("lua stack overflow");
+		if (lua_checkstack(to, 3) == 0) return LuaUtils::valueError("lua stack overflow");
 
 		switch (lua_type(from, index)) {
 			case LUA_TNIL:
@@ -324,21 +324,21 @@ namespace rawrbox {
 				}
 			case LUA_TUSERDATA:
 				{
-					const auto type = findJSONType(from, index);
+					const auto type = LuaUtils::findJSONType(from, index);
 					if (type.has_value()) {
-						if (!type->copy(from, index, to)) return valueError("failed to copy different types");
+						if (!type->copy(from, index, to)) return LuaUtils::valueError("failed to copy different types");
 						return {};
 					}
 
-					if (options.strict) return valueError("is a userdata without a registered JSON type");
-					const auto text = describe(from, index);
+					if (options.strict) return LuaUtils::valueError("is a userdata without a registered JSON type");
+					const auto text = LuaUtils::describe(from, index);
 					lua_pushlstring(to, text.data(), text.size());
 					return {};
 				}
 			case LUA_TTABLE:
 				{
-					if (depth >= options.maxDepth) return valueError(fmt::format("is nested deeper than {} tables", options.maxDepth));
-					if (lua_checkstack(from, 3) == 0) return valueError("lua stack overflow");
+					if (depth >= options.maxDepth) return LuaUtils::valueError(fmt::format("is nested deeper than {} tables", options.maxDepth));
+					if (lua_checkstack(from, 3) == 0) return LuaUtils::valueError("lua stack overflow");
 
 					const int top = lua_gettop(to);
 					lua_createtable(to, lua_objlen(from, index), 0);
@@ -366,15 +366,15 @@ namespace rawrbox {
 
 							const std::string reason = fmt::format("has a {} key", lua_typename(from, keyType));
 							unwind();
-							return valueError(reason);
+							return LuaUtils::valueError(reason);
 						}
 
-						auto copied = copyValue(from, key, to, options, depth + 1);
-						if (copied.has_value()) copied = copyValue(from, value, to, options, depth + 1);
+						auto copied = LuaUtils::copyValue(from, key, to, options, depth + 1);
+						if (copied.has_value()) copied = LuaUtils::copyValue(from, value, to, options, depth + 1);
 
 						if (!copied.has_value()) {
 							const double position = keyType == LUA_TNUMBER ? lua_tonumber(from, key) : 0.0;
-							auto error = position >= 1.0 && position == std::floor(position) ? atIndex(std::move(copied.error()), static_cast<size_t>(position)) : atKey(std::move(copied.error()), keyName(from, key, false).value_or("?"));
+							auto error = position >= 1.0 && position == std::floor(position) ? LuaUtils::atIndex(std::move(copied.error()), static_cast<size_t>(position)) : LuaUtils::atKey(std::move(copied.error()), LuaUtils::keyName(from, key, false).value_or("?"));
 
 							unwind();
 							return std::unexpected(std::move(error));
@@ -388,9 +388,9 @@ namespace rawrbox {
 				}
 			default:
 				{
-					if (options.strict) return valueError(fmt::format("is a {}. Cannot be copied", luaL_typename(from, index)));
+					if (options.strict) return LuaUtils::valueError(fmt::format("is a {}. Cannot be copied", luaL_typename(from, index)));
 
-					const auto text = describe(from, index);
+					const auto text = LuaUtils::describe(from, index);
 					lua_pushlstring(to, text.data(), text.size());
 					return {};
 				}
@@ -400,14 +400,14 @@ namespace rawrbox {
 
 	// CACHE ---
 	bool LuaUtils::pushCacheTable(lua_State* L, bool create) {
-		if (lua_rawgetp(L, LUA_REGISTRYINDEX, &_cacheKey) == LUA_TTABLE) return true;
+		if (lua_rawgetp(L, LUA_REGISTRYINDEX, &LuaUtils::_cacheKey) == LUA_TTABLE) return true;
 		lua_pop(L, 1);
 
 		if (!create) return false;
 
 		lua_newtable(L);
 		lua_pushvalue(L, -1);
-		lua_rawsetp(L, LUA_REGISTRYINDEX, &_cacheKey);
+		lua_rawsetp(L, LUA_REGISTRYINDEX, &LuaUtils::_cacheKey);
 		return true;
 	}
 	// ---------
@@ -438,16 +438,16 @@ namespace rawrbox {
 
 		const std::string data(bytes.begin(), bytes.end());
 		if (data.starts_with("\x1bLuau")) {
-			loadBytecode(L, chunkID, data.substr(5));
+			LuaUtils::loadBytecode(L, chunkID, data.substr(5));
 			return;
 		}
 
-		compileAndLoadScript(L, chunkID, data);
+		LuaUtils::compileAndLoadScript(L, chunkID, data);
 	}
 
 	void LuaUtils::compileAndLoadScript(lua_State* L, const std::string& chunkID, const std::string& script) {
 		if (L == nullptr) throw std::runtime_error("Invalid lua state");
-		loadBytecode(L, chunkID, compile(script));
+		LuaUtils::loadBytecode(L, chunkID, LuaUtils::compile(script));
 	}
 
 	std::string LuaUtils::compile(const std::string& script) {
@@ -472,14 +472,14 @@ namespace rawrbox {
 	}
 
 	std::string LuaUtils::precompile(const std::string& script) {
-		return "\x1bLuau" + compile(script);
+		return "\x1bLuau" + LuaUtils::compile(script);
 	}
 
 	void LuaUtils::loadBytecode(lua_State* L, const std::string& chunkID, const std::string& bytecode) {
 		if (L == nullptr) throw std::runtime_error("Invalid lua state");
 
 		const int top = lua_gettop(L);
-		auto* thread = loadThread(L, chunkID, bytecode);
+		auto* thread = LuaUtils::loadThread(L, chunkID, bytecode);
 
 		luabridge::detail::ScopeGuard restore([L, top]() { lua_settop(L, top); });
 		rawrbox::LuaUtils::resume(thread, L);
@@ -614,24 +614,24 @@ namespace rawrbox {
 		if (type.tag.empty()) RAWRBOX_CRITICAL("JSON type tag cannot be empty");
 		if (type.is == nullptr || type.encode == nullptr || type.decode == nullptr || type.copy == nullptr) RAWRBOX_CRITICAL("Invalid JSON type '{}'", type.tag);
 
-		const std::unique_lock lock(_jsonTypesLock);
+		const std::unique_lock lock(LuaUtils::_jsonTypesLock);
 
-		const auto fnd = std::ranges::find(_jsonTypes, type.tag, &rawrbox::LuaJSONType::tag);
-		if (fnd != _jsonTypes.end()) {
+		const auto& fnd = std::ranges::find(LuaUtils::_jsonTypes, type.tag, &rawrbox::LuaJSONType::tag);
+		if (fnd != LuaUtils::_jsonTypes.end()) {
 			*fnd = std::move(type);
 			return;
 		}
 
-		_jsonTypes.push_back(std::move(type));
+		LuaUtils::_jsonTypes.push_back(std::move(type));
 	}
 
 	std::vector<std::string> LuaUtils::getJSONTypes() {
-		const std::shared_lock lock(_jsonTypesLock);
+		const std::shared_lock lock(LuaUtils::_jsonTypesLock);
 
 		std::vector<std::string> tags = {};
-		tags.reserve(_jsonTypes.size());
+		tags.reserve(LuaUtils::_jsonTypes.size());
 
-		for (const auto& type : _jsonTypes) {
+		for (const auto& type : LuaUtils::_jsonTypes) {
 			tags.push_back(type.tag);
 		}
 
@@ -643,7 +643,7 @@ namespace rawrbox {
 		if (L == nullptr) return std::unexpected("Invalid lua state");
 
 		value.push(L);
-		auto json = toJSON(L, -1, options);
+		auto json = LuaUtils::toJSON(L, -1, options);
 		lua_pop(L, 1);
 
 		return json;
@@ -652,9 +652,8 @@ namespace rawrbox {
 	std::expected<glz::generic, std::string> LuaUtils::toJSON(lua_State* L, int index, const rawrbox::LuaJSONOptions& options) {
 		if (L == nullptr) return std::unexpected("Invalid lua state");
 
-		auto json = encode(L, index, options, 0);
-		if (!json.has_value()) return std::unexpected(formatError(json.error()));
-
+		auto json = LuaUtils::encode(L, index, options, 0);
+		if (!json.has_value()) return std::unexpected(LuaUtils::formatError(json.error(), options.root));
 		return std::move(json.value());
 	}
 
@@ -663,10 +662,10 @@ namespace rawrbox {
 
 		const int top = lua_gettop(L);
 
-		auto pushed = decode(L, json, options, 0);
+		auto pushed = LuaUtils::decode(L, json, options, 0);
 		if (!pushed.has_value()) {
 			lua_settop(L, top);
-			return std::unexpected(formatError(pushed.error()));
+			return std::unexpected(LuaUtils::formatError(pushed.error(), options.root));
 		}
 
 		auto value = luabridge::LuaRef::fromStack(L, -1);
@@ -678,8 +677,8 @@ namespace rawrbox {
 	std::expected<void, std::string> LuaUtils::copy(lua_State* from, int index, lua_State* to, const rawrbox::LuaJSONOptions& options) {
 		if (from == nullptr || to == nullptr) return std::unexpected("Invalid lua state");
 
-		auto copied = copyValue(from, index, to, options, 0);
-		if (!copied.has_value()) return std::unexpected(formatError(copied.error()));
+		auto copied = LuaUtils::copyValue(from, index, to, options, 0);
+		if (!copied.has_value()) return std::unexpected(LuaUtils::formatError(copied.error(), options.root));
 
 		return {};
 	}
@@ -691,7 +690,7 @@ namespace rawrbox {
 		index = lua_absindex(L, index);
 
 		if (lua_type(L, index) == LUA_TUSERDATA) {
-			freezeUserdata(L, index);
+			LuaUtils::freezeUserdata(L, index);
 			return;
 		}
 
@@ -702,15 +701,15 @@ namespace rawrbox {
 
 		lua_pushnil(L);
 		while (lua_next(L, index) != 0) {
-			freeze(L, -1);
-			freeze(L, -2);
+			LuaUtils::freeze(L, -1);
+			LuaUtils::freeze(L, -2);
 
 			lua_pop(L, 1);
 		}
 	}
 
 	bool LuaUtils::pushCached(lua_State* L, std::string_view key, std::string_view version) {
-		if (!pushCacheTable(L, false)) return false;
+		if (!LuaUtils::pushCacheTable(L, false)) return false;
 
 		lua_pushlstring(L, key.data(), key.size());
 		if (lua_rawget(L, -2) != LUA_TTABLE) {
@@ -737,7 +736,7 @@ namespace rawrbox {
 	}
 
 	void LuaUtils::storeCached(lua_State* L, std::string_view key, std::string_view version, const luabridge::LuaRef& value) {
-		pushCacheTable(L, true);
+		LuaUtils::pushCacheTable(L, true);
 
 		lua_pushlstring(L, key.data(), key.size());
 		lua_createtable(L, 2, 0);
@@ -791,7 +790,7 @@ namespace rawrbox {
 
 	std::expected<std::filesystem::path, std::string> LuaUtils::resolveContent(const std::filesystem::path& path, const rawrbox::Mod& mod) {
 		try {
-			auto content = getContent(path, mod.getFolder());
+			auto content = LuaUtils::getContent(path, mod.getFolder());
 			if (content.first.empty()) return std::move(content.second);
 
 			const auto* owner = rawrbox::SCRIPTING::getMod(content.first);
@@ -807,6 +806,13 @@ namespace rawrbox {
 		const auto* mod = rawrbox::SCRIPTING::getMod(L);
 		if (mod == nullptr) return std::unexpected("Not called from a mod");
 
-		return resolveContent(path, *mod);
+		return LuaUtils::resolveContent(path, *mod);
+	}
+
+	std::expected<std::filesystem::path, std::string> LuaUtils::resolveContent(const std::filesystem::path& path, std::string_view modId) {
+		const auto* mod = rawrbox::SCRIPTING::getMod(std::string(modId));
+		if (mod == nullptr) return std::unexpected(fmt::format("Mod '{}' is not loaded", modId));
+
+		return LuaUtils::resolveContent(path, *mod);
 	}
 } // namespace rawrbox

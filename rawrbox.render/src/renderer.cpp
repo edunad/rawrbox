@@ -831,9 +831,9 @@ namespace rawrbox {
 		Diligent::ScopedQueryHelper* durationHelper = nullptr;
 
 		// PIPELINE QUERY -----
-		auto fndPipeline = this->_query.find(pipeName);
+		const auto& fndPipeline = this->_query.find(pipeName);
 		if (fndPipeline == this->_query.end()) {
-			auto name = fmt::format("RawrBox::STATS::PIPELINE::{}", query);
+			const auto name = fmt::format("RawrBox::STATS::PIPELINE::{}", query);
 
 			Diligent::QueryDesc queryDesc;
 			queryDesc.Name = name.c_str();
@@ -850,9 +850,9 @@ namespace rawrbox {
 		// --------------
 
 		// DURATION QUERY -----
-		auto fndDuration = this->_query.find(durationName);
+		const auto& fndDuration = this->_query.find(durationName);
 		if (fndDuration == this->_query.end()) {
-			auto name = fmt::format("RawrBox::STATS::DURATION::{}", query);
+			const auto name = fmt::format("RawrBox::STATS::DURATION::{}", query);
 
 			Diligent::QueryDesc queryDesc;
 			queryDesc.Name = name.c_str();

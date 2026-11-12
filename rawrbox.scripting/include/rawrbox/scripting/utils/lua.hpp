@@ -36,6 +36,8 @@ namespace rawrbox {
 	struct LuaJSONOptions {
 		uint32_t maxDepth = 32;
 		bool strict = true;
+
+		std::string_view root = "value";
 	};
 
 	struct LuaJSONType {
@@ -99,7 +101,7 @@ namespace rawrbox {
 		static JSONError atIndex(JSONError error, size_t index);
 
 		static std::string describe(lua_State* L, int index);
-		static std::string formatError(const JSONError& error);
+		static std::string formatError(const JSONError& error, std::string_view root);
 
 		static TableKeys countKeys(lua_State* L, int index);
 		static std::optional<std::string> keyName(lua_State* L, int index, bool strict);
@@ -213,7 +215,7 @@ namespace rawrbox {
 			using Number = typename Components::value_type;
 			constexpr size_t count = std::tuple_size_v<Components>;
 
-			registerJSONType<T>(
+			LuaUtils::registerJSONType<T>(
 			    tag, [](const T& value) {
 				    glz::generic::array_t parts = {};
 				    parts.reserve(count);
@@ -281,7 +283,13 @@ namespace rawrbox {
 		static void registerEnum(lua_State* L, std::string_view name = magic_enum::enum_type_name<E>()) {
 			if (L == nullptr) throw std::runtime_error("Invalid lua state");
 
-			lua_createtable(L, 0, static_cast<int>(magic_enum::enum_count<E>()));
+			lua_createtable(L, 0, static_cast<int>(magic_enum::enum_count<E>()) + 1);
+			if constexpr (magic_enum::detail::subtype_v<E> == magic_enum::detail::enum_subtype::flags) {
+				lua_pushstring(L, "NONE");
+				lua_pushnumber(L, 0.0);
+				lua_rawset(L, -3);
+			}
+
 			for (const auto& [value, key] : magic_enum::enum_entries<E>()) {
 				lua_pushlstring(L, key.data(), key.size());
 				lua_pushnumber(L, static_cast<double>(std::to_underlying(value)));
@@ -335,5 +343,6 @@ namespace rawrbox {
 
 		[[nodiscard]] static std::expected<std::filesystem::path, std::string> resolveContent(const std::filesystem::path& path, const rawrbox::Mod& mod);
 		[[nodiscard]] static std::expected<std::filesystem::path, std::string> resolveContent(const std::filesystem::path& path, lua_State* L);
+		[[nodiscard]] static std::expected<std::filesystem::path, std::string> resolveContent(const std::filesystem::path& path, std::string_view modId);
 	};
 } // namespace rawrbox

@@ -30,7 +30,7 @@ namespace rawrbox {
 	std::unordered_map<int, std::unique_ptr<rawrbox::TextureImage>> IMGUIManager::_textures = {};
 	// -------
 
-	std::string IMGUIManager::_ini = {};
+	std::string IMGUIManager::_init = {};
 	// ---------
 
 	void IMGUIManager::renderDrawData(ImDrawData* data) {
@@ -118,8 +118,8 @@ namespace rawrbox {
 		IO.BackendFlags |= ImGuiBackendFlags_RendererHasVtxOffset;
 		IO.BackendFlags |= ImGuiBackendFlags_RendererHasTextures;
 
-		IMGUIManager::_ini = settings.ini.has_value() ? settings.ini->generic_string() : std::string();
-		IO.IniFilename = settings.ini.has_value() ? IMGUIManager::_ini.c_str() : nullptr;
+		IMGUIManager::_init = settings.ini.has_value() ? settings.ini->generic_string() : std::string();
+		IO.IniFilename = settings.ini.has_value() ? IMGUIManager::_init.c_str() : nullptr;
 
 		switch (renderer.getRenderType()) {
 			case Diligent::RENDER_DEVICE_TYPE_D3D12:
@@ -207,12 +207,12 @@ namespace rawrbox {
 						tex->SetTexID(texture.get());
 						tex->SetStatus(ImTextureStatus_OK);
 
-						_textures[tex->UniqueID] = std::move(texture);
+						IMGUIManager::_textures[tex->UniqueID] = std::move(texture);
 						break;
 					}
 				case ImTextureStatus_WantUpdates:
 					{
-						auto* handle = _textures.at(tex->UniqueID)->getTexture();
+						auto* handle = IMGUIManager::_textures.at(tex->UniqueID)->getTexture();
 						auto* context = rawrbox::RENDERER->context();
 
 						rawrbox::BarrierUtils::barrier({{handle, Diligent::RESOURCE_STATE_SHADER_RESOURCE, Diligent::RESOURCE_STATE_COPY_DEST, Diligent::STATE_TRANSITION_FLAG_UPDATE_STATE}});
@@ -238,7 +238,7 @@ namespace rawrbox {
 					{
 						if (tex->UnusedFrames == 0) break;
 
-						_textures.erase(tex->UniqueID);
+						IMGUIManager::_textures.erase(tex->UniqueID);
 						tex->SetTexID(ImTextureID_Invalid);
 						tex->SetStatus(ImTextureStatus_Destroyed);
 						break;
@@ -263,7 +263,7 @@ namespace rawrbox {
 				tex->SetStatus(ImTextureStatus_Destroyed);
 			}
 
-			_textures.clear();
+			IMGUIManager::_textures.clear();
 		} else {
 			ImGui_ImplGlfw_Shutdown();
 #ifdef RAWRBOX_IMGUI_IMPLOT

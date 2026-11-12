@@ -37,7 +37,7 @@ namespace rawrbox {
 		static std::unordered_map<int, std::unique_ptr<rawrbox::TextureImage>> _textures;
 		// -------
 
-		static std::string _ini;
+		static std::string _init;
 
 		static void renderDrawData(ImDrawData* data);
 

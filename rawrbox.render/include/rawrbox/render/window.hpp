@@ -97,6 +97,21 @@ namespace rawrbox {
 			}
 		}
 
+		void inject(int index, bool down) {
+			if (index < 0 || static_cast<size_t>(index) >= COUNT) return;
+
+			const size_t word = static_cast<size_t>(index) / 64U;
+			const uint64_t bit = 1ULL << (static_cast<size_t>(index) % 64U);
+
+			if (down) {
+				this->_down[word].fetch_or(bit);
+				this->_framePressed[word] |= bit;
+			} else {
+				this->_down[word].fetch_and(~bit);
+				this->_frameReleased[word] |= bit;
+			}
+		}
+
 		[[nodiscard]] bool isDown(int index) const { return index >= 0 && static_cast<size_t>(index) < COUNT && this->test(this->_down[static_cast<size_t>(index) / 64U].load(), static_cast<size_t>(index)); }
 		[[nodiscard]] bool isPressed(int index) const { return index >= 0 && static_cast<size_t>(index) < COUNT && this->test(this->_framePressed[static_cast<size_t>(index) / 64U], static_cast<size_t>(index)); }
 		[[nodiscard]] bool isReleased(int index) const { return index >= 0 && static_cast<size_t>(index) < COUNT && this->test(this->_frameReleased[static_cast<size_t>(index) / 64U], static_cast<size_t>(index)); }
@@ -241,6 +256,8 @@ namespace rawrbox {
 		[[nodiscard]] virtual bool isKeyReleased(int key) const;
 		[[nodiscard]] virtual bool isMousePressed(int key) const;
 		[[nodiscard]] virtual bool isMouseReleased(int key) const;
+
+		virtual void injectMouseButton(int key, bool down);
 		// -----------
 
 		[[nodiscard]] virtual const std::unordered_map<int, rawrbox::Vector2u>& getScreenSizes() const;

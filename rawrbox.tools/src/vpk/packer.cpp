@@ -75,7 +75,7 @@ namespace rawrbox {
 				}
 
 				// Duplicated files ---
-				auto index = indexes.find(file.path);
+				const auto& index = indexes.find(file.path);
 				if (index != indexes.end()) {
 					this->_logger->warn("'{}' already packed from '{}', skipping '{}'", file.path, this->_files[index->second].source.generic_string(), file.source.generic_string());
 					continue;

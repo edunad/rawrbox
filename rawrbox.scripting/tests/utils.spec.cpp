@@ -21,6 +21,12 @@ namespace rawrbox {
 		SECOND = 4
 	};
 
+	enum class LuaUtilsTestFlags : uint8_t {
+		NONE = 0,
+		LEFT = 1U << 0U,
+		RIGHT = 1U << 1U
+	};
+
 	struct LuaUtilsTestCounter {
 		int value = 0;
 		void bump() { ++this->value; }
@@ -77,6 +83,11 @@ namespace rawrbox {
 template <>
 struct luabridge::Stack<rawrbox::LuaUtilsTestEnum> : rawrbox::LuaEnum<rawrbox::LuaUtilsTestEnum> {};
 
+template <>
+struct magic_enum::customize::enum_range<rawrbox::LuaUtilsTestFlags> {
+	static constexpr bool is_flags = true;
+};
+
 TEST_CASE("Lua Utils should behave as expected", "[rawrbox::LuaUtils]") {
 	SECTION("rawrbox::LuaUtils::getContent") {
 		auto test1 = rawrbox::LuaUtils::getContent("./assets/bla.png", "my_mod/");
@@ -126,6 +137,9 @@ TEST_CASE("Lua Utils should behave as expected", "[rawrbox::LuaUtils]") {
 		lua_close(L);
 
 		REQUIRE(rawrbox::LuaUtils::resolveContent("x.png", mod.getEnvironment()).value() == "mods/my_mod/x.png");
+
+		REQUIRE(rawrbox::LuaUtils::resolveContent("x.png", std::string_view("other")).value() == "mods/other/x.png");
+		REQUIRE(rawrbox::LuaUtils::resolveContent("x.png", std::string_view("missing")).error() == "Mod 'missing' is not loaded");
 		rawrbox::LuaUtilsTestScripting::clear();
 	}
 
@@ -236,6 +250,7 @@ TEST_CASE("Lua Utils should behave as expected", "[rawrbox::LuaUtils]") {
 		REQUIRE(rawrbox::LuaUtils::toJSON(rawrbox::evalUtilsLua(L, "{Vector2i = 5}")).error().find("rename the field") != std::string::npos);
 		REQUIRE(rawrbox::LuaUtils::toJSON(rawrbox::evalUtilsLua(L, "0/0")).error() == "value not a finite number");
 		REQUIRE(rawrbox::LuaUtils::toJSON(rawrbox::evalUtilsLua(L, "{{{1}}}"), {.maxDepth = 2}).error() == "value[1][1] is nested deeper than 2 tables");
+		REQUIRE(rawrbox::LuaUtils::toJSON(rawrbox::evalUtilsLua(L, "{a = {{fn = print}}}"), {.root = "self.data"}).error() == "self.data.a[1].fn is a function! Not plain data");
 
 		rawrbox::runUtilsLua(L, "CYCLE = {}; CYCLE.self = CYCLE");
 		REQUIRE_FALSE(rawrbox::LuaUtils::toJSON(luabridge::getGlobal(L, "CYCLE")).has_value());
@@ -370,7 +385,7 @@ TEST_CASE("Lua Utils should behave as expected", "[rawrbox::LuaUtils]") {
 		{
 			const auto build = [&builds](lua_State* main) {
 				++builds;
-				
+
 				auto table = luabridge::newTable(main);
 				table["builds"] = builds;
 
@@ -397,8 +412,11 @@ TEST_CASE("Lua Utils should behave as expected", "[rawrbox::LuaUtils]") {
 		lua_State* L = rawrbox::newUtilsState();
 		rawrbox::LuaUtils::registerEnum<rawrbox::LuaUtilsTestEnum>(L, "TestEnum");
 
-		REQUIRE_FALSE(rawrbox::failsUtilsLua(L, "assert(TestEnum.FIRST == 1 and TestEnum.SECOND == 4)"));
+		REQUIRE_FALSE(rawrbox::failsUtilsLua(L, "assert(TestEnum.FIRST == 1 and TestEnum.SECOND == 4 and TestEnum.NONE == nil)"));
 		REQUIRE(rawrbox::failsUtilsLua(L, "TestEnum.THIRD = 5"));
+
+		rawrbox::LuaUtils::registerEnum<rawrbox::LuaUtilsTestFlags>(L, "TestFlags");
+		REQUIRE_FALSE(rawrbox::failsUtilsLua(L, "assert(TestFlags.NONE == 0 and TestFlags.LEFT == 1 and TestFlags.RIGHT == 2)"));
 
 		REQUIRE(static_cast<bool>(luabridge::Stack<rawrbox::LuaUtilsTestEnum>::push(L, rawrbox::LuaUtilsTestEnum::SECOND)));
 		REQUIRE(luabridge::Stack<rawrbox::LuaUtilsTestEnum>::get(L, -1).value() == rawrbox::LuaUtilsTestEnum::SECOND);
