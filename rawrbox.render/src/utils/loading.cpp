@@ -7,6 +7,9 @@
 #include <algorithm>
 
 namespace rawrbox {
+	constexpr rawrbox::Vector2f LOADING_BAR = {220.F, 4.F};
+	constexpr rawrbox::Color LOADING_TASK_COLOR = rawrbox::Color::RGBHex(0x4a9eff);
+
 	std::vector<rawrbox::LoadingTask> LoadingUtils::_tasks = {};
 
 	void LoadingUtils::add(const std::string& id, const std::string& title, size_t done, size_t total, const std::string& detail) {
@@ -44,33 +47,40 @@ namespace rawrbox {
 	}
 
 	void LoadingUtils::draw(rawrbox::Stencil& stencil, const rawrbox::Vector2f& size) {
-		std::string title;
-		std::string detail;
+		const rawrbox::LoadingTask* task = LoadingUtils::_tasks.empty() ? nullptr : &LoadingUtils::_tasks.front();
 
-		float progress = 1.F;
+		const bool compiling = rawrbox::PipelineUtils::isCompiling();
+		if (task == nullptr && !compiling) return;
 
-		if (rawrbox::PipelineUtils::isCompiling()) { // Shader & required tasks
-			title = "COMPILING SHADERS";
-			detail = rawrbox::PipelineUtils::getCompilingName();
-			progress = rawrbox::PipelineUtils::getCompileProgress();
-		} else if (!LoadingUtils::_tasks.empty()) { // Custom tasks
-			const auto& task = LoadingUtils::_tasks.front();
-
-			title = task.title;
-			detail = task.detail.empty() ? fmt::format("{}/{}", task.done, task.total) : task.detail;
-			if (task.total != 0) progress = std::clamp(static_cast<float>(task.done) / static_cast<float>(task.total), 0.F, 1.F);
-		} else {
-			return;
+		float taskProgress = 1.F;
+		std::string taskDetail = {};
+		if (task != nullptr) {
+			if (task->total != 0) taskProgress = std::clamp(static_cast<float>(task->done) / static_cast<float>(task->total), 0.F, 1.F);
+			taskDetail = task->detail.empty() ? fmt::format("{}/{}", task->done, task->total) : task->detail;
 		}
 
-		constexpr rawrbox::Vector2f bar = {220.F, 4.F};
-		const rawrbox::Vector2f barPos = {(size.x - bar.x) * 0.5F, size.y - 45.F};
+		const float progress = compiling ? rawrbox::PipelineUtils::getCompileProgress() : taskProgress;
 
-		stencil.drawText(fmt::format("{} {}%", title, static_cast<int>(progress * 100.F)), {size.x * 0.5F, barPos.y - 18.F}, rawrbox::Colors::White(), rawrbox::Colors::Transparent(), rawrbox::Alignment::Center);
+		const std::string title = compiling ? "COMPILING SHADERS" : task->title;
+		const std::string detail = compiling ? rawrbox::PipelineUtils::getCompilingName() : taskDetail;
 
-		stencil.drawBox(barPos, bar, rawrbox::Color::RGBHex(0x2a2a2d));
-		stencil.drawBox(barPos, {bar.x * progress, bar.y}, rawrbox::Colors::White());
+		const rawrbox::Color color = compiling ? rawrbox::Colors::White() : LOADING_TASK_COLOR;
 
-		stencil.drawText(detail, {size.x * 0.5F, barPos.y + 12.F}, rawrbox::Colors::Gray(), rawrbox::Colors::Transparent(), rawrbox::Alignment::Center);
+		const bool both = compiling && task != nullptr;
+		const float center = size.x * 0.5F;
+		const rawrbox::Vector2f barPos = {(size.x - LOADING_BAR.x) * 0.5F, size.y - (both ? 57.F : 45.F)};
+
+		stencil.drawText(fmt::format("{} {}%", title, static_cast<int>(progress * 100.F)), {center, barPos.y - 18.F}, color, rawrbox::Colors::Transparent(), rawrbox::Alignment::Center);
+		LoadingUtils::drawBar(stencil, barPos, progress, color);
+		if (both) LoadingUtils::drawBar(stencil, {barPos.x, barPos.y + 6.F}, taskProgress, LOADING_TASK_COLOR);
+
+		const float below = barPos.y + (both ? 18.F : 12.F);
+		stencil.drawText(detail, {center, below}, rawrbox::Colors::Gray(), rawrbox::Colors::Transparent(), rawrbox::Alignment::Center);
+		if (both) stencil.drawText(fmt::format("{} {}% ({})", task->title, static_cast<int>(taskProgress * 100.F), taskDetail), {center, below + 12.F}, LOADING_TASK_COLOR, rawrbox::Colors::Transparent(), rawrbox::Alignment::Center);
+	}
+
+	void LoadingUtils::drawBar(rawrbox::Stencil& stencil, const rawrbox::Vector2f& pos, float progress, const rawrbox::Color& color) {
+		stencil.drawBox(pos, LOADING_BAR, rawrbox::Color::RGBHex(0x2a2a2d));
+		stencil.drawBox(pos, {LOADING_BAR.x * progress, LOADING_BAR.y}, color);
 	}
 } // namespace rawrbox

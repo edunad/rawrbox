@@ -21,7 +21,9 @@ namespace rawrbox {
 	std::unordered_map<Diligent::SHADER_TYPE, Diligent::ShaderMacroHelper> PipelineUtils::_globalMacros = {};
 
 	Diligent::RefCntAutoPtr<Diligent::IRenderStateCache> PipelineUtils::_stateCache;
+	Diligent::RefCntAutoPtr<Diligent::IPipelineStateCache> PipelineUtils::_psoCache;
 	std::filesystem::path PipelineUtils::_stateCachePath;
+	std::filesystem::path PipelineUtils::_psoCachePath;
 
 	std::unique_ptr<rawrbox::Logger> PipelineUtils::_logger = std::make_unique<rawrbox::Logger>("RawrBox-Pipeline");
 	// -------------
@@ -31,12 +33,38 @@ namespace rawrbox {
 	bool PipelineUtils::initialized = false;
 	// -----------------
 
+	// PRIVATE ----
+	Diligent::RefCntAutoPtr<Diligent::IDataBlob> PipelineUtils::loadCache(const std::filesystem::path& path) {
+		if (!std::filesystem::exists(path)) return {};
+
+		const auto rawStr = path.generic_string();
+		Diligent::FileWrapper CacheDataFile(rawStr.c_str());
+
+		auto pCacheData = Diligent::DataBlobImpl::Create();
+		if (!CacheDataFile->Read(pCacheData)) return {};
+
+		PipelineUtils::_logger->debug("Loaded pipeline cache from '{}'", rawStr);
+		return pCacheData;
+	}
+
+	void PipelineUtils::saveCache(const std::filesystem::path& path, const Diligent::IDataBlob& data) {
+		const auto rawStr = path.generic_string();
+		Diligent::FileWrapper CacheDataFile{rawStr.c_str(), Diligent::EFileAccessMode::Overwrite};
+
+		if (CacheDataFile->Write(data.GetConstDataPtr(), data.GetSize())) {
+			PipelineUtils::_logger->debug("Saved pipeline cache to '{}'", rawStr);
+		} else {
+			PipelineUtils::_logger->error("Failed to save pipeline cache to '{}'", rawStr);
+		}
+	}
+	// -----------------
+
 	void PipelineUtils::init(Diligent::IRenderDevice& device) {
 		if (PipelineUtils::initialized) return;
 		PipelineUtils::_logger->info("Initializing pipeline utils");
 
-		uint32_t id = Diligent::TEXTURE_ADDRESS_WRAP << 6 | Diligent::TEXTURE_ADDRESS_WRAP << 3 | Diligent::TEXTURE_ADDRESS_WRAP;
-		Diligent::SamplerDesc desc{
+		constexpr uint32_t id = Diligent::TEXTURE_ADDRESS_WRAP << 6 | Diligent::TEXTURE_ADDRESS_WRAP << 3 | Diligent::TEXTURE_ADDRESS_WRAP;
+		constexpr Diligent::SamplerDesc desc{
 		    Diligent::FILTER_TYPE_POINT, Diligent::FILTER_TYPE_POINT, Diligent::FILTER_TYPE_POINT,
 		    Diligent::TEXTURE_ADDRESS_WRAP, Diligent::TEXTURE_ADDRESS_WRAP, Diligent::TEXTURE_ADDRESS_WRAP};
 
@@ -60,20 +88,25 @@ namespace rawrbox {
 
 #ifdef _DEBUG
 		PipelineUtils::_stateCachePath = cacheRoot / fmt::format("{}_d.bin", magic_enum::enum_name(rawrbox::RENDERER->getRenderType()));
+		PipelineUtils::_psoCachePath = cacheRoot / fmt::format("{}_pso_d.bin", magic_enum::enum_name(rawrbox::RENDERER->getRenderType()));
 #else
-		_stateCachePath = cacheRoot / fmt::format("{}_r.bin", magic_enum::enum_name(rawrbox::RENDERER->getRenderType()));
+		PipelineUtils::_stateCachePath = cacheRoot / fmt::format("{}_r.bin", magic_enum::enum_name(rawrbox::RENDERER->getRenderType()));
+		PipelineUtils::_psoCachePath = cacheRoot / fmt::format("{}_pso_r.bin", magic_enum::enum_name(rawrbox::RENDERER->getRenderType()));
 #endif
 
-		const auto pString = PipelineUtils::_stateCachePath.generic_string();
-		if (std::filesystem::exists(PipelineUtils::_stateCachePath)) {
-			Diligent::FileWrapper CacheDataFile(pString.c_str());
-			auto pCacheData = Diligent::DataBlobImpl::Create();
+		const auto pCacheData = PipelineUtils::loadCache(PipelineUtils::_stateCachePath);
+		if (pCacheData != nullptr) PipelineUtils::_stateCache->Load(pCacheData);
 
-			if (CacheDataFile->Read(pCacheData)) {
-				PipelineUtils::_logger->debug("Loaded pipeline cache from '{}'", pString);
-				PipelineUtils::_stateCache->Load(pCacheData);
-			}
+		Diligent::PipelineStateCacheCreateInfo PSOCacheCI;
+		PSOCacheCI.Desc.Name = "RawrBox::PSOCache";
+
+		const auto pPSOCacheData = PipelineUtils::loadCache(PipelineUtils::_psoCachePath);
+		if (pPSOCacheData != nullptr) {
+			PSOCacheCI.pCacheData = pPSOCacheData->GetConstDataPtr();
+			PSOCacheCI.CacheDataSize = static_cast<Diligent::Uint32>(pPSOCacheData->GetSize());
 		}
+
+		device.CreatePipelineStateCache(PSOCacheCI, &PipelineUtils::_psoCache);
 		// ------------------
 
 		PipelineUtils::initialized = true;
@@ -82,18 +115,11 @@ namespace rawrbox {
 	void PipelineUtils::shutdown() {
 		// Save cache -----
 		Diligent::RefCntAutoPtr<Diligent::IDataBlob> pCacheData;
+		if (PipelineUtils::_stateCache->WriteToBlob(0, &pCacheData) && pCacheData != nullptr) PipelineUtils::saveCache(PipelineUtils::_stateCachePath, *pCacheData);
 
-		if (PipelineUtils::_stateCache->WriteToBlob(0, &pCacheData)) {
-			if (pCacheData != nullptr) {
-				const auto pString = PipelineUtils::_stateCachePath.generic_string();
-				Diligent::FileWrapper CacheDataFile{pString.c_str(), Diligent::EFileAccessMode::Overwrite};
-				if (CacheDataFile->Write(pCacheData->GetConstDataPtr(), pCacheData->GetSize())) {
-					PipelineUtils::_logger->debug("Saved pipeline cache to '{}'", pString);
-				} else {
-					PipelineUtils::_logger->error("Failed to save pipeline cache to '{}'", pString);
-				}
-			}
-		}
+		Diligent::RefCntAutoPtr<Diligent::IDataBlob> pPSOCacheData;
+		if (PipelineUtils::_psoCache != nullptr) PipelineUtils::_psoCache->GetData(&pPSOCacheData);
+		if (pPSOCacheData != nullptr) PipelineUtils::saveCache(PipelineUtils::_psoCachePath, *pPSOCacheData);
 		// ------
 
 		PipelineUtils::_compiling.clear();
@@ -105,6 +131,7 @@ namespace rawrbox {
 		PipelineUtils::_samplers.clear();
 		PipelineUtils::_globalMacros.clear();
 
+		RAWRBOX_DESTROY(PipelineUtils::_psoCache);
 		RAWRBOX_DESTROY(PipelineUtils::_stateCache);
 
 		PipelineUtils::_logger.reset();
@@ -255,6 +282,7 @@ namespace rawrbox {
 
 		PSOCreateInfo.pCS = rawrbox::PipelineUtils::compileShader(settings.pCS, Diligent::SHADER_TYPE_COMPUTE, settings.macros, settings.entry);
 		PSOCreateInfo.Flags = Diligent::PSO_CREATE_FLAG_ASYNCHRONOUS;
+		PSOCreateInfo.pPSOCache = PipelineUtils::_psoCache;
 
 		PipelineUtils::_stateCache->CreateComputePipelineState(PSOCreateInfo, &pipe);
 		if (pipe == nullptr) RAWRBOX_CRITICAL("Failed to create pipeline '{}'", name);
@@ -371,6 +399,7 @@ namespace rawrbox {
 
 		// ---------------------
 		info.Flags = Diligent::PSO_CREATE_FLAG_ASYNCHRONOUS;
+		info.pPSOCache = PipelineUtils::_psoCache;
 
 		PipelineUtils::_stateCache->CreateGraphicsPipelineState(info, &pipe);
 		if (pipe == nullptr) RAWRBOX_CRITICAL("Failed to create pipeline '{}'", name);

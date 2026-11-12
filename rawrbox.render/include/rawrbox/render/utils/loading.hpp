@@ -1,5 +1,6 @@
 #pragma once
 
+#include <rawrbox/math/color.hpp>
 #include <rawrbox/math/vector2.hpp>
 
 #include <string>
@@ -20,6 +21,8 @@ namespace rawrbox {
 	class LoadingUtils {
 	protected:
 		static std::vector<rawrbox::LoadingTask> _tasks;
+
+		static void drawBar(rawrbox::Stencil& stencil, const rawrbox::Vector2f& pos, float progress, const rawrbox::Color& color);
 
 	public:
 		static void add(const std::string& id, const std::string& title, size_t done, size_t total, const std::string& detail = "");

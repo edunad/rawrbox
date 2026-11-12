@@ -6,8 +6,9 @@
 #include <RenderStateCache.hpp>
 #include <ShaderMacroHelper.hpp>
 
-#include <Buffer.h>
+#include <DataBlob.h>
 #include <PipelineState.h>
+#include <PipelineStateCache.h>
 #include <Shader.h>
 #include <ShaderResourceVariable.h>
 
@@ -51,7 +52,7 @@ namespace rawrbox {
 
 		uint8_t renderTargets = 1;
 		uint8_t viewports = 1;
-		
+
 		Diligent::TEXTURE_FORMAT renderTargetFormat = Diligent::TEX_FORMAT_UNKNOWN;
 		Diligent::COLOR_MASK colorMask = Diligent::COLOR_MASK_ALL;
 
@@ -103,10 +104,15 @@ namespace rawrbox {
 		// ------
 
 		static Diligent::RefCntAutoPtr<Diligent::IRenderStateCache> _stateCache;
+		static Diligent::RefCntAutoPtr<Diligent::IPipelineStateCache> _psoCache;
 
 		static std::filesystem::path _stateCachePath;
+		static std::filesystem::path _psoCachePath;
 
 		static std::unique_ptr<rawrbox::Logger> _logger;
+
+		[[nodiscard]] static Diligent::RefCntAutoPtr<Diligent::IDataBlob> loadCache(const std::filesystem::path& path);
+		static void saveCache(const std::filesystem::path& path, const Diligent::IDataBlob& data);
 
 	public:
 		static Diligent::ISampler* defaultSampler;
@@ -117,8 +123,8 @@ namespace rawrbox {
 		static void shutdown();
 
 		// ASYNC COMPILE ---
-		[[nodiscard]] static bool isCompiling(); // Drops finished pipelines, true while any is still compiling
-		[[nodiscard]] static float getCompileProgress(); // 0 - 1 over the current batch
+		[[nodiscard]] static bool isCompiling();             // Drops finished pipelines, true while any is still compiling
+		[[nodiscard]] static float getCompileProgress();     // 0 - 1 over the current batch
 		[[nodiscard]] static std::string getCompilingName(); // Oldest pipeline still compiling
 		static void waitCompiling();
 		// ------
