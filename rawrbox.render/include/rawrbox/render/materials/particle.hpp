@@ -2,10 +2,15 @@
 
 #include <rawrbox/render/materials/base.hpp>
 
+#include <string>
+
 namespace rawrbox {
 
 	class MaterialParticle : public rawrbox::MaterialBase {
 		static bool _built;
+
+	protected:
+		[[nodiscard]] virtual std::string getVertexShader() const;
 
 	public:
 		MaterialParticle() = default;

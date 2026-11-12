@@ -1,16 +1,13 @@
 #pragma once
 
-#include <rawrbox/render/materials/particle.hpp>
 #include <rawrbox/render/plugins/base.hpp>
 
 namespace rawrbox {
-	template <typename M = rawrbox::MaterialParticle>
-		requires(std::derived_from<M, rawrbox::MaterialParticle>)
-	class Emitter;
+	class EmitterBase;
 
 	class ParticleEnginePlugin : public rawrbox::RenderPlugin {
 	protected:
-		std::vector<rawrbox::Emitter<>*> _registeredEmitters = {};
+		std::vector<rawrbox::EmitterBase*> _registeredEmitters = {};
 
 		Diligent::IPipelineState* _updateProgram = nullptr;
 
@@ -24,8 +21,8 @@ namespace rawrbox {
 		void createPipelines();
 
 		// RENDERING ---
-		void setupEmitter(rawrbox::Emitter<>* emitter);
-		void computeEmitter(rawrbox::Emitter<>* emitter);
+		void setupEmitter(rawrbox::EmitterBase* emitter);
+		void computeEmitter(rawrbox::EmitterBase* emitter);
 		// ---------
 
 	public:
@@ -44,8 +41,8 @@ namespace rawrbox {
 		[[nodiscard]] Diligent::IPipelineResourceSignature* getSignature(bool draw = true) const;
 
 		// REGISTER ----
-		void registerEmitter(rawrbox::Emitter<>* em);
-		void unregisterEmitter(rawrbox::Emitter<>* em);
+		void registerEmitter(rawrbox::EmitterBase* em);
+		void unregisterEmitter(rawrbox::EmitterBase* em);
 		// -------------
 
 		std::string getID() override;

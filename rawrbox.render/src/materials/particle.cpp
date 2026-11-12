@@ -8,6 +8,8 @@ namespace rawrbox {
 	bool MaterialParticle::_built = false;
 	// ----------------
 
+	std::string MaterialParticle::getVertexShader() const { return "materials/particles/particle.vsh"; }
+
 	void MaterialParticle::init() {
 		const std::string id = "Particle::Unlit";
 
@@ -21,12 +23,12 @@ namespace rawrbox {
 		this->setupPipelines(id);
 	}
 
-	void MaterialParticle::createPipelines(const std::string& id, const std::vector<Diligent::LayoutElement>& /*layout*/, const Diligent::ShaderMacroHelper& /*helper*/) {
+	void MaterialParticle::createPipelines(const std::string& id, const std::vector<Diligent::LayoutElement>& /*layout*/, const Diligent::ShaderMacroHelper& helper) {
 		auto* engine = rawrbox::RENDERER->getPlugin<rawrbox::ParticleEnginePlugin>("ParticleEngine");
 		if (engine == nullptr) RAWRBOX_CRITICAL("This material requires the `ParticleEngine` renderer plugin");
 		// PIPELINE ----
 		rawrbox::PipeSettings settings;
-		settings.pVS = "materials/particles/particle.vsh";
+		settings.pVS = this->getVertexShader();
 		settings.pPS = "materials/particles/unlit/particle_unlit.psh";
 		settings.pGS = "materials/particles/unlit/particle_unlit.gsh";
 		settings.renderTargets = RB_RENDER_RENDER_TARGET_TARGETS;    // COLOR + GPUPick
@@ -36,6 +38,7 @@ namespace rawrbox {
 		settings.blending = {Diligent::BLEND_FACTOR_SRC_ALPHA, Diligent::BLEND_FACTOR_INV_SRC_ALPHA};
 		settings.fill = Diligent::FILL_MODE_SOLID;
 		settings.signatures = {rawrbox::BindlessManager::signature, engine->getSignature()};
+		settings.macros = helper;
 		// -------------------
 
 		rawrbox::PipelineUtils::createPipeline(id, settings);

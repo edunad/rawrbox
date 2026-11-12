@@ -7,10 +7,6 @@
 #include "include/math.fxh"
 
 // BUFFERS -----
-#if defined(READ_LIGHTS)
-StructuredBuffer<Light> Lights; // Read-only
-#endif
-
 #if defined(READ_DECALS)
 StructuredBuffer<Decal> Decals; // Read-only, sorted by depth
 #endif

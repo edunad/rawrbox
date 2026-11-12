@@ -30,6 +30,8 @@ struct Light {
 	uint2 radiance; // RGB16F, linear -> color * intensity
 };
 
+StructuredBuffer<Light> Lights;
+
 float3 GetLightRadiance(Light light) {
 	return float3(Unpack_RG16_FLOAT(light.radiance.x), f16tof32(light.radiance.y & 0xFFFFu));
 }

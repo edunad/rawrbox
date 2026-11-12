@@ -93,11 +93,11 @@ namespace rawrbox {
 	Diligent::IPipelineResourceSignature* ParticleEnginePlugin::getSignature(bool draw) const { return draw ? this->_drawSignature : this->_signature; }
 
 	// REGISTER ----
-	void ParticleEnginePlugin::registerEmitter(rawrbox::Emitter<>* em) {
+	void ParticleEnginePlugin::registerEmitter(rawrbox::EmitterBase* em) {
 		this->_registeredEmitters.push_back(em);
 	}
 
-	void ParticleEnginePlugin::unregisterEmitter(rawrbox::Emitter<>* em) {
+	void ParticleEnginePlugin::unregisterEmitter(rawrbox::EmitterBase* em) {
 		for (auto it = this->_registeredEmitters.begin(); it != this->_registeredEmitters.end();) {
 			if ((*it) != nullptr && (*it) == em) {
 				it = this->_registeredEmitters.erase(it);
@@ -110,7 +110,7 @@ namespace rawrbox {
 	// -------------
 
 	// RENDERING ---
-	void ParticleEnginePlugin::setupEmitter(rawrbox::Emitter<>* emitter) {
+	void ParticleEnginePlugin::setupEmitter(rawrbox::EmitterBase* emitter) {
 		if (emitter == nullptr) RAWRBOX_CRITICAL("Invalid emitter");
 		if (this->_signature == nullptr) RAWRBOX_CRITICAL("Plugin not uploaded!");
 
@@ -122,7 +122,7 @@ namespace rawrbox {
 		// --------
 	}
 
-	void ParticleEnginePlugin::computeEmitter(rawrbox::Emitter<>* emitter) {
+	void ParticleEnginePlugin::computeEmitter(rawrbox::EmitterBase* emitter) {
 		if (emitter == nullptr) RAWRBOX_CRITICAL("Invalid emitter");
 		if (this->_signature == nullptr) RAWRBOX_CRITICAL("Plugin not uploaded!");
 
