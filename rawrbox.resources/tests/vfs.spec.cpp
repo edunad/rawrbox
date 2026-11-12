@@ -11,14 +11,14 @@
 #include <string>
 #include <vector>
 
-namespace {
-	void writeFile(const std::string& path, const std::string& data) {
+namespace rawrbox {
+	static void writeResourceFile(const std::string& path, const std::string& data) {
 		std::filesystem::create_directories(std::filesystem::path(path).parent_path());
 
 		std::ofstream stream(path, std::ios::binary | std::ios::trunc);
 		stream.write(data.data(), static_cast<std::streamsize>(data.size()));
 	}
-} // namespace
+} // namespace rawrbox
 
 TEST_CASE("RESOURCES should load from a mounted VPK", "[rawrbox::RESOURCES]") {
 	const std::string folder = "./rawrbox-tests-resources-vfs";
@@ -28,10 +28,10 @@ TEST_CASE("RESOURCES should load from a mounted VPK", "[rawrbox::RESOURCES]") {
 	rawrbox::VFS::unmount(pack);
 	std::filesystem::remove_all(folder);
 
-	writeFile(folder + "/source/json/packed.json", R"({"source": "packed"})");
-	writeFile(folder + "/source/json/folder/a.json", R"({"id": "a"})");
-	writeFile(folder + "/source/json/folder/b.json", R"({"id": "b"})");
-	writeFile(folder + "/source/json/shared.json", R"({"id": "shared"})");
+	rawrbox::writeResourceFile(folder + "/source/json/packed.json", R"({"source": "packed"})");
+	rawrbox::writeResourceFile(folder + "/source/json/folder/a.json", R"({"id": "a"})");
+	rawrbox::writeResourceFile(folder + "/source/json/folder/b.json", R"({"id": "b"})");
+	rawrbox::writeResourceFile(folder + "/source/json/shared.json", R"({"id": "shared"})");
 
 	rawrbox::VPKWriter writer;
 	writer.add("json/packed.json", folder + "/source/json/packed.json");
@@ -54,7 +54,7 @@ TEST_CASE("RESOURCES should load from a mounted VPK", "[rawrbox::RESOURCES]") {
 
 	SECTION("rawrbox::RESOURCES::loadFolder") {
 		size_t loaded = 0;
-		rawrbox::RESOURCES::loadFolder(assets + "/json/folder", nullptr, [&loaded](const std::string& /*file*/) { loaded++; });
+		rawrbox::RESOURCES::loadFolder(assets + "/json/folder", nullptr, [&loaded](const std::string& /*file*/) { ++loaded; });
 
 		REQUIRE(loaded == 2);
 		REQUIRE(rawrbox::RESOURCES::isLoaded(assets + "/json/folder/a.json"));
@@ -63,7 +63,7 @@ TEST_CASE("RESOURCES should load from a mounted VPK", "[rawrbox::RESOURCES]") {
 
 	SECTION("rawrbox::RESOURCES::loadFile same file from many threads") {
 		std::vector<std::future<rawrbox::ResourceJSON*>> jobs = {};
-		for (size_t i = 0; i < 8; i++) {
+		for (size_t i = 0; i < 8; ++i) {
 			jobs.push_back(std::async(std::launch::async, [&assets]() {
 				return rawrbox::RESOURCES::loadFile<rawrbox::ResourceJSON>(assets + "/json/shared.json");
 			}));
@@ -77,6 +77,8 @@ TEST_CASE("RESOURCES should load from a mounted VPK", "[rawrbox::RESOURCES]") {
 		REQUIRE(results.front() != nullptr);
 		for (auto* result : results) {
 			REQUIRE(result == results.front());
+			REQUIRE(result->status == rawrbox::LoadStatus::LOADED);
+			REQUIRE(result->get()["id"].get<std::string>() == "shared");
 		}
 	}
 

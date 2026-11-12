@@ -7,9 +7,9 @@
 #include <rawrbox/render/utils/pipeline.hpp>
 
 #include <GraphicsAccessories.hpp>
+#include <tracy/Tracy.hpp>
 
 #include <fmt/format.h>
-#include <tracy/Tracy.hpp>
 
 #include <bit>
 
@@ -30,6 +30,7 @@ namespace rawrbox {
 	// ----
 
 	TextureBase::~TextureBase() {
+		rawrbox::BindlessManager::unregisterUpdateTexture(*this);
 		if (this->_failedToLoad) return; // Don't delete the fallback
 
 		rawrbox::BindlessManager::unregisterTexture(*this);
@@ -45,7 +46,7 @@ namespace rawrbox {
 	void TextureBase::loadFallback() {
 		this->_failedToLoad = true;
 
-		auto missing = _type == TEXTURE_TYPE::VERTEX ? rawrbox::MISSING_VERTEX_TEXTURE : rawrbox::MISSING_TEXTURE;
+		const auto missing = this->_type == TEXTURE_TYPE::VERTEX ? rawrbox::MISSING_VERTEX_TEXTURE : rawrbox::MISSING_TEXTURE;
 
 		this->_data.frames = missing->getData().frames;
 		this->_handle = missing->getHandle();

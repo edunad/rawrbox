@@ -189,8 +189,8 @@ namespace rawrbox {
 
 			rawrbox::RENDERER->device()->CreateBuffer(BuffDesc, &BuffData, &this->_buffer);
 
-			_bufferWrite = this->_buffer->GetDefaultView(Diligent::BUFFER_VIEW_UNORDERED_ACCESS);
-			_bufferRead = this->_buffer->GetDefaultView(Diligent::BUFFER_VIEW_SHADER_RESOURCE);
+			this->_bufferWrite = this->_buffer->GetDefaultView(Diligent::BUFFER_VIEW_UNORDERED_ACCESS);
+			this->_bufferRead = this->_buffer->GetDefaultView(Diligent::BUFFER_VIEW_SHADER_RESOURCE);
 			// -----------
 
 			// Create uniforms --

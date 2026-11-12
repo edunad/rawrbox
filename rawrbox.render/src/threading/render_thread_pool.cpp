@@ -7,31 +7,22 @@
 #include <utility>
 
 namespace rawrbox {
-	namespace {
-		thread_local bool RECORDING = false;
-		thread_local Diligent::IDeviceContext* CONTEXT = nullptr;
-		thread_local uint32_t CONTEXT_INDEX = 0;
+	thread_local bool RenderThreadPool::RECORDING = false;
+	thread_local Diligent::IDeviceContext* RenderThreadPool::CONTEXT = nullptr;
+	thread_local uint32_t RenderThreadPool::CONTEXT_INDEX = 0;
 
-		class RecordingScope {
-		public:
-			RecordingScope(Diligent::IDeviceContext& context, uint32_t index) {
-				RECORDING = true;
+	RenderThreadPool::RecordingScope::RecordingScope(Diligent::IDeviceContext& context, uint32_t index) {
+		RECORDING = true;
 
-				CONTEXT = &context;
-				CONTEXT_INDEX = index;
-			}
+		CONTEXT = &context;
+		CONTEXT_INDEX = index;
+	}
 
-			RecordingScope(const RecordingScope&) = delete;
-			RecordingScope(RecordingScope&&) = delete;
-			RecordingScope& operator=(const RecordingScope&) = delete;
-			RecordingScope& operator=(RecordingScope&&) = delete;
-			~RecordingScope() {
-				RECORDING = false;
-				CONTEXT = nullptr;
-				CONTEXT_INDEX = 0;
-			}
-		};
-	} // namespace
+	RenderThreadPool::RecordingScope::~RecordingScope() {
+		RECORDING = false;
+		CONTEXT = nullptr;
+		CONTEXT_INDEX = 0;
+	}
 
 	RenderThreadPool::RenderThreadPool(Diligent::IDeviceContext& immediate, std::vector<Diligent::RefCntAutoPtr<Diligent::IDeviceContext>> deferred) : _immediate(&immediate), _owner(std::this_thread::get_id()) {
 		if (immediate.GetDesc().IsDeferred) RAWRBOX_CRITICAL("Expected an immediate context");
@@ -110,7 +101,7 @@ namespace rawrbox {
 			}
 		}
 
-		if (slot.dirty != NO_FRAME) slot.context->FinishFrame();
+		if (slot.dirty != this->NO_FRAME) slot.context->FinishFrame();
 	}
 
 	void RenderThreadPool::runSlot(Slot& slot, const Job& job) const {
@@ -120,7 +111,7 @@ namespace rawrbox {
 		const RecordingScope scope(context, slot.index);
 
 		try {
-			if (slot.dirty != NO_FRAME && slot.dirty != job.frame) context.FinishFrame();
+			if (slot.dirty != this->NO_FRAME && slot.dirty != job.frame) context.FinishFrame();
 			context.Begin(this->_immediate->GetDesc().ContextId);
 			context.InsertDebugLabel(slot.label.c_str());
 		} catch (...) {
@@ -209,7 +200,7 @@ namespace rawrbox {
 	bool RenderThreadPool::record(uint32_t count, const RecordFunc& record, const SetupFunc& setup, std::span<const uint32_t> weights) {
 		if (std::this_thread::get_id() != this->_owner) RAWRBOX_CRITICAL("'record' must be called from the owner thread");
 
-		if (RECORDING) RAWRBOX_CRITICAL("'record' cannot be called from inside a render job");
+		if (this->RECORDING) RAWRBOX_CRITICAL("'record' cannot be called from inside a render job");
 		if (!record) RAWRBOX_CRITICAL("Invalid record callback");
 		if (!weights.empty() && weights.size() != count) RAWRBOX_CRITICAL("Expected {} weights, got {}", count, weights.size());
 
@@ -297,7 +288,7 @@ namespace rawrbox {
 
 	void RenderThreadPool::finishFrame() {
 		if (std::this_thread::get_id() != this->_owner) RAWRBOX_CRITICAL("'finishFrame' must be called inside the owner thread");
-		if (RECORDING) RAWRBOX_CRITICAL("'finishFrame' cannot be called from inside a render job");
+		if (this->RECORDING) RAWRBOX_CRITICAL("'finishFrame' cannot be called from inside a render job");
 
 		++this->_frame;
 	}
@@ -310,7 +301,7 @@ namespace rawrbox {
 		return static_cast<uint32_t>(this->_slots.size()) + 1U;
 	}
 
-	bool RenderThreadPool::isRecording() { return RECORDING; }
-	Diligent::IDeviceContext* RenderThreadPool::currentContext() { return CONTEXT; }
-	uint32_t RenderThreadPool::contextIndex() { return CONTEXT_INDEX; }
+	bool RenderThreadPool::isRecording() { return RenderThreadPool::RECORDING; }
+	Diligent::IDeviceContext* RenderThreadPool::currentContext() { return RenderThreadPool::CONTEXT; }
+	uint32_t RenderThreadPool::contextIndex() { return RenderThreadPool::CONTEXT_INDEX; }
 } // namespace rawrbox

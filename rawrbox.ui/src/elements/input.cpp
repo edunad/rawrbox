@@ -36,7 +36,7 @@ namespace rawrbox {
 		if (this->_numeric) paste_text = rawrbox::StrUtils::extractNumbers(paste_text);
 		if (paste_text.empty()) return;
 
-		auto bytePos = Font::getByteCount(getText(), this->_charXPos);
+		const auto bytePos = Font::getByteCount(this->getText(), this->_charXPos);
 
 		// add the result UTF8 to our buffer
 		auto curStr = this->getText();
@@ -51,7 +51,7 @@ namespace rawrbox {
 	void UIInput::combo_backspace(uint32_t mods) {
 		if (this->_readOnly) return;
 
-		auto text = getText();
+		auto text = this->getText();
 		if (text.empty() || this->_charXPos == 0) return;
 
 		// If pressing ctrl we're removing text in chunks rather than per letter
@@ -86,7 +86,7 @@ namespace rawrbox {
 	void UIInput::combo_delete(uint32_t mods) {
 		if (this->_readOnly) return;
 
-		auto text = getText();
+		auto text = this->getText();
 		if (text.empty() || this->_charXPos == Font::getCharacterCount(text)) return;
 
 		// If pressing ctrl we're removing text in chunks rather than per letter
@@ -108,7 +108,7 @@ namespace rawrbox {
 			text.erase(text.begin() + fromPos, text.begin() + toPos);
 		}
 
-		setText(text);
+		this->setText(text);
 	}
 
 	void UIInput::moveCharet(bool forward) {
@@ -147,7 +147,7 @@ namespace rawrbox {
 			this->_charXPos = static_cast<int>(rawrbox::Font::getCharacterCount(this->_text)); // Set at the end
 		}
 
-		if (!preventEvent) onTextUpdate();
+		if (!preventEvent) this->onTextUpdate();
 		this->genFill();
 	}
 
@@ -288,7 +288,7 @@ namespace rawrbox {
 		}
 
 		if (key == KEY_END) {
-			this->_charXPos = static_cast<int>(Font::getCharacterCount(getText()));
+			this->_charXPos = static_cast<int>(Font::getCharacterCount(this->getText()));
 		}
 
 		if (key == KEY_RIGHT) {
@@ -324,12 +324,12 @@ namespace rawrbox {
 
 		auto pos = Vector2f(this->_padding, (size.y - this->_textSize.y) / 2 + this->_offsetY);
 
-		auto offset = this->_textSize.x + this->_charSize.x + this->_padding;
+		const auto offset = this->_textSize.x + this->_charSize.x + this->_padding;
 		if (offset > size.x) pos.x -= offset - size.x;
 
-		if ((time(nullptr) % 2) == 0 && focused() && !this->_readOnly) {
-			auto charPos = this->_font->getStringSize(text.substr(0, Font::getByteCount(text, this->_charXPos)));
-			stencil.drawBox({this->_padding + charPos.x + pos.x, 2}, {1, size.y - 4}, getColor());
+		if ((time(nullptr) % 2) == 0 && this->focused() && !this->_readOnly) {
+			const auto charPos = this->_font->getStringSize(text.substr(0, Font::getByteCount(text, this->_charXPos)));
+			stencil.drawBox({this->_padding + charPos.x + pos.x, 2}, {1, size.y - 4}, this->getColor());
 		}
 
 		if (!this->_hint.empty()) {
@@ -337,7 +337,7 @@ namespace rawrbox {
 		}
 
 		if (text.empty() && !this->_readOnly) {
-			stencil.drawText(*this->_font, this->_placeholder, pos, getColor() * 0.5F);
+			stencil.drawText(*this->_font, this->_placeholder, pos, this->getColor() * 0.5F);
 		} else {
 			stencil.drawText(*this->_font, text, pos, this->_readOnly ? this->getColor() * 0.65F : this->getColor());
 		}
@@ -348,7 +348,7 @@ namespace rawrbox {
 
 		// Border
 		stencil.pushOutline({this->_borderSize});
-		stencil.drawBox({}, size, getBorderColor());
+		stencil.drawBox({}, size, this->getBorderColor());
 		stencil.popOutline();
 	}
 	// ----------

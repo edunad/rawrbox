@@ -329,6 +329,7 @@ namespace rawrbox {
 		// ---------
 
 		// UTILS ---
+		[[nodiscard]] static Diligent::RefCntAutoPtr<Diligent::IBuffer> createBuffer(const char* name, uint32_t stride, uint32_t count, Diligent::BIND_FLAGS flags, const void* data = nullptr, Diligent::BUFFER_MODE mode = Diligent::BUFFER_MODE_STRUCTURED);
 		static void createSignature(const char* name, uint8_t index, const std::vector<Diligent::PipelineResourceDesc>& resources, Diligent::RefCntAutoPtr<Diligent::IPipelineResourceSignature>& signature);
 
 		[[nodiscard]] static bool requestShadow(const rawrbox::LightBase& light);

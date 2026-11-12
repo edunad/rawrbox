@@ -9,10 +9,12 @@
 #include <DynamicBuffer.hpp>
 
 #include <algorithm>
+#include <cstring>
 #include <numeric>
 #include <optional>
 
 namespace rawrbox {
+	static constexpr uint64_t MAX_INSTANCES = RB_RENDER_MAX_INSTANCE_BUFFER_SIZE / sizeof(rawrbox::Instance);
 
 	template <typename M = rawrbox::MaterialInstanced>
 		requires(std::derived_from<M, rawrbox::MaterialBase>)
@@ -28,21 +30,33 @@ namespace rawrbox {
 		uint32_t _instanceBindVersion = 0;
 
 		rawrbox::BBOX _instanceBounds = {};
+		bool _instanceBoundsDirty = true;
 		rawrbox::DirtyRanges _dirtyInstances = {};
-		
+
 		uint32_t _capacity = 0;
 		uint32_t _gpuCullMin = RB_RENDER_GPU_CULL_MIN_INSTANCES;
 
 		void updateBuffers() override {
 			rawrbox::ModelBase<M>::updateBuffers();
-			this->updateInstances();
+
+			this->_resetVIS = true;
+			this->_instanceBoundsDirty = true;
 		}
 
 		[[nodiscard]] uint32_t bufferCapacity(size_t requested) const {
-			constexpr uint64_t max = RB_RENDER_MAX_INSTANCE_BUFFER_SIZE / sizeof(rawrbox::Instance);
-			if (this->_instances.size() > max) RAWRBOX_CRITICAL("Too many instances {}!. Max is {}! Increase 'RB_RENDER_MAX_INSTANCE_BUFFER_SIZE'", this->_instances.size(), max);
+			if (this->_instances.size() > MAX_INSTANCES) RAWRBOX_CRITICAL("Too many instances {}!. Max is {}! Increase 'RB_RENDER_MAX_INSTANCE_BUFFER_SIZE'", this->_instances.size(), MAX_INSTANCES);
+			return static_cast<uint32_t>(std::clamp<uint64_t>(requested, 1U, MAX_INSTANCES));
+		}
 
-			return static_cast<uint32_t>(std::clamp<uint64_t>(requested, 1U, max));
+		virtual void resizeBuffer(size_t count) {
+			auto* context = rawrbox::RENDERER->context();
+			if (context == nullptr) RAWRBOX_CRITICAL("Invalid renderer context");
+
+			const uint32_t capacity = this->bufferCapacity(count);
+			this->_instances.reserve(capacity);
+
+			this->_dataBuffer->Resize(rawrbox::RENDERER->device(), context, sizeof(rawrbox::Instance) * static_cast<uint64_t>(capacity), true);
+			this->createCullBuffers(capacity, 2U);
 		}
 
 		virtual void createInstanceBind() {
@@ -192,11 +206,14 @@ namespace rawrbox {
 		}
 
 		virtual void setTemplate(rawrbox::Mesh<typename M::vertexBufferType> mesh) {
-			if (mesh.empty()) RAWRBOX_CRITICAL("Invalid mesh! Missing vertices / indices!");
-			this->_mesh = std::make_unique<rawrbox::Mesh<typename M::vertexBufferType>>(mesh);
+			if (mesh.empty() && this->isUploaded() && !this->isDynamic()) RAWRBOX_CRITICAL("Invalid mesh! Missing vertices / indices!");
+			*this->_mesh = std::move(mesh);
 
 			if (this->isUploaded() && this->isDynamic()) {
 				this->updateBuffers();
+			} else {
+				this->_vertexBoundsDirty = true;
+				this->_instanceBoundsDirty = true;
 			}
 		}
 
@@ -226,6 +243,57 @@ namespace rawrbox {
 
 		virtual std::vector<rawrbox::Instance>& instances() { return this->_instances; }
 		[[nodiscard]] virtual size_t count() const { return this->_instances.size(); }
+
+		virtual bool setInstances(std::vector<rawrbox::Instance>&& instances) {
+			if (instances.size() == this->_instances.size() && (instances.empty() || std::memcmp(instances.data(), this->_instances.data(), instances.size() * sizeof(rawrbox::Instance)) == 0)) return false;
+
+			this->_instances.swap(instances);
+			if (this->_dataBuffer != nullptr) {
+				this->updateInstances();
+			} else {
+				this->_instanceBoundsDirty = true;
+			}
+
+			return true;
+		}
+
+		virtual void reserve(size_t instances) {
+			if (instances > MAX_INSTANCES) RAWRBOX_CRITICAL("Cannot reserve {} instances, max is {}! Increase 'RB_RENDER_MAX_INSTANCE_BUFFER_SIZE'", instances, MAX_INSTANCES);
+			this->_instances.reserve(instances);
+			if (this->_dataBuffer == nullptr || instances <= this->_capacity) return;
+
+			this->resizeBuffer(instances);
+			if (!this->_instances.empty()) this->updateInstances();
+		}
+
+		void setCullBounds(std::optional<rawrbox::BBOX> bounds) override {
+			if (this->_cullBounds == bounds) return;
+
+			rawrbox::ModelBase<M>::setCullBounds(bounds);
+			this->_instanceBoundsDirty = true;
+		}
+
+		[[nodiscard]] const rawrbox::BBOX& getInstanceBounds() {
+			if (!this->_instanceBoundsDirty) return this->_instanceBounds;
+
+			this->_instanceBoundsDirty = false;
+			this->_instanceBounds = {};
+
+			const auto& local = this->getCachedVertexBounds();
+			if (local.isInfinite()) return this->_instanceBounds;
+
+			for (size_t i = 0; i < this->_instances.size(); i++) {
+				const auto bounds = local.transform(this->_instances[i].getMatrix());
+
+				if (i == 0) {
+					this->_instanceBounds = bounds;
+				} else {
+					this->_instanceBounds.combine(bounds);
+				}
+			}
+
+			return this->_instanceBounds;
+		}
 
 		virtual void setGPUCullThreshold(uint32_t instances) { this->_gpuCullMin = instances; }
 		[[nodiscard]] virtual uint32_t getGPUCullThreshold() const { return this->_gpuCullMin; }
@@ -269,9 +337,6 @@ namespace rawrbox {
 			auto* context = rawrbox::RENDERER->context();
 			if (context == nullptr) RAWRBOX_CRITICAL("Invalid renderer context");
 
-			auto* device = rawrbox::RENDERER->device();
-			if (device == nullptr) RAWRBOX_CRITICAL("Invalid renderer device");
-
 			size_t start = first.value_or(0);
 			if (start > this->_instances.size()) RAWRBOX_CRITICAL("Instance range out of bounds");
 
@@ -280,11 +345,7 @@ namespace rawrbox {
 
 			// RESIZE ----
 			if (this->_instances.size() > this->_capacity) {
-				const uint32_t capacity = this->bufferCapacity(std::max<size_t>(this->_instances.size() + 16, static_cast<size_t>(this->_capacity) + this->_capacity / 2));
-				this->_instances.reserve(capacity);
-
-				this->_dataBuffer->Resize(device, context, sizeof(rawrbox::Instance) * static_cast<uint64_t>(capacity), true);
-				this->createCullBuffers(capacity, 2U);
+				this->resizeBuffer(std::max<size_t>(this->_instances.size() + 16, static_cast<size_t>(this->_capacity) + this->_capacity / 2));
 
 				start = 0;
 				total = this->_instances.size();
@@ -297,21 +358,7 @@ namespace rawrbox {
 				this->_dirtyInstances.clear();
 			}
 
-			// SHADOW BOUNDS ---
-			const auto& local = this->getCachedVertexBounds();
-
-			if (!local.isInfinite()) {
-				for (size_t i = start; i < start + total; i++) {
-					const auto bounds = local.transform(this->_instances[i].getMatrix());
-
-					if (full && i == start) {
-						this->_instanceBounds = bounds;
-					} else {
-						this->_instanceBounds.combine(bounds);
-					}
-				}
-			}
-			//  ---------
+			this->_instanceBoundsDirty = true;
 
 			if (total == 0) return;
 			context->UpdateBuffer(this->_dataBuffer->GetBuffer(), sizeof(rawrbox::Instance) * start, sizeof(rawrbox::Instance) * total, &this->_instances[start], Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
@@ -320,6 +367,9 @@ namespace rawrbox {
 		void bindBuffers() override {
 			auto* context = rawrbox::RENDERER->context();
 			if (context == nullptr) RAWRBOX_CRITICAL("Invalid renderer context");
+
+			this->internalUpdate();
+			// --------------------------
 
 			// Bind vertex and index buffers
 			constexpr std::array<uint64_t, 2> offset = {0, 0};
@@ -333,11 +383,11 @@ namespace rawrbox {
 		// SHADOWS ---
 		[[nodiscard]] rawrbox::BBOX getShadowBounds() override {
 			if (this->_instances.empty() || this->getCachedVertexBounds().isInfinite()) return rawrbox::BBOX::infinite();
-			return this->_instanceBounds.transform(this->getMatrix());
+			return this->getInstanceBounds().transform(this->getMatrix());
 		}
 
 		[[nodiscard]] bool getShadowInstances(rawrbox::ShadowInstances& instances) override {
-			if (this->_instances.empty() || !this->canCastShadows(*this->_mesh) || this->getCachedVertexBounds().isInfinite()) return false;
+			if (this->_instances.empty() || this->_mesh->empty() || !this->canCastShadows(*this->_mesh) || this->getCachedVertexBounds().isInfinite()) return false;
 
 			instances = {
 			    .instances = this->_dataBuffer->GetBuffer(),
@@ -351,7 +401,7 @@ namespace rawrbox {
 		}
 
 		void drawShadow(const rawrbox::ShadowDraw& draw) override {
-			if (this->_instances.empty() || !this->canCastShadows(*this->_mesh)) return;
+			if (this->_instances.empty() || this->_mesh->empty() || !this->canCastShadows(*this->_mesh)) return;
 
 			if (draw.bind) {
 				this->bindBuffers();
@@ -394,7 +444,7 @@ namespace rawrbox {
 			}
 			// -----------
 
-			if (this->_instances.empty()) return;
+			if (this->_instances.empty() || this->_mesh->empty()) return;
 
 			// OCCLUSION ---
 			auto* occlusion = rawrbox::RENDERER->occlusion();
@@ -413,7 +463,7 @@ namespace rawrbox {
 			}
 
 			if (!this->useGPUCulling()) {
-				if (this->_instanceBounds.inFrustum(rawrbox::RENDERER->getPassCamera()->getViewProjMtx() * this->getMatrix())) this->drawInstances(false, 0);
+				if (this->getInstanceBounds().inFrustum(rawrbox::RENDERER->getPassCamera()->getViewProjMtx() * this->getMatrix())) this->drawInstances(false, 0);
 				return;
 			}
 
@@ -425,6 +475,7 @@ namespace rawrbox {
 		}
 
 		void drawLate() override {
+			if (this->_instances.empty() || this->_mesh->empty()) return;
 			if (!this->_mesh->isCullable() || this->_mesh->isTransparent() || this->getCachedVertexBounds().isInfinite()) {
 				this->drawInstances(false, 0);
 				return;

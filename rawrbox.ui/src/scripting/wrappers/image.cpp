@@ -13,11 +13,10 @@ namespace rawrbox {
 			    self.setTexture(tex);
 		    })
 		    .addFunction("setTexturePath", [](rawrbox::UIImage& self, const std::string& path, lua_State* L) {
-			    auto modFolder = rawrbox::LuaUtils::getLuaENVVar<std::string>(L, "__mod_folder");
-			    auto fixedPath = rawrbox::LuaUtils::getContent(path, modFolder);
-			    if (!fixedPath.first.empty()) throw std::runtime_error("External mod resources loading not supported");
+			    const auto fixedPath = rawrbox::LuaUtils::resolveContent(path, L);
+			    if (!fixedPath) throw std::runtime_error(fixedPath.error());
 
-			    self.setTexture(fixedPath.second);
+			    self.setTexture(fixedPath.value());
 		    })
 		    .addFunction("sizeToContents", &rawrbox::UIImage::sizeToContents)
 		    .endClass();

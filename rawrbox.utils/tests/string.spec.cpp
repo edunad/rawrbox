@@ -29,6 +29,15 @@ TEST_CASE("StrUtils should behave as expected", "[rawrbox::StrUtils]") {
 	SECTION("rawrbox::StrUtils::replace") {
 		REQUIRE(rawrbox::StrUtils::replace("AVI STOP PLAYING BAD GAMES", "AVI", "BROM") == "BROM STOP PLAYING BAD GAMES");
 		REQUIRE(rawrbox::StrUtils::replace("AVI STOP PLAYING BAD GAMES", "NYA", "BROM") == "AVI STOP PLAYING BAD GAMES");
+		REQUIRE(rawrbox::StrUtils::replace("a\\b\\c", "\\", "/") == "a/b\\c");
+	}
+
+	SECTION("rawrbox::StrUtils::replaceAll") {
+		REQUIRE(rawrbox::StrUtils::replaceAll("a\\b\\c", "\\", "/") == "a/b/c");
+		REQUIRE(rawrbox::StrUtils::replaceAll("aaa", "a", "aa") == "aaaaaa");
+		REQUIRE(rawrbox::StrUtils::replaceAll("../../x", "../", "") == "x");
+		REQUIRE(rawrbox::StrUtils::replaceAll("abc", "", "x") == "abc");
+		REQUIRE(rawrbox::StrUtils::replaceAll("", "a", "b").empty());
 	}
 
 	SECTION("rawrbox::StrUtils::split") {

@@ -16,7 +16,7 @@ namespace rawrbox {
 	}
 
 	void ClusteredUtils::build(std::vector<rawrbox::ZBinEntry>& entries, uint32_t offset, float zNear, float zFar, std::vector<uint32_t>& bins) {
-		bins.assign(RB_RENDER_ZBINS, EMPTY_BIN);
+		bins.assign(RB_RENDER_ZBINS, ClusteredUtils::EMPTY_BIN);
 		std::ranges::sort(entries, [](const rawrbox::ZBinEntry& a, const rawrbox::ZBinEntry& b) { return a.minZ < b.minZ; });
 		if (zFar <= zNear) return; // Invalid camera
 

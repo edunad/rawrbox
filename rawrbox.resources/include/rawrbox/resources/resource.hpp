@@ -1,5 +1,6 @@
 #pragma once
 #include <filesystem>
+#include <future>
 #include <string>
 #include <vector>
 
@@ -20,6 +21,8 @@ namespace rawrbox {
 
 		std::filesystem::path filePath = {};
 		std::string extention;
+
+		std::shared_future<void> ready = {};
 
 		virtual bool load(const std::vector<uint8_t>& buffer);
 		virtual void upload();

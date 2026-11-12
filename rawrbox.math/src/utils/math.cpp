@@ -57,16 +57,16 @@ namespace rawrbox {
 		if (diff < -180.F) {
 			// lerp upwards past 360
 			b += 360.F;
-			result = lerp(a, b, lerpFactor);
+			result = MathUtils::lerp(a, b, lerpFactor);
 			if (result >= 360.F) result -= 360.F;
 		} else if (diff > 180.F) {
 			// lerp downwards past 0
 			b -= 360.F;
-			result = lerp(a, b, lerpFactor);
+			result = MathUtils::lerp(a, b, lerpFactor);
 			if (result < 0.F) result += 360.F;
 		} else {
 			// straight lerp
-			result = lerp(a, b, lerpFactor);
+			result = MathUtils::lerp(a, b, lerpFactor);
 		}
 
 		return result;
@@ -84,17 +84,17 @@ namespace rawrbox {
 		if (diff < -PI) {
 			// lerp upwards past PI_TIMES_TWO
 			b += PI_TIMES_TWO;
-			result = lerp(a, b, lerpFactor);
+			result = MathUtils::lerp(a, b, lerpFactor);
 			if (result >= PI_TIMES_TWO) result -= PI_TIMES_TWO;
 
 		} else if (diff > PI) {
 			// lerp downwards past 0
 			b -= PI_TIMES_TWO;
-			result = lerp(a, b, lerpFactor);
+			result = MathUtils::lerp(a, b, lerpFactor);
 			if (result < 0.F) result += PI_TIMES_TWO;
 		} else {
 			// straight lerp
-			result = lerp(a, b, lerpFactor);
+			result = MathUtils::lerp(a, b, lerpFactor);
 		}
 
 		return result;
@@ -136,18 +136,18 @@ namespace rawrbox {
 	}
 
 	Vector2f MathUtils::toRad(const Vector2f& vec) {
-		return {toRad(vec.x), toRad(vec.y)};
+		return {MathUtils::toRad(vec.x), MathUtils::toRad(vec.y)};
 	}
 
 	Vector2f MathUtils::toDeg(const Vector2f& vec) {
-		return {toDeg(vec.x), toDeg(vec.y)};
+		return {MathUtils::toDeg(vec.x), MathUtils::toDeg(vec.y)};
 	}
 
 	Vector3f MathUtils::toRad(const Vector3f& vec) {
-		return {toRad(vec.x), toRad(vec.y), toRad(vec.z)};
+		return {MathUtils::toRad(vec.x), MathUtils::toRad(vec.y), MathUtils::toRad(vec.z)};
 	}
 
 	Vector3f MathUtils::toDeg(const Vector3f& vec) {
-		return {toDeg(vec.x), toDeg(vec.y), toDeg(vec.z)};
+		return {MathUtils::toDeg(vec.x), MathUtils::toDeg(vec.y), MathUtils::toDeg(vec.z)};
 	}
 } // namespace rawrbox

@@ -7,56 +7,63 @@ namespace rawrbox {
 	PacketWrapper::PacketWrapper(rawrbox::Packet packet) : data(std::move(packet)) {}
 
 	// UTILS -----
-	void PacketWrapper::seek(size_t offset) { data.seek(offset - 1); }
-	void PacketWrapper::clear() { data.clear(); }
-	size_t PacketWrapper::tell() { return data.tell() + 1; }
-	size_t PacketWrapper::size() { return data.size(); }
-	bool PacketWrapper::empty() { return data.empty(); }
+	void PacketWrapper::seek(size_t offset) { this->data.seek(offset - 1); }
+	void PacketWrapper::clear() { this->data.clear(); }
+	size_t PacketWrapper::tell() { return this->data.tell() + 1; }
+	size_t PacketWrapper::size() { return this->data.size(); }
+	bool PacketWrapper::empty() { return this->data.empty(); }
 	// -------------------
 
 	// WRITE ---
-	void PacketWrapper::writeBool(bool val) { data.write(val); }
-	void PacketWrapper::writeByte(uint8_t val) { data.write(val); }
-	void PacketWrapper::writeChar(char val) { data.write(val); }
-	void PacketWrapper::writeShort(int16_t val) { data.write(val); }
-	void PacketWrapper::writeUShort(uint16_t val) { data.write(val); }
-	void PacketWrapper::writeInt(int32_t val) { data.write(val); }
-	void PacketWrapper::writeUInt(uint32_t val) { data.write(val); }
-	void PacketWrapper::writeLong(int64_t val) { data.write(val); }
-	void PacketWrapper::writeULong(uint64_t val) { data.write(val); }
-	void PacketWrapper::writeFloat(float val) { data.write(val); }
-	void PacketWrapper::writeDouble(double val) { data.write(val); }
-	void PacketWrapper::writeString(const std::string& val) { data.write(val); }
+	void PacketWrapper::writeBool(bool val) { this->data.write(val); }
+	void PacketWrapper::writeByte(uint8_t val) { this->data.write(val); }
+	void PacketWrapper::writeChar(char val) { this->data.write(val); }
+	void PacketWrapper::writeShort(int16_t val) { this->data.write(val); }
+	void PacketWrapper::writeUShort(uint16_t val) { this->data.write(val); }
+	void PacketWrapper::writeInt(int32_t val) { this->data.write(val); }
+	void PacketWrapper::writeUInt(uint32_t val) { this->data.write(val); }
+	void PacketWrapper::writeLong(int64_t val) { this->data.write(val); }
+	void PacketWrapper::writeULong(uint64_t val) { this->data.write(val); }
+	void PacketWrapper::writeFloat(float val) { this->data.write(val); }
+	void PacketWrapper::writeDouble(double val) { this->data.write(val); }
+	void PacketWrapper::writeString(const std::string& val) { this->data.write(val); }
 	void PacketWrapper::writeTable(const luabridge::LuaRef& val) {
-		std::string output;
-		auto ec = glz::write<glz::opts{.prettify = false}>(rawrbox::LuaUtils::luaToJsonObject(val), output);
-		if (ec) throw std::runtime_error(fmt::format("Failed to printTable"));
+		const auto json = rawrbox::LuaUtils::toJSON(val);
+		if (!json) throw std::runtime_error(fmt::format("Failed to write table ──> {}", json.error()));
 
-		data.write(output);
+		std::string output;
+
+		auto ec = glz::write<glz::opts{.prettify = false}>(json.value(), output);
+		if (ec) throw std::runtime_error(fmt::format("Failed to write table"));
+
+		this->data.write(output);
 	}
 	// -------
 
 	// READ ----
-	bool PacketWrapper::readBool() { return data.read<bool>(); }
-	uint8_t PacketWrapper::readByte() { return data.read<uint8_t>(); }
-	char PacketWrapper::readChar() { return data.read<char>(); }
-	int16_t PacketWrapper::readShort() { return data.read<int16_t>(); }
-	uint16_t PacketWrapper::readUShort() { return data.read<uint16_t>(); }
-	int32_t PacketWrapper::readInt() { return data.read<int32_t>(); }
-	uint32_t PacketWrapper::readUInt() { return data.read<uint32_t>(); }
-	int64_t PacketWrapper::readLong() { return data.read<int64_t>(); }
-	uint64_t PacketWrapper::readULong() { return data.read<uint64_t>(); }
-	float PacketWrapper::readFloat() { return data.read<float>(); }
-	double PacketWrapper::readDouble() { return data.read<double>(); }
-	std::string PacketWrapper::readString() { return data.read<std::string>(); }
+	bool PacketWrapper::readBool() { return this->data.read<bool>(); }
+	uint8_t PacketWrapper::readByte() { return this->data.read<uint8_t>(); }
+	char PacketWrapper::readChar() { return this->data.read<char>(); }
+	int16_t PacketWrapper::readShort() { return this->data.read<int16_t>(); }
+	uint16_t PacketWrapper::readUShort() { return this->data.read<uint16_t>(); }
+	int32_t PacketWrapper::readInt() { return this->data.read<int32_t>(); }
+	uint32_t PacketWrapper::readUInt() { return this->data.read<uint32_t>(); }
+	int64_t PacketWrapper::readLong() { return this->data.read<int64_t>(); }
+	uint64_t PacketWrapper::readULong() { return this->data.read<uint64_t>(); }
+	float PacketWrapper::readFloat() { return this->data.read<float>(); }
+	double PacketWrapper::readDouble() { return this->data.read<double>(); }
+	std::string PacketWrapper::readString() { return this->data.read<std::string>(); }
 
 	luabridge::LuaRef PacketWrapper::readTable(lua_State* L) {
 		glz::generic json = {};
 
-		auto err = glz::read_json(json, data.read<std::string>());
+		auto err = glz::read_json(json, this->data.read<std::string>());
 		if (err != glz::error_code::none) throw std::runtime_error("Invalid table format");
 
-		return rawrbox::LuaUtils::jsonToLua(L, json);
+		auto table = rawrbox::LuaUtils::fromJSON(L, json);
+		if (!table) throw std::runtime_error(fmt::format("Invalid table ──> {}", table.error()));
+
+		return std::move(table.value());
 	}
 	// ----------
 

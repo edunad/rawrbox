@@ -61,10 +61,10 @@ namespace rawrbox {
 	}
 
 	std::pair<std::shared_ptr<rawrbox::VPK>, const rawrbox::VPKEntry*> VFS::find(const std::filesystem::path& path) {
-		const auto key = normalize(path);
+		const auto key = VFS::normalize(path);
 
-		for (auto mount = _mounts.rbegin(); mount != _mounts.rend(); ++mount) {
-			const auto relative = getRelativePath(key, mount->mountPoint);
+		for (auto mount = VFS::_mounts.rbegin(); mount != VFS::_mounts.rend(); ++mount) {
+			const auto relative = VFS::getRelativePath(key, mount->mountPoint);
 			if (!relative.has_value()) continue;
 
 			const auto* entry = mount->vpk->getEntry(relative.value());
@@ -76,23 +76,23 @@ namespace rawrbox {
 
 	bool VFS::mount(const std::filesystem::path& path, const std::string& mountPoint) {
 		if (!std::filesystem::exists(path)) {
-			_logger->warn("VPK '{}' not found!", path.generic_string());
+			VFS::_logger->warn("VPK '{}' not found!", path.generic_string());
 			return false;
 		}
 
 		const auto canonical = std::filesystem::weakly_canonical(path);
 
-		std::unique_lock lock(_lock);
-		if (std::ranges::any_of(_mounts, [&canonical](const auto& mount) { return mount.path == canonical; })) {
-			_logger->warn("VPK '{}' is already mounted", path.generic_string());
+		std::unique_lock lock(VFS::_lock);
+		if (std::ranges::any_of(VFS::_mounts, [&canonical](const auto& mount) { return mount.path == canonical; })) {
+			VFS::_logger->warn("VPK '{}' is already mounted", path.generic_string());
 			return false;
 		}
 
 		auto vpk = std::make_shared<rawrbox::VPK>(path);
-		_logger->info("Mounted '{}' on '{}' ({} files)", fmt::styled(path.generic_string(), fmt::fg(fmt::color::coral)), mountPoint, vpk->getEntries().size());
+		VFS::_logger->info("Mounted '{}' on '{}' ({} files)", fmt::styled(path.generic_string(), fmt::fg(fmt::color::coral)), mountPoint, vpk->getEntries().size());
 
-		_mounts.push_back({.path = canonical,
-		    .mountPoint = normalize(mountPoint),
+		VFS::_mounts.push_back({.path = canonical,
+		    .mountPoint = VFS::normalize(mountPoint),
 		    .vpk = std::move(vpk)});
 
 		return true;
@@ -101,8 +101,8 @@ namespace rawrbox {
 	bool VFS::unmount(const std::filesystem::path& path) {
 		const auto canonical = std::filesystem::weakly_canonical(path);
 
-		std::unique_lock lock(_lock);
-		return std::erase_if(_mounts, [&canonical](const auto& mount) { return mount.path == canonical; }) > 0;
+		std::unique_lock lock(VFS::_lock);
+		return std::erase_if(VFS::_mounts, [&canonical](const auto& mount) { return mount.path == canonical; }) > 0;
 	}
 
 	std::string VFS::normalize(const std::filesystem::path& path) {
@@ -119,11 +119,11 @@ namespace rawrbox {
 	bool VFS::contains(const std::filesystem::path& path) {
 		std::error_code err;
 		if (std::filesystem::exists(path, err)) return true;
-		const auto key = normalize(path);
+		const auto key = VFS::normalize(path);
 
-		std::shared_lock lock(_lock);
-		for (const auto& mount : _mounts) {
-			const auto relative = getRelativePath(key, mount.mountPoint);
+		std::shared_lock lock(VFS::_lock);
+		for (const auto& mount : VFS::_mounts) {
+			const auto relative = VFS::getRelativePath(key, mount.mountPoint);
 			if (!relative.has_value()) continue;
 
 			if (mount.vpk->getEntry(relative.value()) != nullptr || mount.vpk->hasFolder(relative.value())) return true;
@@ -145,8 +145,8 @@ namespace rawrbox {
 			return data;
 		}
 
-		std::shared_lock lock(_lock);
-		auto [vpk, entry] = find(path);
+		std::shared_lock lock(VFS::_lock);
+		auto [vpk, entry] = VFS::find(path);
 		if (vpk == nullptr) return {};
 
 		return vpk->read(*entry);
@@ -156,8 +156,8 @@ namespace rawrbox {
 		std::error_code err;
 		if (std::filesystem::is_regular_file(path, err)) return std::make_unique<rawrbox::VFSStream>(path);
 
-		std::shared_lock lock(_lock);
-		auto [vpk, entry] = find(path);
+		std::shared_lock lock(VFS::_lock);
+		auto [vpk, entry] = VFS::find(path);
 		if (vpk == nullptr) return nullptr;
 
 		return std::make_unique<rawrbox::VFSStream>(std::move(vpk), entry);
@@ -171,22 +171,22 @@ namespace rawrbox {
 		if (std::filesystem::is_directory(folder, err)) {
 			if (recursive) {
 				for (const auto& entry : std::filesystem::recursive_directory_iterator(folder)) {
-					if (entry.is_regular_file()) files.emplace(normalize(entry.path()), entry.path());
+					if (entry.is_regular_file()) files.emplace(VFS::normalize(entry.path()), entry.path());
 				}
 			} else {
 				for (const auto& entry : std::filesystem::directory_iterator(folder)) {
-					if (entry.is_regular_file()) files.emplace(normalize(entry.path()), entry.path());
+					if (entry.is_regular_file()) files.emplace(VFS::normalize(entry.path()), entry.path());
 				}
 			}
 		}
 		// --------
 
 		// PACKED ---
-		const auto key = normalize(folder);
+		const auto key = VFS::normalize(folder);
 
-		std::shared_lock lock(_lock);
-		for (auto mount = _mounts.rbegin(); mount != _mounts.rend(); ++mount) {
-			const auto relative = getRelativePath(key, mount->mountPoint);
+		std::shared_lock lock(VFS::_lock);
+		for (auto mount = VFS::_mounts.rbegin(); mount != VFS::_mounts.rend(); ++mount) {
+			const auto relative = VFS::getRelativePath(key, mount->mountPoint);
 			if (!relative.has_value()) continue;
 
 			const auto prefix = relative->empty() ? "" : relative.value() + "/";
@@ -197,7 +197,7 @@ namespace rawrbox {
 				if (!recursive && remaining.find('/') != std::string::npos) continue;
 
 				const auto path = folder / remaining;
-				files.emplace(normalize(path), path);
+				files.emplace(VFS::normalize(path), path);
 			}
 		}
 		// --------

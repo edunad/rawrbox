@@ -23,11 +23,11 @@ namespace rawrbox {
 	}
 
 	void ClusteredPlugin::initialize(const rawrbox::Vector2u& /*renderSize*/) {
-		if constexpr (RB_RENDER_MAX_LIGHTS % BIN_BITS != 0 || RB_RENDER_MAX_LIGHTS > 65535)
-			RAWRBOX_CRITICAL("RB_RENDER_MAX_LIGHTS must be divisible by {}, and fit in 16 bits", BIN_BITS);
+		if constexpr (RB_RENDER_MAX_LIGHTS % this->BIN_BITS != 0 || RB_RENDER_MAX_LIGHTS > 65535)
+			RAWRBOX_CRITICAL("RB_RENDER_MAX_LIGHTS must be divisible by {}, and fit in 16 bits", this->BIN_BITS);
 
-		if constexpr (RB_RENDER_MAX_DECALS % BIN_BITS != 0 || RB_RENDER_MAX_DECALS > 65535)
-			RAWRBOX_CRITICAL("RB_RENDER_MAX_DECALS must be divisible by {}, and fit in 16 bits", BIN_BITS);
+		if constexpr (RB_RENDER_MAX_DECALS % this->BIN_BITS != 0 || RB_RENDER_MAX_DECALS > 65535)
+			RAWRBOX_CRITICAL("RB_RENDER_MAX_DECALS must be divisible by {}, and fit in 16 bits", this->BIN_BITS);
 
 		// Init
 		rawrbox::LIGHTS::init();
@@ -106,8 +106,8 @@ namespace rawrbox {
 		if (!lightsRebuilt && !decalsRebuilt) return; // Tiles only depend on the bins, nothing to cull
 		// ------------
 
-		const uint32_t lightBins = rawrbox::MathUtils::divideRound<uint32_t>(static_cast<uint32_t>(rawrbox::LIGHTS::active()), BIN_BITS);
-		const uint32_t decalBins = rawrbox::MathUtils::divideRound<uint32_t>(static_cast<uint32_t>(std::min<size_t>(rawrbox::DECALS::count(), RB_RENDER_MAX_DECALS)), BIN_BITS);
+		const uint32_t lightBins = rawrbox::MathUtils::divideRound<uint32_t>(static_cast<uint32_t>(rawrbox::LIGHTS::active()), this->BIN_BITS);
+		const uint32_t decalBins = rawrbox::MathUtils::divideRound<uint32_t>(static_cast<uint32_t>(std::min<size_t>(rawrbox::DECALS::count(), RB_RENDER_MAX_DECALS)), this->BIN_BITS);
 
 		const uint32_t maxBins = std::max(lightBins, decalBins);
 		if (maxBins == 0) return;
@@ -125,7 +125,7 @@ namespace rawrbox {
 
 		Diligent::DispatchComputeAttribs dispatch;
 
-		dispatch.ThreadGroupCountX = TILES;
+		dispatch.ThreadGroupCountX = this->TILES;
 		dispatch.ThreadGroupCountY = rawrbox::MathUtils::divideRound<uint32_t>(maxBins, RB_RENDER_TILE_THREADS);
 		dispatch.ThreadGroupCountZ = 2;
 
@@ -150,7 +150,7 @@ namespace rawrbox {
 			BuffDesc.Usage = Diligent::USAGE_DEFAULT;
 			BuffDesc.Mode = Diligent::BUFFER_MODE_STRUCTURED;
 			BuffDesc.Name = "rawrbox::Cluster::LightTiles";
-			BuffDesc.Size = BuffDesc.ElementByteStride * TILES * LIGHT_BINS;
+			BuffDesc.Size = BuffDesc.ElementByteStride * this->TILES * this->LIGHT_BINS;
 			BuffDesc.BindFlags = Diligent::BIND_UNORDERED_ACCESS | Diligent::BIND_SHADER_RESOURCE;
 
 			device->CreateBuffer(BuffDesc, nullptr, &this->_lightTiles);
@@ -167,7 +167,7 @@ namespace rawrbox {
 			BuffDesc.Usage = Diligent::USAGE_DEFAULT;
 			BuffDesc.Mode = Diligent::BUFFER_MODE_STRUCTURED;
 			BuffDesc.Name = "rawrbox::Cluster::DecalTiles";
-			BuffDesc.Size = BuffDesc.ElementByteStride * TILES * DECAL_BINS;
+			BuffDesc.Size = BuffDesc.ElementByteStride * this->TILES * this->DECAL_BINS;
 			BuffDesc.BindFlags = Diligent::BIND_UNORDERED_ACCESS | Diligent::BIND_SHADER_RESOURCE;
 
 			device->CreateBuffer(BuffDesc, nullptr, &this->_decalTiles);
@@ -263,10 +263,10 @@ namespace rawrbox {
 		macro.AddShaderMacro("TILE_THREADS", RB_RENDER_TILE_THREADS);
 
 		macro.AddShaderMacro("ZBINS", RB_RENDER_ZBINS);
-		macro.AddShaderMacro("BIN_BITS", BIN_BITS);
+		macro.AddShaderMacro("BIN_BITS", this->BIN_BITS);
 
-		macro.AddShaderMacro("LIGHT_BINS", LIGHT_BINS);
-		macro.AddShaderMacro("DECAL_BINS", DECAL_BINS);
+		macro.AddShaderMacro("LIGHT_BINS", this->LIGHT_BINS);
+		macro.AddShaderMacro("DECAL_BINS", this->DECAL_BINS);
 
 		macro.AddShaderMacro("CLUSTER_PLUGIN", true);
 		return macro;

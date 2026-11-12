@@ -16,15 +16,15 @@ namespace rawrbox {
 		OrientedPoint(rawrbox::Vector3f position, rawrbox::Vector4f rotation, float vCoordinate = 0) : position(position), rotation(rotation), vCoordinate(vCoordinate) {}
 
 		[[nodiscard]] rawrbox::Vector3f LocalToWorld(const rawrbox::Vector3f& point) const {
-			return position + rotation * point;
+			return this->position + this->rotation * point;
 		}
 
 		rawrbox::Vector3f WorldToLocal(const rawrbox::Vector3f& point) {
-			return rotation.inverse() * (point - position);
+			return this->rotation.inverse() * (point - this->position);
 		}
 
 		[[nodiscard]] rawrbox::Vector3f LocalToWorldDirection(const rawrbox::Vector3f& dir) const {
-			return rotation * dir;
+			return this->rotation * dir;
 		}
 	};
 

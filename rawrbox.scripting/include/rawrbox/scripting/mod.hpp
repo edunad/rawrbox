@@ -74,6 +74,8 @@ namespace rawrbox {
 
 		[[nodiscard]] virtual lua_State* getEnvironment();
 
+		[[nodiscard]] static rawrbox::Mod* fromState(lua_State* L);
+
 #ifdef RAWRBOX_SCRIPTING_WORKSHOP_MODDING
 		virtual void setWorkshopId(uint64_t id);
 		[[nodiscard]] virtual uint64_t getWorkshopId() const;
@@ -90,11 +92,11 @@ namespace rawrbox {
 
 			try {
 				rawrbox::LuaResult result = rawrbox::LuaUtils::call(fnc, this->_modTable, std::forward<CallbackArgs>(args)...);
-				if (result.hasFailed()) _logger->warn("Lua error on {}\n  └── {}", this->_id, result.errorMessage());
+				if (result.hasFailed()) this->_logger->warn("Lua error on {}\n  └── {}", this->_id, result.errorMessage());
 
 				return result;
 			} catch (const luabridge::LuaException& err) {
-				_logger->warn("Lua error on {}\n  └── {}", this->_id, err.what());
+				this->_logger->warn("Lua error on {}\n  └── {}", this->_id, err.what());
 				return std::nullopt;
 			}
 		}

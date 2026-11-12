@@ -14,8 +14,8 @@
 #include <string>
 #include <vector>
 
-namespace {
-	std::vector<uint8_t> makeData(size_t size, uint8_t seed) {
+namespace rawrbox {
+	static std::vector<uint8_t> makeVPKData(size_t size, uint8_t seed) {
 		std::vector<uint8_t> data(size);
 		for (size_t i = 0; i < size; i++) {
 			data[i] = static_cast<uint8_t>((i * 131) + (i >> 8) + seed);
@@ -24,14 +24,14 @@ namespace {
 		return data;
 	}
 
-	void writeFile(const std::string& path, const std::vector<uint8_t>& data) {
+	static void writeVPKFile(const std::string& path, const std::vector<uint8_t>& data) {
 		std::filesystem::create_directories(std::filesystem::path(path).parent_path());
 
 		std::ofstream stream(path, std::ios::binary | std::ios::trunc);
 		stream.write(std::bit_cast<const char*>(data.data()), static_cast<std::streamsize>(data.size()));
 	}
 
-	void corruptFile(const std::string& path, uint64_t offset) {
+	static void corruptVPKFile(const std::string& path, uint64_t offset) {
 		std::fstream stream(path, std::ios::binary | std::ios::in | std::ios::out);
 
 		char byte = 0;
@@ -42,7 +42,7 @@ namespace {
 		stream.seekp(static_cast<std::streamoff>(offset));
 		stream.write(&byte, 1);
 	}
-} // namespace
+} // namespace rawrbox
 
 TEST_CASE("VPK should behave as expected", "[rawrbox::VPK]") {
 	const std::string folder = "./rawrbox-tests-vpk";
@@ -50,21 +50,21 @@ TEST_CASE("VPK should behave as expected", "[rawrbox::VPK]") {
 
 	const std::string pack = folder + "/pack/test_dir.vpk";
 	const std::map<std::string, std::vector<uint8_t>> files = {
-	    {"readme.txt", makeData(5, 1)},
-	    {"textures/wall.png", makeData(300000, 2)},
-	    {"textures/floor.png", makeData(70000, 3)},
-	    {"shaders/include/common.fxh", makeData(2000, 4)},
-	    {"fonts/debug.ttf", makeData(100000, 5)},
-	    {"noextension", makeData(10, 6)},
+	    {"readme.txt", rawrbox::makeVPKData(5, 1)},
+	    {"textures/wall.png", rawrbox::makeVPKData(300000, 2)},
+	    {"textures/floor.png", rawrbox::makeVPKData(70000, 3)},
+	    {"shaders/include/common.fxh", rawrbox::makeVPKData(2000, 4)},
+	    {"fonts/debug.ttf", rawrbox::makeVPKData(100000, 5)},
+	    {"noextension", rawrbox::makeVPKData(10, 6)},
 	    {"empty.txt", {}},
-	    {"Upper/Case.TXT", makeData(42, 7)},
-	    {"models/house.glb", makeData(600000, 8)},
+	    {"Upper/Case.TXT", rawrbox::makeVPKData(42, 7)},
+	    {"models/house.glb", rawrbox::makeVPKData(600000, 8)},
 	};
 
 	// PACK ---
 	rawrbox::VPKWriter writer(256 * 1024, 64 * 1024);
 	for (const auto& file : files) {
-		writeFile(folder + "/source/" + file.first, file.second);
+		rawrbox::writeVPKFile(folder + "/source/" + file.first, file.second);
 		writer.add(file.first, folder + "/source/" + file.first, file.first.starts_with("shaders/") || file.first.starts_with("fonts/"));
 	}
 
@@ -165,7 +165,7 @@ TEST_CASE("VPK should behave as expected", "[rawrbox::VPK]") {
 	}
 
 	SECTION("rawrbox::VPK (corrupted tree)") {
-		corruptFile(pack, sizeof(rawrbox::VPKHeader) + 2);
+		rawrbox::corruptVPKFile(pack, sizeof(rawrbox::VPKHeader) + 2);
 		REQUIRE_THROWS(rawrbox::VPK(pack));
 	}
 
@@ -175,18 +175,18 @@ TEST_CASE("VPK should behave as expected", "[rawrbox::VPK]") {
 		stream.read(std::bit_cast<char*>(&header), sizeof(rawrbox::VPKHeader));
 		stream.close();
 
-		corruptFile(pack, sizeof(rawrbox::VPKHeader) + header.treeSize + 500);
+		rawrbox::corruptVPKFile(pack, sizeof(rawrbox::VPKHeader) + header.treeSize + 500);
 		REQUIRE_THROWS(rawrbox::VPK(pack));
 	}
 
 	SECTION("rawrbox::VPK (corrupted checksums)") {
-		corruptFile(pack, std::filesystem::file_size(pack) - sizeof(rawrbox::VPKOtherMD5) - 10);
+		rawrbox::corruptVPKFile(pack, std::filesystem::file_size(pack) - sizeof(rawrbox::VPKOtherMD5) - 10);
 		REQUIRE_THROWS(rawrbox::VPK(pack));
 	}
 
 	SECTION("rawrbox::VPK (corrupted archive)") {
 		const rawrbox::VPKEntry house = *rawrbox::VPK(pack).getEntry("models/house.glb");
-		corruptFile(rawrbox::VPK(pack).getArchivePath(house.archive).generic_string(), house.offset + 70000);
+		rawrbox::corruptVPKFile(rawrbox::VPK(pack).getArchivePath(house.archive).generic_string(), house.offset + 70000);
 
 		rawrbox::VPK vpk(pack);
 		REQUIRE_THROWS(vpk.read(*vpk.getEntry("models/house.glb")));
@@ -223,9 +223,9 @@ TEST_CASE("VPK should behave as expected", "[rawrbox::VPK]") {
 			byte = static_cast<uint8_t>(rng());
 		}
 
-		writeFile(folder + "/compress/text.txt", textData);
-		writeFile(folder + "/compress/copy.txt", textData);
-		writeFile(folder + "/compress/noise.bin", noise);
+		rawrbox::writeVPKFile(folder + "/compress/text.txt", textData);
+		rawrbox::writeVPKFile(folder + "/compress/copy.txt", textData);
+		rawrbox::writeVPKFile(folder + "/compress/noise.bin", noise);
 
 		rawrbox::VPKWriter compressed;
 		compressed.add("text.txt", folder + "/compress/text.txt", false, true);

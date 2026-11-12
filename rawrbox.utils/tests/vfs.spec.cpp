@@ -10,19 +10,19 @@
 #include <string>
 #include <vector>
 
-namespace {
-	std::vector<uint8_t> toData(const std::string& str) {
+namespace rawrbox {
+	static std::vector<uint8_t> toVFSData(const std::string& str) {
 		return {str.begin(), str.end()};
 	}
 
-	void writeFile(const std::string& path, const std::string& data) {
+	static void writeVFSFile(const std::string& path, const std::string& data) {
 		std::filesystem::create_directories(std::filesystem::path(path).parent_path());
 
 		std::ofstream stream(path, std::ios::binary | std::ios::trunc);
 		stream.write(data.data(), static_cast<std::streamsize>(data.size()));
 	}
 
-	std::vector<std::string> toNames(const std::vector<std::filesystem::path>& paths, const std::string& root) {
+	static std::vector<std::string> toVFSNames(const std::vector<std::filesystem::path>& paths, const std::string& root) {
 		std::vector<std::string> names = {};
 		for (const auto& path : paths) {
 			names.push_back(rawrbox::VFS::normalize(path.lexically_relative(root)));
@@ -30,7 +30,7 @@ namespace {
 
 		return names;
 	}
-} // namespace
+} // namespace rawrbox
 
 TEST_CASE("VFS should behave as expected", "[rawrbox::VFS]") {
 	const std::string folder = "./rawrbox-tests-vfs";
@@ -43,10 +43,10 @@ TEST_CASE("VFS should behave as expected", "[rawrbox::VFS]") {
 	std::filesystem::remove_all(folder);
 
 	// PACKS ---
-	writeFile(folder + "/base/textures/a.png", "packed a");
-	writeFile(folder + "/base/textures/sub/b.png", "packed b");
-	writeFile(folder + "/base/shaders/common.fxh", "packed shader");
-	writeFile(folder + "/patch/textures/a.png", "patched a");
+	rawrbox::writeVFSFile(folder + "/base/textures/a.png", "packed a");
+	rawrbox::writeVFSFile(folder + "/base/textures/sub/b.png", "packed b");
+	rawrbox::writeVFSFile(folder + "/base/shaders/common.fxh", "packed shader");
+	rawrbox::writeVFSFile(folder + "/patch/textures/a.png", "patched a");
 
 	rawrbox::VPKWriter baseWriter;
 	baseWriter.add("textures/a.png", folder + "/base/textures/a.png");
@@ -78,7 +78,7 @@ TEST_CASE("VFS should behave as expected", "[rawrbox::VFS]") {
 	}
 
 	SECTION("rawrbox::VFS::mount (root)") {
-		writeFile(folder + "/root/a.txt", "root a");
+		rawrbox::writeVFSFile(folder + "/root/a.txt", "root a");
 
 		rawrbox::VPKWriter rootWriter;
 		rootWriter.add("rawrbox-vfs-root/a.txt", folder + "/root/a.txt");
@@ -86,7 +86,7 @@ TEST_CASE("VFS should behave as expected", "[rawrbox::VFS]") {
 
 		REQUIRE(rawrbox::VFS::mount(folder + "/root_dir.vpk"));
 		REQUIRE(rawrbox::VFS::contains("./rawrbox-vfs-root/a.txt"));
-		REQUIRE(rawrbox::VFS::read("rawrbox-vfs-root/a.txt") == toData("root a"));
+		REQUIRE(rawrbox::VFS::read("rawrbox-vfs-root/a.txt") == rawrbox::toVFSData("root a"));
 		REQUIRE(rawrbox::VFS::unmount(folder + "/root_dir.vpk"));
 	}
 
@@ -103,23 +103,23 @@ TEST_CASE("VFS should behave as expected", "[rawrbox::VFS]") {
 		REQUIRE_FALSE(rawrbox::VFS::contains(assets + "/missing.png"));
 		REQUIRE_FALSE(rawrbox::VFS::contains(folder + "/textures/a.png"));
 
-		REQUIRE(rawrbox::VFS::read(assets + "/textures/a.png") == toData("packed a"));
-		REQUIRE(rawrbox::VFS::read(assets + "/./textures/../shaders/common.fxh") == toData("packed shader"));
+		REQUIRE(rawrbox::VFS::read(assets + "/textures/a.png") == rawrbox::toVFSData("packed a"));
+		REQUIRE(rawrbox::VFS::read(assets + "/./textures/../shaders/common.fxh") == rawrbox::toVFSData("packed shader"));
 		REQUIRE(rawrbox::VFS::read(assets + "/missing.png").empty());
 	}
 
 	SECTION("rawrbox::VFS::read (priority)") {
 		REQUIRE(rawrbox::VFS::mount(base, assets));
 		REQUIRE(rawrbox::VFS::mount(patch, assets));
-		REQUIRE(rawrbox::VFS::read(assets + "/textures/a.png") == toData("patched a"));
-		REQUIRE(rawrbox::VFS::read(assets + "/textures/sub/b.png") == toData("packed b"));
+		REQUIRE(rawrbox::VFS::read(assets + "/textures/a.png") == rawrbox::toVFSData("patched a"));
+		REQUIRE(rawrbox::VFS::read(assets + "/textures/sub/b.png") == rawrbox::toVFSData("packed b"));
 
-		writeFile(assets + "/textures/a.png", "loose a");
-		REQUIRE(rawrbox::VFS::read(assets + "/textures/a.png") == toData("loose a"));
+		rawrbox::writeVFSFile(assets + "/textures/a.png", "loose a");
+		REQUIRE(rawrbox::VFS::read(assets + "/textures/a.png") == rawrbox::toVFSData("loose a"));
 
 		std::filesystem::remove(assets + "/textures/a.png");
 		REQUIRE(rawrbox::VFS::unmount(patch));
-		REQUIRE(rawrbox::VFS::read(assets + "/textures/a.png") == toData("packed a"));
+		REQUIRE(rawrbox::VFS::read(assets + "/textures/a.png") == rawrbox::toVFSData("packed a"));
 	}
 
 	SECTION("rawrbox::VFS::open") {
@@ -134,7 +134,7 @@ TEST_CASE("VFS should behave as expected", "[rawrbox::VFS]") {
 		REQUIRE(data == "cke");
 		REQUIRE(packed->read(6, std::bit_cast<uint8_t*>(data.data()), data.size()) == 2);
 
-		writeFile(assets + "/loose.txt", "loose file");
+		rawrbox::writeVFSFile(assets + "/loose.txt", "loose file");
 		auto loose = rawrbox::VFS::open(assets + "/loose.txt");
 		REQUIRE(loose != nullptr);
 		REQUIRE(loose->size() == 10);
@@ -150,11 +150,11 @@ TEST_CASE("VFS should behave as expected", "[rawrbox::VFS]") {
 
 	SECTION("rawrbox::VFS::list") {
 		REQUIRE(rawrbox::VFS::mount(base, assets));
-		writeFile(assets + "/textures/loose.png", "loose");
+		rawrbox::writeVFSFile(assets + "/textures/loose.png", "loose");
 
-		REQUIRE(toNames(rawrbox::VFS::list(assets + "/textures"), assets) == std::vector<std::string>{"textures/a.png", "textures/loose.png"});
-		REQUIRE(toNames(rawrbox::VFS::list(assets + "/textures", true), assets) == std::vector<std::string>{"textures/a.png", "textures/loose.png", "textures/sub/b.png"});
-		REQUIRE(toNames(rawrbox::VFS::list(assets, true), assets).size() == 4);
+		REQUIRE(rawrbox::toVFSNames(rawrbox::VFS::list(assets + "/textures"), assets) == std::vector<std::string>{"textures/a.png", "textures/loose.png"});
+		REQUIRE(rawrbox::toVFSNames(rawrbox::VFS::list(assets + "/textures", true), assets) == std::vector<std::string>{"textures/a.png", "textures/loose.png", "textures/sub/b.png"});
+		REQUIRE(rawrbox::toVFSNames(rawrbox::VFS::list(assets, true), assets).size() == 4);
 		REQUIRE(rawrbox::VFS::list(assets + "/missing").empty());
 	}
 

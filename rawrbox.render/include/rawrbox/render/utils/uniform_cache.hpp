@@ -37,7 +37,7 @@ namespace rawrbox {
 			static std::array<Slot<T>, RB_RENDER_MAX_CONTEXTS> slots = {};
 
 			const uint32_t index = rawrbox::RenderThreadPool::contextIndex();
-			const uint64_t generation = _generation[index];
+			const uint64_t generation = UniformCache::_generation[index];
 
 			auto& cache = slots[index];
 			if (cache.generation == generation && cache.value == value) return false;
@@ -59,7 +59,7 @@ namespace rawrbox {
 		template <typename T, typename Key = T>
 			requires(std::equality_comparable<T> && std::is_trivially_copyable_v<T> && std::is_default_constructible_v<T>)
 		static bool map(Diligent::IBuffer* buffer, const T& value) {
-			return map<T, Key>(*rawrbox::RENDERER->context(), buffer, value);
+			return UniformCache::map<T, Key>(*rawrbox::RENDERER->context(), buffer, value);
 		}
 
 		static void reset();

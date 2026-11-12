@@ -43,7 +43,7 @@ namespace rawrbox {
 					auto nextTask = std::move(this->_tasks.front());
 					this->_tasks.pop();
 
-					runTask(std::move(nextTask));
+					this->runTask(std::move(nextTask));
 				}
 			});
 		}
@@ -56,7 +56,7 @@ namespace rawrbox {
 			auto task = std::make_unique<T>(std::forward<Args>(args)...);
 
 			if (this->_executing.size() < this->_concurrent) {
-				runTask(std::move(task));
+				this->runTask(std::move(task));
 				return;
 			}
 

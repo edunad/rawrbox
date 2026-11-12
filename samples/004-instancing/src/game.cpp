@@ -1,6 +1,7 @@
 
 
 #include <rawrbox/engine/static.hpp>
+#include <rawrbox/math/pi.hpp>
 #include <rawrbox/render/cameras/orbit.hpp>
 #include <rawrbox/render/models/utils/mesh.hpp>
 #include <rawrbox/render/resources/texture.hpp>
@@ -11,6 +12,8 @@
 
 #include <instance_test/game.hpp>
 
+#include <array>
+#include <cmath>
 #include <random>
 
 namespace instance_test {
@@ -116,12 +119,51 @@ namespace instance_test {
 		}
 
 		this->_model->upload();
+
+		// DYNAMIC TEMPLATE ---
+		this->_texture = t;
+
+		this->_dynamic->setTemplate({});
+		this->_dynamic->reserve(this->DYNAMIC_INSTANCES);
+		this->_dynamic->upload(rawrbox::UploadType::RESIZABLE_DYNAMIC);
+		this->_dynamic->setPos({0.F, 3.5F, 2.F});
+		// -------------
+
 		this->_ready = true;
+	}
+
+	void Game::updateDynamic() {
+		if (!this->_ready) return;
+		this->_dynamicTime += rawrbox::DELTA_TIME;
+
+		const auto shape = static_cast<size_t>(this->_dynamicTime) % 3U;
+		if (shape != this->_dynamicShape) {
+			this->_dynamicShape = shape;
+
+			rawrbox::Mesh<> mesh = {};
+			if (shape == 1U) mesh = rawrbox::MeshUtils::generateCube({0, 0, 0}, {0.5F, 0.5F, 0.5F});
+			if (shape == 2U) mesh = rawrbox::MeshUtils::generateSphere({0, 0, 0}, {0.6F, 0.6F, 0.6F}, 1.F);
+			if (!mesh.empty()) mesh.setTexture(this->_texture);
+
+			this->_dynamic->setTemplate(mesh);
+		}
+
+		this->_dynamicInstances.clear();
+		for (size_t i = 0; i < this->DYNAMIC_INSTANCES; i++) {
+			const float angle = this->_dynamicTime * 0.5F + (static_cast<float>(i) / this->DYNAMIC_INSTANCES) * rawrbox::pi<float> * 2.F;
+
+			rawrbox::Matrix4x4 m;
+			m.SRT({0.6F, 0.6F, 0.6F}, rawrbox::Vector4f::toQuat({0, angle, 0}), {std::cos(angle) * 3.F, 0.F, std::sin(angle) * 3.F});
+			this->_dynamicInstances.emplace_back(m, rawrbox::Colors::White(), static_cast<uint16_t>(i % 5U));
+		}
+
+		this->_dynamic->setInstances(std::move(this->_dynamicInstances));
 	}
 
 	void Game::onThreadShutdown(rawrbox::ENGINE_THREADS thread) {
 		if (thread == rawrbox::ENGINE_THREADS::THREAD_RENDER) {
 			this->_model.reset();
+			this->_dynamic.reset();
 			rawrbox::RESOURCES::shutdown();
 		}
 
@@ -134,11 +176,14 @@ namespace instance_test {
 
 	void Game::update() {
 		rawrbox::Window::update();
+		this->updateDynamic();
 	}
 
 	void Game::drawWorld() {
 		if (!this->_ready || this->_model == nullptr) return;
+
 		this->_model->draw();
+		this->_dynamic->draw();
 	}
 
 	void Game::drawOverlay() const {
@@ -151,6 +196,9 @@ namespace instance_test {
 		stencil->drawText(fmt::format("[F1]   FREEZE CULL: {}", this->_camera->isCullFrozen()), {15, 15});
 #endif
 		stencil->drawText(fmt::format("[F2]   OCCLUSION: {}", rawrbox::RENDERER->occlusion()->isEnabled()), {15, 30});
+
+		constexpr std::array<const char*, 3> shapes = {"NONE", "CUBE", "SPHERE"};
+		stencil->drawText(fmt::format("DYNAMIC TEMPLATE: {}", shapes[this->_dynamicShape % shapes.size()]), {15, 45});
 	}
 
 	void Game::draw() {

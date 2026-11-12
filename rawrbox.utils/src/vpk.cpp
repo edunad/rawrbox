@@ -147,7 +147,7 @@ namespace rawrbox {
 	}
 
 	void VPK::verifyChunks(uint16_t archive, uint64_t offset, uint64_t size) {
-		const auto archiveIt = this->_archives.find(archive);
+		const auto& archiveIt = this->_archives.find(archive);
 		if (archiveIt == this->_archives.end()) RAWRBOX_CRITICAL("Invalid VPK '{}'! Missing checksums for {}", this->_path.generic_string(), archive);
 
 		auto& vpkArchive = archiveIt->second;
@@ -193,7 +193,7 @@ namespace rawrbox {
 	}
 
 	const rawrbox::VPKEntry* VPK::getEntry(const std::string& path) const {
-		const auto entry = this->_entries.find(path);
+		const auto& entry = this->_entries.find(path);
 		if (entry == this->_entries.end()) return nullptr;
 
 		return &entry->second;
@@ -208,7 +208,7 @@ namespace rawrbox {
 	}
 
 	std::filesystem::path VPK::getArchivePath(uint16_t archive) const {
-		return getArchivePath(this->_path, archive);
+		return this->getArchivePath(this->_path, archive);
 	}
 
 	std::filesystem::path VPK::getArchivePath(const std::filesystem::path& dirPath, uint16_t archive) {

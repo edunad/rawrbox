@@ -16,16 +16,16 @@ namespace rawrbox {
 
 	void POPUP::init(rawrbox::UIRoot* root) {
 		if (root == nullptr) RAWRBOX_CRITICAL("Invalid UIRoot!");
-		_root = root;
+		POPUP::_root = root;
 	}
 
 	void POPUP::shutdown() {
-		_popups.clear();
-		_root = nullptr;
+		POPUP::_popups.clear();
+		POPUP::_root = nullptr;
 	}
 
 	rawrbox::UIFrame* POPUP::spawn(const std::string& id, const std::string& title, const std::string& message, rawrbox::PopupType type, const std::function<void(bool)>& callback) {
-		if (_root == nullptr) RAWRBOX_CRITICAL("UIRoot is not initialized!");
+		if (POPUP::_root == nullptr) RAWRBOX_CRITICAL("UIRoot is not initialized!");
 
 		auto titleColor = rawrbox::Color::RGBHex(0xFFFFFF);
 		auto btnColor = rawrbox::Color::RGBHex(0x282a2e);
@@ -54,16 +54,16 @@ namespace rawrbox {
 		const bool loading = type == rawrbox::PopupType::LOADING;
 
 		// Destroy old one, if it exists
-		auto* old = get(id);
+		auto* old = POPUP::get(id);
 		if (old != nullptr) {
 			pos = old->getPos();
 			old->remove();
 
-			destroy(id);
+			POPUP::destroy(id);
 		}
 		// -----
 
-		auto* popupFrame = _root->createChild<rawrbox::UIFrame>();
+		auto* popupFrame = POPUP::_root->createChild<rawrbox::UIFrame>();
 		popupFrame->setTitle(title);
 		popupFrame->setTitleColor(titleColor);
 		popupFrame->setSize(size);
@@ -72,7 +72,7 @@ namespace rawrbox {
 		popupFrame->bringToFront();
 		popupFrame->onClose += [id, callback, popupFrame]() {
 			if (callback != nullptr) callback(false);
-			destroy(id);
+			POPUP::destroy(id);
 			popupFrame->remove();
 		};
 
@@ -104,7 +104,7 @@ namespace rawrbox {
 				yesButton->setBackgroundColor(btnColor);
 				yesButton->onClick += [id, callback, popupFrame]() {
 					if (callback != nullptr) callback(true);
-					if (destroy(id)) popupFrame->remove();
+					if (POPUP::destroy(id)) popupFrame->remove();
 				};
 
 				auto* noButton = popupFrame->createChild<rawrbox::UIButton>();
@@ -117,7 +117,7 @@ namespace rawrbox {
 				noButton->setBackgroundColor(Color::RGBHex(0x402929));
 				noButton->onClick += [id, callback, popupFrame]() {
 					if (callback != nullptr) callback(false);
-					if (destroy(id)) popupFrame->remove();
+					if (POPUP::destroy(id)) popupFrame->remove();
 				};
 
 			} else {
@@ -131,51 +131,51 @@ namespace rawrbox {
 				okButton->setBackgroundColor(btnColor);
 				okButton->onClick += [id, callback, popupFrame]() {
 					if (callback != nullptr) callback(true);
-					if (destroy(id)) popupFrame->remove();
+					if (POPUP::destroy(id)) popupFrame->remove();
 				};
 			}
 		} else {
 			messageLabel->setPos((frameSize - messageLabel->getSize()) / 2);
 		}
 
-		_popups[id] = popupFrame;
+		POPUP::_popups[id] = popupFrame;
 		return popupFrame;
 	}
 
 	// CREATE ----
 	rawrbox::UIFrame* POPUP::create(const std::string& title, const std::string& message, rawrbox::PopupType type, const std::function<void(bool)>& callback) {
-		return spawn("default", title, message, type, callback);
+		return POPUP::spawn("default", title, message, type, callback);
 	}
 
 	rawrbox::UIFrame* POPUP::create(const std::string& id, const std::string& title, const std::string& message, rawrbox::PopupType type, const std::function<void(bool)>& callback) {
-		return spawn(id, title, message, type, callback);
+		return POPUP::spawn(id, title, message, type, callback);
 	}
 
-	bool POPUP::destroy() { return destroy("default"); }
+	bool POPUP::destroy() { return POPUP::destroy("default"); }
 	bool POPUP::destroy(const std::string& id) {
-		auto fnd = _popups.find(id);
-		if (fnd == _popups.end()) return false;
+		const auto& fnd = POPUP::_popups.find(id);
+		if (fnd == POPUP::_popups.end()) return false;
 
-		_popups.erase(id);
+		POPUP::_popups.erase(id);
 		return true;
 	}
 	// ---------------
 
 	// UTILS ----
-	bool POPUP::exists(const std::string& id) { return _popups.find(id) != _popups.end(); }
+	bool POPUP::exists(const std::string& id) { return POPUP::_popups.find(id) != POPUP::_popups.end(); }
 	rawrbox::UIFrame* POPUP::get(const std::string& id) {
-		auto fnd = _popups.find(id);
-		if (fnd == _popups.end()) return nullptr;
+		const auto& fnd = POPUP::_popups.find(id);
+		if (fnd == POPUP::_popups.end()) return nullptr;
 
 		return fnd->second;
 	}
 
 	void POPUP::clear() {
-		for (const auto& popup : _popups) {
+		for (const auto& popup : POPUP::_popups) {
 			popup.second->remove();
 		}
 
-		_popups.clear();
+		POPUP::_popups.clear();
 	}
 	// ---------------
 } // namespace rawrbox

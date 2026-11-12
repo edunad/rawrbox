@@ -1,6 +1,8 @@
+#include <rawrbox/render/models/skeleton.hpp>
 #include <rawrbox/render/models/utils/animation.hpp>
 #include <rawrbox/utils/logger.hpp>
 
+#include <algorithm>
 #include <array>
 
 namespace rawrbox {
@@ -21,6 +23,19 @@ namespace rawrbox {
 
 		const float inv = 1.F / this->weight;
 		return rawrbox::Matrix4x4::mtxSRT(this->scale * inv, this->rotation.normalized(), this->pos * inv);
+	}
+
+	size_t AnimationUtils::boneTransforms(const rawrbox::Skeleton& skeleton, std::span<const ozz::math::Float4x4> models, std::span<rawrbox::Matrix4x4> transforms) {
+		const size_t total = std::min(skeleton.getNumSkinJoints(), transforms.size());
+
+		for (size_t i = 0; i < total; i++) {
+			const auto joint = static_cast<size_t>(skeleton.getJointIndex(i));
+			if (joint >= models.size()) RAWRBOX_CRITICAL("Invalid skin joint {}", i);
+
+			transforms[i] = rawrbox::AnimationUtils::toMatrix(models[joint]) * skeleton.getInverseBindMatrix(i);
+		}
+
+		return total;
 	}
 
 	rawrbox::Matrix4x4 AnimationUtils::toMatrix(const ozz::math::Float4x4& mtx) {

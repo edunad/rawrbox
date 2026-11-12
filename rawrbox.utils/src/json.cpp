@@ -12,9 +12,9 @@ namespace rawrbox {
 			const auto& arrB = b.get<glz::generic::array_t>();
 
 			// Diffs
-			size_t minSize = std::min(arrA.size(), arrB.size());
+			const size_t minSize = std::min(arrA.size(), arrB.size());
 			for (size_t i = 0; i < minSize; ++i) {
-				auto subDiffs = diff(arrA[i], arrB[i], fmt::format("{}/{}", path, std::to_string(i)));
+				auto subDiffs = JSONUtils::diff(arrA[i], arrB[i], fmt::format("{}/{}", path, std::to_string(i)));
 				diffs.insert(diffs.end(), subDiffs.begin(), subDiffs.end());
 			}
 
@@ -40,7 +40,7 @@ namespace rawrbox {
 
 				if (objB.contains(key)) {
 					const auto& valueB = objB.at(key);
-					auto subDiffs = diff(valueA, valueB, jsonPath);
+					auto subDiffs = JSONUtils::diff(valueA, valueB, jsonPath);
 					diffs.insert(diffs.end(), subDiffs.begin(), subDiffs.end());
 				} else {
 					diffs.emplace_back(rawrbox::JSONDiffOp::REMOVE, jsonPath, glz::generic::null_t());
@@ -53,9 +53,9 @@ namespace rawrbox {
 				}
 			}
 		} else { // root
-			compareAndDiff<double>(a, b, path, diffs);
-			compareAndDiff<std::string>(a, b, path, diffs);
-			compareAndDiff<bool>(a, b, path, diffs);
+			JSONUtils::compareAndDiff<double>(a, b, path, diffs);
+			JSONUtils::compareAndDiff<std::string>(a, b, path, diffs);
+			JSONUtils::compareAndDiff<bool>(a, b, path, diffs);
 		}
 
 		return diffs;

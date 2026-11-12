@@ -57,7 +57,7 @@ namespace rawrbox {
 	}
 
 	rawrbox::ImageData WEBP::decode(const std::vector<uint8_t>& data) {
-		return decode(data.data(), data.size());
+		return WEBP::decode(data.data(), data.size());
 	}
 
 	std::vector<uint8_t> WEBP::encode(const rawrbox::ImageData& /*data*/) {

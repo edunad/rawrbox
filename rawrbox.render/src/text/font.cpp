@@ -153,7 +153,7 @@ namespace rawrbox {
 	}
 
 	rawrbox::Glyph* Font::getGlyph(uint32_t codepoint) const {
-		auto fnd = this->_glyphs.find(codepoint);
+		const auto& fnd = this->_glyphs.find(codepoint);
 		if (fnd == this->_glyphs.end()) return this->_glyphs.find(65533)->second.get(); // �
 		return fnd->second.get();
 	}

@@ -40,18 +40,18 @@ namespace rawrbox {
 		float alphaCutoff = 0.5F;
 
 		[[nodiscard]] rawrbox::Vector4f getTextureData() const {
-			return {roughnessFactor, metalnessFactor, specularFactor, emissionFactor};
+			return {this->roughnessFactor, this->metalnessFactor, this->specularFactor, this->emissionFactor};
 		}
 
 		[[nodiscard]] rawrbox::Vector4f getData() const {
-			return {alphaCutoff, 0.F, 0.F, 0.F};
+			return {this->alphaCutoff, 0.F, 0.F, 0.F};
 		}
 
 		[[nodiscard]] rawrbox::Vector4_t<uint32_t> getTextureIDs() const {
-			auto* base = texture == nullptr ? rawrbox::WHITE_TEXTURE.get() : texture;
-			auto* norm = normal == nullptr ? rawrbox::NORMAL_TEXTURE.get() : normal;
-			auto* metR = roughtMetal == nullptr ? rawrbox::BLACK_TEXTURE.get() : roughtMetal;
-			auto* em = emission == nullptr ? rawrbox::BLACK_TEXTURE.get() : emission;
+			const auto* base = this->texture == nullptr ? rawrbox::WHITE_TEXTURE.get() : this->texture;
+			const auto* norm = this->normal == nullptr ? rawrbox::NORMAL_TEXTURE.get() : this->normal;
+			const auto* metR = this->roughtMetal == nullptr ? rawrbox::BLACK_TEXTURE.get() : this->roughtMetal;
+			const auto* em = this->emission == nullptr ? rawrbox::BLACK_TEXTURE.get() : this->emission;
 
 			return {base->getTextureID(), norm->getTextureID(), metR->getTextureID(), em->getTextureID()};
 		}
@@ -61,7 +61,7 @@ namespace rawrbox {
 		}
 
 		bool operator==(const rawrbox::MeshTextures& other) const { return this->texture == other.texture && this->normal == other.normal && this->specularFactor == other.specularFactor && this->roughtMetal == other.roughtMetal && this->emission == other.emission; }
-		bool operator!=(const rawrbox::MeshTextures& other) const { return !operator==(other); }
+		bool operator!=(const rawrbox::MeshTextures& other) const { return !this->operator==(other); }
 	};
 
 	struct MeshData { // Aka data for vertex shader
@@ -76,7 +76,7 @@ namespace rawrbox {
 		// --------------
 
 		bool operator==(const rawrbox::MeshData& other) const { return this->vertexSnapPower == other.vertexSnapPower && this->billboard == other.billboard && this->slice == other.slice && this->displacement == other.displacement && this->displacementPower == other.displacementPower; }
-		bool operator!=(const rawrbox::MeshData& other) const { return !operator==(other); }
+		bool operator!=(const rawrbox::MeshData& other) const { return !this->operator==(other); }
 	};
 
 	template <typename T = rawrbox::VertexUVData>

@@ -3,8 +3,8 @@
 
 namespace rawrbox {
 	void ColorWrapper::registerLua(lua_State* L) {
-		registerTemplate<int>(L, "Colori");
-		registerTemplate<double>(L, "Colord");
-		registerTemplate<float>(L, "Color");
+		ColorWrapper::registerTemplate<int>(L, "Colori");
+		ColorWrapper::registerTemplate<double>(L, "Colord");
+		ColorWrapper::registerTemplate<float>(L, "Color");
 	}
 } // namespace rawrbox

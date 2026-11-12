@@ -33,15 +33,15 @@ namespace rawrbox {
 	// --------------
 
 	void BindlessManager::init() {
-		if (signature != nullptr) RAWRBOX_CRITICAL("Signature already bound!");
-		_logger->info("Initializing bindless manager");
+		if (BindlessManager::signature != nullptr) RAWRBOX_CRITICAL("Signature already bound!");
+		BindlessManager::_logger->info("Initializing bindless manager");
 
 		auto* renderer = rawrbox::RENDERER;
 		auto* device = renderer->device();
 
 		// Reserve max textures ---
-		_textureHandles.reserve(RB_RENDER_MAX_TEXTURES);
-		_vertexTextureHandles.reserve(RB_RENDER_MAX_VERTEX_TEXTURES);
+		BindlessManager::_textureHandles.reserve(RB_RENDER_MAX_TEXTURES);
+		BindlessManager::_vertexTextureHandles.reserve(RB_RENDER_MAX_VERTEX_TEXTURES);
 		// ------------------------
 
 		// Create Buffer ------
@@ -53,7 +53,7 @@ namespace rawrbox {
 			BuffVertexDesc.CPUAccessFlags = Diligent::CPU_ACCESS_WRITE;
 			BuffVertexDesc.Size = sizeof(rawrbox::BindlessVertexBuffer);
 
-			device->CreateBuffer(BuffVertexDesc, nullptr, &signatureBufferVertex);
+			device->CreateBuffer(BuffVertexDesc, nullptr, &BindlessManager::signatureBufferVertex);
 		}
 
 		{
@@ -64,10 +64,10 @@ namespace rawrbox {
 			BuffPixelDesc.CPUAccessFlags = Diligent::CPU_ACCESS_WRITE;
 			BuffPixelDesc.Size = sizeof(rawrbox::BindlessVertexSkinnedBuffer);
 
-			device->CreateBuffer(BuffPixelDesc, nullptr, &signatureBufferVertexSkinned);
+			device->CreateBuffer(BuffPixelDesc, nullptr, &BindlessManager::signatureBufferVertexSkinned);
 
 			// Horrible temp fix for signatures that might never be mapped ---
-			Diligent::MapHelper<rawrbox::BindlessVertexSkinnedBuffer> HACK(rawrbox::RENDERER->context(), signatureBufferVertexSkinned, Diligent::MAP_WRITE, Diligent::MAP_FLAG_DISCARD);
+			Diligent::MapHelper<rawrbox::BindlessVertexSkinnedBuffer> HACK(rawrbox::RENDERER->context(), BindlessManager::signatureBufferVertexSkinned, Diligent::MAP_WRITE, Diligent::MAP_FLAG_DISCARD);
 			// -----------
 		}
 
@@ -79,37 +79,37 @@ namespace rawrbox {
 			BuffPixelDesc.CPUAccessFlags = Diligent::CPU_ACCESS_WRITE;
 			BuffPixelDesc.Size = sizeof(rawrbox::BindlessPixelBuffer);
 
-			device->CreateBuffer(BuffPixelDesc, nullptr, &signatureBufferPixel);
+			device->CreateBuffer(BuffPixelDesc, nullptr, &BindlessManager::signatureBufferPixel);
 		}
 		// -------------
 
 		// BARRIER -----
-		rawrbox::BarrierUtils::barrier({{signatureBufferVertexSkinned, Diligent::RESOURCE_STATE_UNKNOWN, Diligent::RESOURCE_STATE_CONSTANT_BUFFER, Diligent::STATE_TRANSITION_FLAG_UPDATE_STATE},
-		    {signatureBufferPixel, Diligent::RESOURCE_STATE_UNKNOWN, Diligent::RESOURCE_STATE_CONSTANT_BUFFER, Diligent::STATE_TRANSITION_FLAG_UPDATE_STATE}});
+		rawrbox::BarrierUtils::barrier({{BindlessManager::signatureBufferVertexSkinned, Diligent::RESOURCE_STATE_UNKNOWN, Diligent::RESOURCE_STATE_CONSTANT_BUFFER, Diligent::STATE_TRANSITION_FLAG_UPDATE_STATE},
+		    {BindlessManager::signatureBufferPixel, Diligent::RESOURCE_STATE_UNKNOWN, Diligent::RESOURCE_STATE_CONSTANT_BUFFER, Diligent::STATE_TRANSITION_FLAG_UPDATE_STATE}});
 		// -----------
 
 		// Create signatures ------
-		createSignatures();
+		BindlessManager::createSignatures();
 		// ------------
 	}
 
 	void BindlessManager::shutdown() {
-		_textureHandles = {};
-		_vertexTextureHandles = {};
-		_updateTextures = {};
+		BindlessManager::_textureHandles = {};
+		BindlessManager::_vertexTextureHandles = {};
+		BindlessManager::_updateTextures = {};
 
-		_updateVertexSignature = false;
-		_updatePixelSignature = false;
+		BindlessManager::_updateVertexSignature = false;
+		BindlessManager::_updatePixelSignature = false;
 
-		RAWRBOX_DESTROY(signature);
-		RAWRBOX_DESTROY(signatureBind);
+		RAWRBOX_DESTROY(BindlessManager::signature);
+		RAWRBOX_DESTROY(BindlessManager::signatureBind);
 
 		rawrbox::UniformCache::clear();
-		RAWRBOX_DESTROY(instanceSignature);
+		RAWRBOX_DESTROY(BindlessManager::instanceSignature);
 
-		RAWRBOX_DESTROY(signatureBufferPixel);
-		RAWRBOX_DESTROY(signatureBufferVertex);
-		RAWRBOX_DESTROY(signatureBufferVertexSkinned);
+		RAWRBOX_DESTROY(BindlessManager::signatureBufferPixel);
+		RAWRBOX_DESTROY(BindlessManager::signatureBufferVertex);
+		RAWRBOX_DESTROY(BindlessManager::signatureBufferVertexSkinned);
 	}
 
 	// SIGNATURES ---------
@@ -156,7 +156,7 @@ namespace rawrbox {
 		PRSDesc.NumImmutableSamplers = static_cast<uint32_t>(samplers.size());
 		// --------------
 
-		device->CreatePipelineResourceSignature(PRSDesc, &signature);
+		device->CreatePipelineResourceSignature(PRSDesc, &BindlessManager::signature);
 		// ----------------------
 
 		// Instanced ---
@@ -169,8 +169,8 @@ namespace rawrbox {
 		instanceDesc.Resources = &instances;
 		instanceDesc.NumResources = 1;
 
-		device->CreatePipelineResourceSignature(instanceDesc, &instanceSignature);
-		if (instanceSignature == nullptr) RAWRBOX_CRITICAL("Failed to create instance signature");
+		device->CreatePipelineResourceSignature(instanceDesc, &BindlessManager::instanceSignature);
+		if (BindlessManager::instanceSignature == nullptr) RAWRBOX_CRITICAL("Failed to create instance signature");
 
 		const uint32_t contexts = rawrbox::RENDERER->threadPool()->contextCount();
 		if (contexts > RB_RENDER_MAX_CONTEXTS) RAWRBOX_CRITICAL("Too many render contexts ({}), max is {}", contexts, RB_RENDER_MAX_CONTEXTS);
@@ -179,99 +179,97 @@ namespace rawrbox {
 
 	void BindlessManager::bindSignatures() {
 		// Setup graphic binds ---
-		signature->GetStaticVariableByName(Diligent::SHADER_TYPE_VERTEX, "Constants")->Set(signatureBufferVertex);
-		signature->GetStaticVariableByName(Diligent::SHADER_TYPE_VERTEX, "SkinnedConstants")->Set(signatureBufferVertexSkinned);
+		BindlessManager::signature->GetStaticVariableByName(Diligent::SHADER_TYPE_VERTEX, "Constants")->Set(BindlessManager::signatureBufferVertex);
+		BindlessManager::signature->GetStaticVariableByName(Diligent::SHADER_TYPE_VERTEX, "SkinnedConstants")->Set(BindlessManager::signatureBufferVertexSkinned);
 
-		signature->GetStaticVariableByName(Diligent::SHADER_TYPE_VERTEX, "Camera")->Set(rawrbox::CameraBase::uniforms);
-		signature->GetStaticVariableByName(Diligent::SHADER_TYPE_PIXEL, "Camera")->Set(rawrbox::CameraBase::uniforms);
-		signature->GetStaticVariableByName(Diligent::SHADER_TYPE_GEOMETRY, "Camera")->Set(rawrbox::CameraBase::uniforms);
+		BindlessManager::signature->GetStaticVariableByName(Diligent::SHADER_TYPE_VERTEX, "Camera")->Set(rawrbox::CameraBase::uniforms);
+		BindlessManager::signature->GetStaticVariableByName(Diligent::SHADER_TYPE_PIXEL, "Camera")->Set(rawrbox::CameraBase::uniforms);
+		BindlessManager::signature->GetStaticVariableByName(Diligent::SHADER_TYPE_GEOMETRY, "Camera")->Set(rawrbox::CameraBase::uniforms);
 
-		signature->GetStaticVariableByName(Diligent::SHADER_TYPE_VERTEX, "SCamera")->Set(rawrbox::CameraBase::staticUniforms);
-		signature->GetStaticVariableByName(Diligent::SHADER_TYPE_PIXEL, "SCamera")->Set(rawrbox::CameraBase::staticUniforms);
-		signature->GetStaticVariableByName(Diligent::SHADER_TYPE_GEOMETRY, "SCamera")->Set(rawrbox::CameraBase::staticUniforms);
+		BindlessManager::signature->GetStaticVariableByName(Diligent::SHADER_TYPE_VERTEX, "SCamera")->Set(rawrbox::CameraBase::staticUniforms);
+		BindlessManager::signature->GetStaticVariableByName(Diligent::SHADER_TYPE_PIXEL, "SCamera")->Set(rawrbox::CameraBase::staticUniforms);
+		BindlessManager::signature->GetStaticVariableByName(Diligent::SHADER_TYPE_GEOMETRY, "SCamera")->Set(rawrbox::CameraBase::staticUniforms);
 
-		signature->GetStaticVariableByName(Diligent::SHADER_TYPE_PIXEL, "Constants")->Set(signatureBufferPixel);
+		BindlessManager::signature->GetStaticVariableByName(Diligent::SHADER_TYPE_PIXEL, "Constants")->Set(BindlessManager::signatureBufferPixel);
 		// ------------
 		// Add extra binds ----
 		for (const auto& plugin : rawrbox::RENDERER->getPlugins()) {
 			if (plugin.second == nullptr) continue;
-			plugin.second->bindStatic(*signature);
+			plugin.second->bindStatic(*BindlessManager::signature);
 		}
 		// -------------------------
 
-		signature->CreateShaderResourceBinding(&signatureBind, true);
+		BindlessManager::signature->CreateShaderResourceBinding(&BindlessManager::signatureBind, true);
 
 		// Bind signature bind ----
 		for (const auto& plugin : rawrbox::RENDERER->getPlugins()) {
 			if (plugin.second == nullptr) continue;
-			plugin.second->bindMutable(*signatureBind);
+			plugin.second->bindMutable(*BindlessManager::signatureBind);
 		}
 		// -------------------------
 
 		// Setup textures ---
-		signatureBind->GetVariableByName(Diligent::SHADER_TYPE_VERTEX, "g_Textures")->SetArray(_vertexTextureHandles.data(), 0, static_cast<uint32_t>(_vertexTextureHandles.size()), Diligent::SET_SHADER_RESOURCE_FLAG_ALLOW_OVERWRITE);
-		signatureBind->GetVariableByName(Diligent::SHADER_TYPE_PIXEL, "g_Textures")->SetArray(_textureHandles.data(), 0, static_cast<uint32_t>(_textureHandles.size()), Diligent::SET_SHADER_RESOURCE_FLAG_ALLOW_OVERWRITE);
+		BindlessManager::signatureBind->GetVariableByName(Diligent::SHADER_TYPE_VERTEX, "g_Textures")->SetArray(BindlessManager::_vertexTextureHandles.data(), 0, static_cast<uint32_t>(BindlessManager::_vertexTextureHandles.size()), Diligent::SET_SHADER_RESOURCE_FLAG_ALLOW_OVERWRITE);
+		BindlessManager::signatureBind->GetVariableByName(Diligent::SHADER_TYPE_PIXEL, "g_Textures")->SetArray(BindlessManager::_textureHandles.data(), 0, static_cast<uint32_t>(BindlessManager::_textureHandles.size()), Diligent::SET_SHADER_RESOURCE_FLAG_ALLOW_OVERWRITE);
 		// ----------------------
 		// ----------------
 	}
 	// --------------------------
 
 	void BindlessManager::bindContext(Diligent::IDeviceContext& context) {
-		if (signatureBind == nullptr) RAWRBOX_CRITICAL("Bindless manager not initialized!");
+		if (BindlessManager::signatureBind == nullptr) RAWRBOX_CRITICAL("Bindless manager not initialized!");
 
 		rawrbox::UniformCache::reset();
-		rawrbox::UniformCache::map(context, signatureBufferVertex, rawrbox::BindlessVertexBuffer{});
-		rawrbox::UniformCache::map(context, signatureBufferVertexSkinned, rawrbox::BindlessVertexSkinnedBuffer{});
-		rawrbox::UniformCache::map(context, signatureBufferPixel, rawrbox::BindlessPixelBuffer{});
+		rawrbox::UniformCache::map(context, BindlessManager::signatureBufferVertex, rawrbox::BindlessVertexBuffer{});
+		rawrbox::UniformCache::map(context, BindlessManager::signatureBufferVertexSkinned, rawrbox::BindlessVertexSkinnedBuffer{});
+		rawrbox::UniformCache::map(context, BindlessManager::signatureBufferPixel, rawrbox::BindlessPixelBuffer{});
 
-		context.CommitShaderResources(signatureBind, Diligent::RESOURCE_STATE_TRANSITION_MODE_NONE);
+		context.CommitShaderResources(BindlessManager::signatureBind, Diligent::RESOURCE_STATE_TRANSITION_MODE_NONE);
 	}
 
 	void BindlessManager::update() {
-		if (signature == nullptr || signatureBind == nullptr) return;
+		if (BindlessManager::signature == nullptr || BindlessManager::signatureBind == nullptr) return;
 		ZoneScopedN("BindlessManager::update");
 
 		// UPDATE TEXTURES ---
-		if (!_updateTextures.empty()) {
-			for (auto it = _updateTextures.begin(); it != _updateTextures.end();) {
-				auto& texture = (*it);
-				if (texture == nullptr || !texture->requiresUpdate()) {
-					it = _updateTextures.erase(it);
-					continue;
-				}
-
-				texture->update();
-				++it;
+		for (size_t i = 0; i < BindlessManager::_updateTextures.size();) {
+			auto* texture = BindlessManager::_updateTextures[i];
+			if (texture == nullptr || !texture->requiresUpdate()) {
+				BindlessManager::_updateTextures.erase(BindlessManager::_updateTextures.begin() + static_cast<std::ptrdiff_t>(i));
+				continue;
 			}
+
+			texture->update();
+			i++;
 		}
 		// ---------------------
 
 		// Flush old ones
-		if (_updateVertexSignature || _updatePixelSignature) rawrbox::RENDERER->context()->WaitForIdle();
+		if (BindlessManager::_updateVertexSignature || BindlessManager::_updatePixelSignature) rawrbox::RENDERER->context()->WaitForIdle();
 		// ---------------------
 
 		// UPDATE SHADER BIND ---
-		if (_updateVertexSignature) {
-			_updateVertexSignature = false;
-			signatureBind->GetVariableByName(Diligent::SHADER_TYPE_VERTEX, "g_Textures")->SetArray(_vertexTextureHandles.data(), 0, static_cast<uint32_t>(_vertexTextureHandles.size()), Diligent::SET_SHADER_RESOURCE_FLAG_ALLOW_OVERWRITE);
+		if (BindlessManager::_updateVertexSignature) {
+			BindlessManager::_updateVertexSignature = false;
+			BindlessManager::signatureBind->GetVariableByName(Diligent::SHADER_TYPE_VERTEX, "g_Textures")->SetArray(BindlessManager::_vertexTextureHandles.data(), 0, static_cast<uint32_t>(BindlessManager::_vertexTextureHandles.size()), Diligent::SET_SHADER_RESOURCE_FLAG_ALLOW_OVERWRITE);
 		}
 
-		if (_updatePixelSignature) {
-			_updatePixelSignature = false;
-			signatureBind->GetVariableByName(Diligent::SHADER_TYPE_PIXEL, "g_Textures")->SetArray(_textureHandles.data(), 0, static_cast<uint32_t>(_textureHandles.size()), Diligent::SET_SHADER_RESOURCE_FLAG_ALLOW_OVERWRITE);
+		if (BindlessManager::_updatePixelSignature) {
+			BindlessManager::_updatePixelSignature = false;
+			BindlessManager::signatureBind->GetVariableByName(Diligent::SHADER_TYPE_PIXEL, "g_Textures")->SetArray(BindlessManager::_textureHandles.data(), 0, static_cast<uint32_t>(BindlessManager::_textureHandles.size()), Diligent::SET_SHADER_RESOURCE_FLAG_ALLOW_OVERWRITE);
 		}
 		// ---------------------
 	}
 
 	// REGISTER TEXTURES -------
 	void BindlessManager::registerTexture(rawrbox::TextureRender& texture) {
-		if (signature == nullptr) RAWRBOX_CRITICAL("Signature not bound! Did you call init?");
+		if (BindlessManager::signature == nullptr) RAWRBOX_CRITICAL("Signature not bound! Did you call init?");
 		if (texture.isRegistered()) return; // Check if it's already registered --
 
 		auto* pDepthSRV = texture.getDepth(); // Get depth
 		if (pDepthSRV != nullptr) {
-			auto id = internalRegister(pDepthSRV, rawrbox::TEXTURE_TYPE::PIXEL);
-			_logger->debug("Registering {} bindless texture '{}' on slot '{}'", fmt::styled("DEPTH", fmt::fg(fmt::color::red)), fmt::styled(texture.getName(), fmt::fg(fmt::color::violet)), fmt::styled(std::to_string(id), fmt::fg(fmt::color::violet)));
+			auto id = BindlessManager::internalRegister(pDepthSRV, rawrbox::TEXTURE_TYPE::PIXEL);
+			BindlessManager::_logger->debug("Registering {} bindless texture '{}' on slot '{}'", fmt::styled("DEPTH", fmt::fg(fmt::color::red)), fmt::styled(texture.getName(), fmt::fg(fmt::color::violet)), fmt::styled(std::to_string(id), fmt::fg(fmt::color::violet)));
 
 			// Register depth
 			texture.setDepthTextureID(id);
@@ -279,28 +277,28 @@ namespace rawrbox {
 		}
 
 		// Ok, now do normal
-		registerTexture(static_cast<rawrbox::TextureBase&>(texture));
+		BindlessManager::registerTexture(static_cast<rawrbox::TextureBase&>(texture));
 	}
 
 	void BindlessManager::registerTexture(rawrbox::TextureBase& texture) {
-		if (signature == nullptr) RAWRBOX_CRITICAL("Signature not bound! Did you call init?");
+		if (BindlessManager::signature == nullptr) RAWRBOX_CRITICAL("Signature not bound! Did you call init?");
 		if (texture.isRegistered()) return; // Check if it's already registered --
 
 		auto* pTextureSRV = texture.getHandle(); // Get shader resource view from the texture
 		if (pTextureSRV == nullptr) RAWRBOX_CRITICAL("Failed to register texture '{}'! Texture view is null, not uploaded?", texture.getName());
 
 		const bool isVertex = texture.getType() == rawrbox::TEXTURE_TYPE::VERTEX;
-		const auto id = internalRegister(pTextureSRV, texture.getType());
-		_logger->debug("Registering bindless {} texture '{}' on slot '{}'", isVertex ? "vertex" : "pixel", fmt::styled(texture.getName(), fmt::fg(fmt::color::violet)), fmt::styled(std::to_string(id), fmt::fg(fmt::color::violet)));
+		const auto id = BindlessManager::internalRegister(pTextureSRV, texture.getType());
+		BindlessManager::_logger->debug("Registering bindless {} texture '{}' on slot '{}'", isVertex ? "vertex" : "pixel", fmt::styled(texture.getName(), fmt::fg(fmt::color::violet)), fmt::styled(std::to_string(id), fmt::fg(fmt::color::violet)));
 
 		// Register for updates
-		registerUpdateTexture(texture);
+		BindlessManager::registerUpdateTexture(texture);
 		texture.setTextureID(id);
 		// ------------
 	}
 
 	void BindlessManager::updateTextureHandle(rawrbox::TextureBase& texture) {
-		if (signature == nullptr) RAWRBOX_CRITICAL("Signature not bound! Did you call init?");
+		if (BindlessManager::signature == nullptr) RAWRBOX_CRITICAL("Signature not bound! Did you call init?");
 		if (!texture.isRegistered()) RAWRBOX_CRITICAL("Texture '{}' is not registered!", texture.getName());
 
 		auto* view = texture.getHandle();
@@ -327,20 +325,20 @@ namespace rawrbox {
 		const auto depthId = texture.getDepthTextureID();
 
 		if (depth != nullptr && depthId != 0) {
-			if (depthId >= _textureHandles.size()) RAWRBOX_CRITICAL("Depth index '{}' not found!", depthId);
+			if (depthId >= BindlessManager::_textureHandles.size()) RAWRBOX_CRITICAL("Depth index '{}' not found!", depthId);
 
-			_textureHandles[depthId] = depth;
-			_updatePixelSignature = true;
+			BindlessManager::_textureHandles[depthId] = depth;
+			BindlessManager::_updatePixelSignature = true;
 		}
 
-		updateTextureHandle(static_cast<rawrbox::TextureBase&>(texture));
+		BindlessManager::updateTextureHandle(static_cast<rawrbox::TextureBase&>(texture));
 	}
 
 	void BindlessManager::unregisterTexture(rawrbox::TextureBase& texture) {
-		if (signature == nullptr || !texture.isRegistered()) return;
+		if (BindlessManager::signature == nullptr || !texture.isRegistered()) return;
 
 		const bool isVertex = texture.getType() == rawrbox::TEXTURE_TYPE::VERTEX;
-		auto& handler = isVertex ? _vertexTextureHandles : _textureHandles;
+		auto& handler = isVertex ? BindlessManager::_vertexTextureHandles : BindlessManager::_textureHandles;
 
 		const auto id = texture.getTextureID();
 		const auto depthId = texture.getDepthTextureID();
@@ -349,35 +347,33 @@ namespace rawrbox {
 		if (depthId >= handler.size()) RAWRBOX_CRITICAL("Depth index '{}' not found!", depthId);
 
 		// Cleanup  ----
-		unregisterUpdateTexture(texture);
+		BindlessManager::unregisterUpdateTexture(texture);
 		handler[id] = nullptr;
 
 		if (depthId != 0) handler[depthId] = nullptr;
 		// --------------------
 
 		// No need to update signature, it will be overriden by another texture
-		_logger->debug("Un-registering bindless {} texture slot '{}'", isVertex ? "vertex" : "pixel", fmt::styled(std::to_string(id), fmt::fg(fmt::color::violet)));
+		BindlessManager::_logger->debug("Un-registering bindless {} texture slot '{}'", isVertex ? "vertex" : "pixel", fmt::styled(std::to_string(id), fmt::fg(fmt::color::violet)));
 	}
 
 	void BindlessManager::registerUpdateTexture(rawrbox::TextureBase& texture) {
-		if (!texture.requiresUpdate()) return;
-		_updateTextures.push_back(&texture);
+		if (!texture.requiresUpdate() || std::ranges::contains(BindlessManager::_updateTextures, &texture)) return;
+		BindlessManager::_updateTextures.push_back(&texture);
 	}
 
 	void BindlessManager::unregisterUpdateTexture(rawrbox::TextureBase& texture) {
-		auto fnd = std::find(_updateTextures.begin(), _updateTextures.end(), &texture);
-		if (fnd == _updateTextures.end()) return;
-
-		_updateTextures.erase(fnd);
+		if (BindlessManager::_updateTextures.empty()) return;
+		std::erase(BindlessManager::_updateTextures, &texture);
 	}
 
 	uint32_t BindlessManager::internalRegister(Diligent::ITextureView* view, rawrbox::TEXTURE_TYPE type) {
-		bool isVertex = type == rawrbox::TEXTURE_TYPE::VERTEX;
-		auto max = isVertex ? RB_RENDER_MAX_VERTEX_TEXTURES : RB_RENDER_MAX_TEXTURES;
-		auto& handler = isVertex ? _vertexTextureHandles : _textureHandles;
+		const bool isVertex = type == rawrbox::TEXTURE_TYPE::VERTEX;
+		const auto max = isVertex ? RB_RENDER_MAX_VERTEX_TEXTURES : RB_RENDER_MAX_TEXTURES;
+		auto& handler = isVertex ? BindlessManager::_vertexTextureHandles : BindlessManager::_textureHandles;
 
-		int size = static_cast<int>(handler.size());
-		if (size == static_cast<int>(max / 1.2F)) _logger->warn("Aproaching max texture limit of {}", fmt::styled(std::to_string(max), fmt::fg(fmt::color::red)));
+		const int size = static_cast<int>(handler.size());
+		if (size == static_cast<int>(max / 1.2F)) BindlessManager::_logger->warn("Aproaching max texture limit of {}", fmt::styled(std::to_string(max), fmt::fg(fmt::color::red)));
 		if (size >= static_cast<int>(max)) RAWRBOX_CRITICAL("Max texture limit reached! Cannot allocate texture, remove some unecessary textures or increase max textures on renderer");
 
 		int id = -1;
@@ -401,9 +397,9 @@ namespace rawrbox {
 
 		// Trigger bind update ----
 		if (isVertex) {
-			_updateVertexSignature = true;
+			BindlessManager::_updateVertexSignature = true;
 		} else {
-			_updatePixelSignature = true;
+			BindlessManager::_updatePixelSignature = true;
 		}
 		// ------------
 

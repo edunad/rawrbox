@@ -188,7 +188,8 @@ namespace rawrbox {
 		};
 
 		void afterDraw(rawrbox::Stencil& stencil) override {
-			if (renderAfter != nullptr) renderAfter(stencil);
+			if (this->renderAfter == nullptr) return;
+			this->renderAfter(stencil);
 		}
 
 		void mouseUp(const rawrbox::Vector2i& /*mousePos*/, uint32_t button, uint32_t /*mods*/) override {

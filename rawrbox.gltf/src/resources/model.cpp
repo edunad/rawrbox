@@ -6,9 +6,10 @@ namespace rawrbox {
 	ResourceGLTF::~ResourceGLTF() { this->_model.reset(); }
 
 	bool ResourceGLTF::load(const std::vector<uint8_t>& buffer) {
-		this->_model = std::make_unique<rawrbox::GLTFImporter>(flags);
-		this->_model->load(this->filePath, buffer);
+		auto model = std::make_unique<rawrbox::GLTFImporter>(this->flags);
+		model->load(this->filePath, buffer);
 
+		this->_model = std::move(model);
 		return true;
 	}
 

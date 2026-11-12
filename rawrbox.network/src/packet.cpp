@@ -7,15 +7,15 @@
 namespace rawrbox {
 	// Read ----
 	void Packet::networkRead(rawrbox::Packet& packet) {
-		packet.read(buffer);
+		packet.read(this->buffer);
 	}
 
 	void Packet::read(std::string& ret) {
 		auto len = this->readLength<size_t>();
-		auto start = buffer.begin() + pos;
+		auto start = this->buffer.begin() + this->pos;
 
 		ret.assign(start, start + len);
-		pos += len;
+		this->pos += len;
 	}
 
 	std::string Packet::readAllString() {
@@ -36,7 +36,7 @@ namespace rawrbox {
 
 	const std::vector<uint8_t>& Packet::readAll() {
 		this->pos = this->size();
-		return buffer;
+		return this->buffer;
 	}
 	// --------
 
@@ -52,38 +52,38 @@ namespace rawrbox {
 
 	// UTILS -----
 	bool Packet::seek(size_t offset) {
-		if (offset > size()) return false;
+		if (offset > this->size()) return false;
 		this->pos = offset;
 		return true;
 	}
 
 	bool Packet::seek(const std::vector<uint8_t>::iterator& offset) {
-		if (offset > end()) return false;
-		this->pos = std::distance(buffer.begin(), offset);
+		if (offset > this->end()) return false;
+		this->pos = std::distance(this->buffer.begin(), offset);
 		return true;
 	}
 
-	size_t Packet::tell() const { return pos; }
-	size_t Packet::size() const { return buffer.size(); }
+	size_t Packet::tell() const { return this->pos; }
+	size_t Packet::size() const { return this->buffer.size(); }
 
-	uint8_t* Packet::data() { return buffer.data(); }
-	const uint8_t* Packet::data() const { return buffer.data(); }
+	uint8_t* Packet::data() { return this->buffer.data(); }
+	const uint8_t* Packet::data() const { return this->buffer.data(); }
 
-	std::vector<uint8_t>& Packet::getBuffer() { return buffer; }
-	const std::vector<uint8_t>& Packet::getBuffer() const { return buffer; }
-	void Packet::setBuffer(std::vector<uint8_t> b) { buffer = std::move(b); }
+	std::vector<uint8_t>& Packet::getBuffer() { return this->buffer; }
+	const std::vector<uint8_t>& Packet::getBuffer() const { return this->buffer; }
+	void Packet::setBuffer(std::vector<uint8_t> b) { this->buffer = std::move(b); }
 
-	std::vector<uint8_t>::iterator Packet::begin() { return buffer.begin(); }
-	std::vector<uint8_t>::iterator Packet::end() { return buffer.end(); }
-	std::vector<uint8_t>::const_iterator Packet::cbegin() const { return buffer.cbegin(); }
-	std::vector<uint8_t>::const_iterator Packet::cend() const { return buffer.cend(); }
+	std::vector<uint8_t>::iterator Packet::begin() { return this->buffer.begin(); }
+	std::vector<uint8_t>::iterator Packet::end() { return this->buffer.end(); }
+	std::vector<uint8_t>::const_iterator Packet::cbegin() const { return this->buffer.cbegin(); }
+	std::vector<uint8_t>::const_iterator Packet::cend() const { return this->buffer.cend(); }
 
-	void Packet::resize(size_t size) { buffer.resize(size); }
-	bool Packet::empty() const { return buffer.empty(); }
+	void Packet::resize(size_t size) { this->buffer.resize(size); }
+	bool Packet::empty() const { return this->buffer.empty(); }
 
 	void Packet::clear() {
-		buffer.clear();
-		pos = 0;
+		this->buffer.clear();
+		this->pos = 0;
 	}
 	// ----------------
 } // namespace rawrbox

@@ -26,6 +26,7 @@
 #include <filesystem>
 #include <functional>
 #include <map>
+#include <memory>
 #include <span>
 #include <utility>
 #include <vector>
@@ -45,6 +46,30 @@ namespace rawrbox {
 	};
 
 	using RenderPluginList = std::vector<std::pair<std::string, std::unique_ptr<rawrbox::RenderPlugin>>>; // Sorted by priority
+
+	// GPU PICKING ---
+	struct PickState {
+		std::function<void(uint32_t)> callback = nullptr;
+		bool done = false;
+	};
+
+	class PickRequest {
+	protected:
+		std::shared_ptr<rawrbox::PickState> _state = nullptr;
+
+	public:
+		PickRequest() = default;
+		explicit PickRequest(std::shared_ptr<rawrbox::PickState> state);
+		PickRequest(const PickRequest&) = delete;
+		PickRequest& operator=(const PickRequest&) = delete;
+		PickRequest(PickRequest&&) noexcept = default;
+		PickRequest& operator=(PickRequest&&) noexcept = default;
+		~PickRequest() = default;
+
+		void cancel();
+		[[nodiscard]] bool isPending() const;
+	};
+	// ---------------
 
 	template <typename T>
 	concept ParallelRender = requires(const T& call) {
@@ -182,7 +207,7 @@ namespace rawrbox {
 		template <typename T = rawrbox::RenderPlugin>
 			requires(std::derived_from<T, rawrbox::RenderPlugin>)
 		[[nodiscard]] T* getPlugin(const std::string& id) const {
-			const auto fnd = std::ranges::find_if(this->_renderPlugins, [&id](const auto& plugin) {
+			const auto& fnd = std::ranges::find_if(this->_renderPlugins, [&id](const auto& plugin) {
 				return plugin.first == id;
 			});
 
@@ -291,7 +316,7 @@ namespace rawrbox {
 		[[nodiscard]] virtual bool isTransparent() const;
 		virtual void setTransparent(bool transparent);
 
-		virtual void gpuPick(const rawrbox::Vector2i& windowPos, const std::function<void(uint32_t)>& callback);
+		[[nodiscard]] virtual rawrbox::PickRequest gpuPick(const rawrbox::Vector2i& windowPos, const std::function<void(uint32_t)>& callback);
 		//  ------
 	};
 } // namespace rawrbox

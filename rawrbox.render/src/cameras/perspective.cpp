@@ -14,12 +14,13 @@ namespace rawrbox {
 	// NOLINTEND(clang-analyzer-optin.cplusplus.VirtualCall)
 
 	void CameraPerspective::updateMtx() {
-		auto dir = this->getForward();
+		const auto dir = this->getForward();
+		const auto eye = this->getEyePos();
 
-		auto at = this->_pos + dir;
-		auto up = this->getUp();
+		const auto at = eye + dir;
+		const auto up = this->getUp();
 
-		this->_view = rawrbox::Matrix4x4::mtxLookAt(this->_pos, at, up);
+		this->_view = rawrbox::Matrix4x4::mtxLookAt(eye, at, up);
 	}
 
 	rawrbox::Vector3f CameraPerspective::worldToScreen(const rawrbox::Vector3f& pos) const {
@@ -28,15 +29,16 @@ namespace rawrbox {
 	}
 
 	rawrbox::Vector3f CameraPerspective::screenRayDir(const rawrbox::Vector2f& screenPos) const {
-		const auto& campos = this->getPos();
+		const auto campos = this->getEyePos();
+
 		const auto& size = this->_renderTarget->getSize();
-		rawrbox::Matrix4x4 viewproj_inv = this->getViewProjMtx().inverse();
+		const rawrbox::Matrix4x4 viewproj_inv = this->getViewProjMtx().inverse();
 
-		auto winPos = size.cast<float>();
-		float screenx_clip = 2.F * (screenPos.x / winPos.x) - 1.F;
-		float screeny_clip = 1.F - 2.F * (screenPos.y) / winPos.y;
+		const auto winPos = size.cast<float>();
+		const float screenx_clip = 2.F * (screenPos.x / winPos.x) - 1.F;
+		const float screeny_clip = 1.F - 2.F * (screenPos.y) / winPos.y;
 
-		rawrbox::Vector4f screen_clip = {screenx_clip, screeny_clip, -1, 1};
+		const rawrbox::Vector4f screen_clip = {screenx_clip, screeny_clip, -1, 1};
 		rawrbox::Vector4f world_pos = viewproj_inv.mulVec(screen_clip);
 		world_pos /= world_pos.w;
 
@@ -47,13 +49,13 @@ namespace rawrbox {
 	rawrbox::Vector3f CameraPerspective::screenToWorld(const rawrbox::Vector2f& screenPos, const rawrbox::Vector3f& origin) const {
 		static constexpr rawrbox::Vector3f plane_normal = {0, 1, 0};
 
-		const auto& campos = this->getPos();
+		const auto campos = this->getEyePos();
 		const auto dir = this->screenRayDir(screenPos);
 
-		float numerator = (origin - campos).dot(plane_normal);
-		float denumerator = dir.dot(plane_normal);
+		const float numerator = (origin - campos).dot(plane_normal);
+		const float denumerator = dir.dot(plane_normal);
 
-		float delta = numerator / denumerator;
+		const float delta = numerator / denumerator;
 		return dir * delta + campos;
 	}
 

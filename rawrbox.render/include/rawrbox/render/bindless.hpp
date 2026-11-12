@@ -20,7 +20,7 @@ namespace rawrbox {
 					       // ----------
 
 		bool operator==(const BindlessVertexBuffer& other) const { return this->data == other.data && this->dataF == other.dataF && this->world == other.world; }
-		bool operator!=(const BindlessVertexBuffer& other) const { return !operator==(other); }
+		bool operator!=(const BindlessVertexBuffer& other) const { return !this->operator==(other); }
 	};
 
 	struct BindlessVertexSkinnedBuffer {
@@ -29,7 +29,7 @@ namespace rawrbox {
 											  //-----------------
 
 		bool operator==(const BindlessVertexSkinnedBuffer& other) const { return std::equal(this->bones.begin(), this->bones.end(), other.bones.begin()); }
-		bool operator!=(const BindlessVertexSkinnedBuffer& other) const { return !operator==(other); }
+		bool operator!=(const BindlessVertexSkinnedBuffer& other) const { return !this->operator==(other); }
 	};
 	// --------------------------
 
@@ -39,7 +39,7 @@ namespace rawrbox {
 		rawrbox::Vector4f pixelData = {};   // Pixel data (cutoff, decal mask, etc)
 
 		bool operator==(const BindlessPixelBuffer& other) const { return this->textureIDs == other.textureIDs && this->textureData == other.textureData && this->pixelData == other.pixelData; }
-		bool operator!=(const BindlessPixelBuffer& other) const { return !operator==(other); }
+		bool operator!=(const BindlessPixelBuffer& other) const { return !this->operator==(other); }
 	};
 
 	struct BindlessPostProcessBuffer {
@@ -47,7 +47,7 @@ namespace rawrbox {
 		rawrbox::Vector4u textureIDs = {}; // BASE, DEPTH, EXTRA, ?
 
 		bool operator==(const BindlessPostProcessBuffer& other) const { return this->textureIDs == other.textureIDs && std::equal(this->data.begin(), this->data.end(), other.data.begin()); }
-		bool operator!=(const BindlessPostProcessBuffer& other) const { return !operator==(other); }
+		bool operator!=(const BindlessPostProcessBuffer& other) const { return !this->operator==(other); }
 	};
 	// --------------------------
 

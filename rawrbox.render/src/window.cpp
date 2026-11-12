@@ -97,10 +97,10 @@ namespace rawrbox {
 	}
 
 	void Window::pollEvents() {
-		if (__WINDOWS.empty()) return;
+		if (Window::__WINDOWS.empty()) return;
 
 		// Check if the window should close
-		for (const auto& window : __WINDOWS) {
+		for (const auto& window : Window::__WINDOWS) {
 			if (glfwWindowShouldClose(window->_handle) != 0) {
 				glfwPollEvents();
 				return;
@@ -140,38 +140,41 @@ namespace rawrbox {
 			// ---------------
 
 			// SHUTDOWN RENDERERS ----
-			for (const auto& window : __WINDOWS) {
+			for (const auto& window : Window::__WINDOWS) {
 				window->_renderer.reset();
 			}
 			// ---------------------
 
-			_logger->debug("Thread 'rawrbox:render' shutdown complete");
+			Window::_logger->debug("Thread 'rawrbox:render' shutdown complete");
 			return;
 		}
 
-		__WINDOWS.clear();
+		Window::__WINDOWS.clear();
 
 		glfwPostEmptyEvent();
 		glfwTerminate();
 
-		_logger->debug("Thread 'rawrbox:input' shutdown complete");
-		_logger.reset();
+		Window::_logger->debug("Thread 'rawrbox:input' shutdown complete");
+		Window::_logger.reset();
 	}
 
 	void Window::update() {
-		for (auto& win : __WINDOWS) {
+		for (const auto& win : Window::__WINDOWS) {
+			win->_keys.reset();
+			win->_buttons.reset();
+
 			if (win->_renderer == nullptr) continue;
 
-			setActiveRenderer(win->_renderer.get());
+			Window::setActiveRenderer(win->_renderer.get());
 			win->_renderer->update();
 		}
 	}
 
 	void Window::render() {
-		for (auto& win : __WINDOWS) {
+		for (auto& win : Window::__WINDOWS) {
 			if (win->_renderer == nullptr) continue;
 
-			setActiveRenderer(win->_renderer.get());
+			Window::setActiveRenderer(win->_renderer.get());
 			win->_renderer->render();
 		}
 	}
@@ -282,7 +285,7 @@ namespace rawrbox {
 
 		this->_handle = glfwHandle;
 		this->_hasFocus = glfwGetWindowAttrib(glfwHandle, GLFW_FOCUSED) == GLFW_TRUE;
-		
+
 		glfwSetWindowUserPointer(glfwHandle, this);
 
 		// Create cursor
@@ -341,15 +344,15 @@ namespace rawrbox {
 #endif
 		// ---------------
 
-		glfwSetKeyCallback(this->_handle, callbacks_key);
-		glfwSetCharCallback(this->_handle, callbacks_char);
-		glfwSetScrollCallback(this->_handle, callbacks_scroll);
-		glfwSetWindowSizeCallback(this->_handle, callbacks_resize);
-		glfwSetWindowFocusCallback(this->_handle, callbacks_focus);
-		glfwSetWindowPosCallback(this->_handle, callbacks_pos);
-		glfwSetCursorPosCallback(this->_handle, callbacks_mouseMove);
-		glfwSetMouseButtonCallback(this->_handle, callbacks_mouseKey);
-		glfwSetWindowCloseCallback(this->_handle, callbacks_windowClose);
+		glfwSetKeyCallback(this->_handle, this->callbacks_key);
+		glfwSetCharCallback(this->_handle, this->callbacks_char);
+		glfwSetScrollCallback(this->_handle, this->callbacks_scroll);
+		glfwSetWindowSizeCallback(this->_handle, this->callbacks_resize);
+		glfwSetWindowFocusCallback(this->_handle, this->callbacks_focus);
+		glfwSetWindowPosCallback(this->_handle, this->callbacks_pos);
+		glfwSetCursorPosCallback(this->_handle, this->callbacks_mouseMove);
+		glfwSetMouseButtonCallback(this->_handle, this->callbacks_mouseKey);
+		glfwSetWindowCloseCallback(this->_handle, this->callbacks_windowClose);
 
 		// Initialize renderer
 		this->_settings.flags = flags;
@@ -454,7 +457,7 @@ namespace rawrbox {
 	rawrbox::Vector2u Window::getMonitorSize() const {
 		if (this->_handle == nullptr) RAWRBOX_CRITICAL("Invalid window handle");
 
-		GLFWmonitor* w = getWindowMonitor();
+		GLFWmonitor* w = this->getWindowMonitor();
 		if (w == nullptr) RAWRBOX_CRITICAL("Failed to find screen dimensions");
 
 		const auto* vidmode = glfwGetVideoMode(w);
@@ -468,8 +471,9 @@ namespace rawrbox {
 		return ret.x / ret.y;
 	}
 
-	const rawrbox::Vector2i& Window::getMousePos() const {
-		return this->_mousePos;
+	rawrbox::Vector2i Window::getMousePos() const {
+		const uint64_t packed = this->_mousePos.load();
+		return {static_cast<int32_t>(static_cast<uint32_t>(packed >> 32U)), static_cast<int32_t>(static_cast<uint32_t>(packed & 0xFFFFFFFFU))};
 	}
 
 	uint32_t Window::getWindowFlags() const {
@@ -506,15 +510,15 @@ namespace rawrbox {
 
 	rawrbox::RendererBase& Window::getRenderer() const { return *this->_renderer; }
 
-	bool Window::isKeyDown(int key) const {
-		if (this->_handle == nullptr) RAWRBOX_CRITICAL("Invalid window handle");
-		return glfwGetKey(this->_handle, key) == GLFW_PRESS;
-	}
+	bool Window::isKeyDown(int key) const { return this->_keys.isDown(key); }
+	bool Window::isMouseDown(int key) const { return this->_buttons.isDown(key); }
 
-	bool Window::isMouseDown(int key) const {
-		if (this->_handle == nullptr) RAWRBOX_CRITICAL("Invalid window handle");
-		return glfwGetMouseButton(this->_handle, key) == GLFW_PRESS;
-	}
+	bool Window::isKeyPressed(int key) const { return this->_keys.isPressed(key); }
+	bool Window::isKeyReleased(int key) const { return this->_keys.isReleased(key); }
+	bool Window::isMousePressed(int key) const { return this->_buttons.isPressed(key); }
+	bool Window::isMouseReleased(int key) const { return this->_buttons.isReleased(key); }
+
+	void Window::injectMouseButton(int key, bool down) { this->_buttons.inject(key, down); }
 
 	const std::unordered_map<int, rawrbox::Vector2u>& Window::getScreenSizes() const {
 		return this->_screenSizes;
@@ -549,6 +553,9 @@ namespace rawrbox {
 		if (key < 0) return;
 
 		auto& window = glfwHandleToRenderer(whandle);
+		if (action == GLFW_PRESS) window._keys.press(key);
+		if (action == GLFW_RELEASE) window._keys.release(key);
+
 		rawrbox::runOnRenderThread([key, scancode, action, mods, &window]() {
 			window.onKey(window,
 			    static_cast<uint32_t>(key),
@@ -562,9 +569,13 @@ namespace rawrbox {
 		if (button < 0) return;
 
 		auto& window = glfwHandleToRenderer(whandle);
-		rawrbox::runOnRenderThread([button, action, mods, &window]() {
+		if (action == GLFW_PRESS) window._buttons.press(button);
+		if (action == GLFW_RELEASE) window._buttons.release(button);
+
+		const auto pos = window.getMousePos();
+		rawrbox::runOnRenderThread([button, action, mods, pos, &window]() {
 			window.onMouseKey(window,
-			    window.getMousePos(),
+			    pos,
 			    static_cast<uint32_t>(button),
 			    static_cast<uint32_t>(action),
 			    static_cast<uint32_t>(mods));
@@ -580,18 +591,21 @@ namespace rawrbox {
 
 	void Window::callbacks_scroll(GLFWwindow* whandle, double x, double y) {
 		auto& window = glfwHandleToRenderer(whandle);
+		const auto pos = window.getMousePos();
 
-		rawrbox::runOnRenderThread([x, y, &window]() {
-			window.onMouseScroll(window, window.getMousePos(), {static_cast<int>(x * 10), static_cast<int>(y * 10)});
+		rawrbox::runOnRenderThread([x, y, pos, &window]() {
+			window.onMouseScroll(window, pos, {static_cast<int>(x * 10), static_cast<int>(y * 10)});
 		});
 	}
 
 	void Window::callbacks_mouseMove(GLFWwindow* whandle, double x, double y) {
 		auto& window = glfwHandleToRenderer(whandle);
-		window._mousePos = {static_cast<int>(x), static_cast<int>(y)};
 
-		rawrbox::runOnRenderThread([&window]() {
-			window.onMouseMove(window, window.getMousePos());
+		const rawrbox::Vector2i pos = {static_cast<int>(x), static_cast<int>(y)};
+		window._mousePos = (static_cast<uint64_t>(static_cast<uint32_t>(pos.x)) << 32U) | static_cast<uint32_t>(pos.y);
+
+		rawrbox::runOnRenderThread([pos, &window]() {
+			window.onMouseMove(window, pos);
 		});
 	}
 

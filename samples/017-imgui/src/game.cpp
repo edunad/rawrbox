@@ -66,7 +66,16 @@ namespace imgui {
 		render->init();
 
 		// Setup ImGui
-		rawrbox::IMGUIManager::init(true);
+		rawrbox::IMGUISettings settings = {};
+		settings.dark = true;
+#ifdef RAWRBOX_IMGUI_RICHMD
+		settings.onLink = [](const std::string& url) {
+			fmt::print("[017-imgui] Opening '{}'\n", url);
+			RichMd::OnOpenLink_Default(url);
+		};
+#endif
+
+		rawrbox::IMGUIManager::init(settings);
 
 		ImGuiStyle& style = ImGui::GetStyle();
 		style.Colors[ImGuiCol_ModalWindowDimBg] = ImVec4(0.F, 0.F, 0.F, 0.F);

@@ -23,10 +23,10 @@ namespace rawrbox {
 	void Matrix4x4::mul(const rawrbox::Matrix4x4& other) {
 		rawrbox::Matrix4x4 _result;
 
-		vec4MulMtx(_result.mtx.data(), this->mtx.data(), other.data());
-		vec4MulMtx(&_result.mtx[4], &this->mtx[4], other.data());
-		vec4MulMtx(&_result.mtx[8], &this->mtx[8], other.data());
-		vec4MulMtx(&_result.mtx[12], &this->mtx[12], other.data());
+		this->vec4MulMtx(_result.mtx.data(), this->mtx.data(), other.data());
+		this->vec4MulMtx(&_result.mtx[4], &this->mtx[4], other.data());
+		this->vec4MulMtx(&_result.mtx[8], &this->mtx[8], other.data());
+		this->vec4MulMtx(&_result.mtx[12], &this->mtx[12], other.data());
 
 		std::memcpy(this->mtx.data(), _result.data(), sizeof(float) * this->mtx.size());
 	}
@@ -35,10 +35,10 @@ namespace rawrbox {
 		rawrbox::Matrix4x4 _result;
 		std::array<float, 4> m = {other.x, other.y, other.z, 1.F};
 
-		vec4MulMtx(_result.mtx.data(), m.data(), this->data());
-		vec4MulMtx(&_result.mtx[4], m.data(), this->data());
-		vec4MulMtx(&_result.mtx[8], m.data(), this->data());
-		vec4MulMtx(&_result.mtx[12], m.data(), this->data());
+		this->vec4MulMtx(_result.mtx.data(), m.data(), this->data());
+		this->vec4MulMtx(&_result.mtx[4], m.data(), this->data());
+		this->vec4MulMtx(&_result.mtx[8], m.data(), this->data());
+		this->vec4MulMtx(&_result.mtx[12], m.data(), this->data());
 
 		std::memcpy(this->mtx.data(), _result.data(), sizeof(float) * this->mtx.size());
 	}
@@ -359,22 +359,22 @@ namespace rawrbox {
 	}
 
 	rawrbox::Matrix4x4& Matrix4x4::inverse() {
-		const float xx = mtx[0];
-		const float xy = mtx[1];
-		const float xz = mtx[2];
-		const float xw = mtx[3];
-		const float yx = mtx[4];
-		const float yy = mtx[5];
-		const float yz = mtx[6];
-		const float yw = mtx[7];
-		const float zx = mtx[8];
-		const float zy = mtx[9];
-		const float zz = mtx[10];
-		const float zw = mtx[11];
-		const float wx = mtx[12];
-		const float wy = mtx[13];
-		const float wz = mtx[14];
-		const float ww = mtx[15];
+		const float xx = this->mtx[0];
+		const float xy = this->mtx[1];
+		const float xz = this->mtx[2];
+		const float xw = this->mtx[3];
+		const float yx = this->mtx[4];
+		const float yy = this->mtx[5];
+		const float yz = this->mtx[6];
+		const float yw = this->mtx[7];
+		const float zx = this->mtx[8];
+		const float zy = this->mtx[9];
+		const float zz = this->mtx[10];
+		const float zw = this->mtx[11];
+		const float wx = this->mtx[12];
+		const float wy = this->mtx[13];
+		const float wz = this->mtx[14];
+		const float ww = this->mtx[15];
 
 		float det = 0.0F;
 		det += xx * (yy * (zz * ww - zw * wz) - yz * (zy * ww - zw * wy) + yw * (zy * wz - zz * wy));
@@ -575,7 +575,7 @@ namespace rawrbox {
 	}
 
 	bool Matrix4x4::operator!=(const rawrbox::Matrix4x4& other) const {
-		return !operator==(other);
+		return !this->operator==(other);
 	}
 	// ------
 

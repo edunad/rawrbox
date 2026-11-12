@@ -71,7 +71,7 @@ namespace rawrbox {
 				const auto& range = this->_ranges[i];
 				auto& last = merged.back();
 
-				if (range.offset <= last.end() + MERGE_GAP) {
+				if (range.offset <= last.end() + this->MERGE_GAP) {
 					last.size = std::max(last.end(), range.end()) - last.offset;
 				} else {
 					merged.push_back(range);
@@ -85,7 +85,7 @@ namespace rawrbox {
 				total += range.size;
 			}
 
-			if (this->_ranges.size() > MAX_RANGES || (bufferSize > 0 && total * 2 >= bufferSize)) {
+			if (this->_ranges.size() > this->MAX_RANGES || (bufferSize > 0 && total * 2 >= bufferSize)) {
 				this->markFull();
 			}
 

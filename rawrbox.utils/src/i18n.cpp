@@ -22,22 +22,22 @@ namespace rawrbox {
 	// ---------------
 
 	void I18N::initialize() {
-		loadLanguagePack("c++", "./i18n");
+		I18N::loadLanguagePack("c++", "./i18n");
 	}
 
 	void I18N::addToLanguagePack(const std::string& id, const std::string& lang, const rawrbox::Translation& translation) {
-		std::string packID = fmt::format("{}-{}", id, lang);
+		const std::string packID = fmt::format("{}-{}", id, lang);
 
-		auto pack = _languagePacks.find(packID);
-		if (pack == _languagePacks.end()) {
-			_languagePacks[packID] = translation;
+		const auto& pack = I18N::_languagePacks.find(packID);
+		if (pack == I18N::_languagePacks.end()) {
+			I18N::_languagePacks[packID] = translation;
 		} else {
-			_languagePacks[packID].insert(translation.begin(), translation.end());
+			I18N::_languagePacks[packID].insert(translation.begin(), translation.end());
 		}
 	}
 
 	void I18N::loadLanguagePack(const std::string& id, const std::filesystem::path& path) {
-		_logger->info("Loading i18n for id {}", fmt::styled(id, fmt::fg(fmt::color::coral)));
+		I18N::_logger->info("Loading i18n for id {}", fmt::styled(id, fmt::fg(fmt::color::coral)));
 
 		for (const auto& filePath : rawrbox::VFS::list(path)) {
 			auto fileCleanName = filePath.stem().string();
@@ -50,39 +50,39 @@ namespace rawrbox {
 				rawrbox::Translation tr = {};
 				if (glz::read_json(tr, langRawStr) != glz::error_code::none) RAWRBOX_CRITICAL("Invalid JSON file");
 
-				addToLanguagePack(id, fileCleanName, tr);
+				I18N::addToLanguagePack(id, fileCleanName, tr);
 				fmt::print("- '{}' language\n", fileCleanName);
 			} catch (...) {
-				_logger->warn("Invalid JSON file: {}", filePath.generic_string());
+				I18N::_logger->warn("Invalid JSON file: {}", filePath.generic_string());
 			}
 		}
 	}
 
 	void I18N::setLanguage(const std::string& language) {
-		_language = language;
+		I18N::_language = language;
 	}
 
 	const std::string& I18N::getLanguage() {
-		return _language;
+		return I18N::_language;
 	}
 
 	const rawrbox::Translation* I18N::findPack(const std::string& id) {
-		auto pack = _languagePacks.find(fmt::format("{}-{}", id, _language));
-		if (pack == _languagePacks.end()) {
-			_logger->warn("Could not find language '{}' on '{}', falling back to english", _language, id);
+		auto pack = I18N::_languagePacks.find(fmt::format("{}-{}", id, I18N::_language));
+		if (pack == I18N::_languagePacks.end()) {
+			I18N::_logger->warn("Could not find language '{}' on '{}', falling back to english", I18N::_language, id);
 
-			pack = _languagePacks.find(fmt::format("{}-en", id));
-			if (pack == _languagePacks.end()) return nullptr;
+			pack = I18N::_languagePacks.find(fmt::format("{}-en", id));
+			if (pack == I18N::_languagePacks.end()) return nullptr;
 		}
 
 		return &pack->second;
 	}
 
 	std::string I18N::get(const std::string& id, const std::string& key) {
-		const auto* pack = findPack(id);
-		if (pack == nullptr) return fmt::format("$I18N FOR LANGUAGE '{}-{}' NOT FOUND$", id, _language);
+		const auto* pack = I18N::findPack(id);
+		if (pack == nullptr) return fmt::format("$I18N FOR LANGUAGE '{}-{}' NOT FOUND$", id, I18N::_language);
 
-		auto val = pack->find(key);
+		const auto& val = pack->find(key);
 		if (val == pack->end()) return fmt::format("$I18N KEY '{}' NOT FOUND$", key);
 
 		return val->second;
@@ -94,21 +94,21 @@ namespace rawrbox {
 			args.push_back(str);
 		}
 
-		return fmt::vformat(get(id, key), args);
+		return fmt::vformat(I18N::get(id, key), args);
 	}
 
 	std::optional<std::string> I18N::find(const std::string& id, const std::string& key) {
-		const auto* pack = findPack(id);
+		const auto* pack = I18N::findPack(id);
 		if (pack == nullptr) return std::nullopt;
 
-		auto val = pack->find(key);
+		const auto& val = pack->find(key);
 		if (val == pack->end()) return std::nullopt;
 
 		return val->second;
 	}
 
 	std::optional<std::string> I18N::find(const std::string& id, const std::string& key, const std::vector<std::string>& values) {
-		auto text = find(id, key);
+		const auto text = I18N::find(id, key);
 		if (!text.has_value()) return std::nullopt;
 
 		fmt::dynamic_format_arg_store<fmt::format_context> args;
@@ -134,11 +134,11 @@ namespace rawrbox {
 	}
 
 	std::string I18N::resolve(std::string_view text, std::string_view id, const std::vector<std::string>& values) {
-		const auto parsed = parseKey(text);
+		const auto parsed = I18N::parseKey(text);
 		if (!parsed.has_value()) return std::string(text);
 
 		const std::string pack(parsed->id.empty() ? id : parsed->id);
 		const std::string key(parsed->key);
-		return values.empty() ? get(pack, key) : get(pack, key, values);
+		return values.empty() ? I18N::get(pack, key) : I18N::get(pack, key, values);
 	}
 } // namespace rawrbox

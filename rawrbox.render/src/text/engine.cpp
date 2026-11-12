@@ -36,16 +36,16 @@ namespace rawrbox {
 	}
 
 	void TextEngine::shutdown() {
-		_fonts.clear();
-		_packs.clear();
-		_logger.reset();
+		TextEngine::_fonts.clear();
+		TextEngine::_packs.clear();
+		TextEngine::_logger.reset();
 
 		TextEngine::packID = 0;
 	}
 
 	std::pair<uint16_t, rawrbox::TexturePack*> TextEngine::requestPack(uint16_t width, uint16_t height, Diligent::TEXTURE_FORMAT format) {
 		// Try to find a spot
-		for (auto& at : _packs) {
+		for (auto& at : TextEngine::_packs) {
 			if (at.second->canInsertNode(width, height)) return {at.first, at.second.get()};
 		}
 
@@ -54,32 +54,32 @@ namespace rawrbox {
 		auto pack = std::make_unique<rawrbox::TexturePack>(512U);
 		pack->upload(format);
 
-		_packs.emplace(id, std::move(pack));
-		return {id, _packs[id].get()};
+		TextEngine::_packs.emplace(id, std::move(pack));
+		return {id, TextEngine::_packs[id].get()};
 	}
 
 	rawrbox::TexturePack* TextEngine::getPack(uint16_t id) {
-		auto fnd = _packs.find(id);
-		if (fnd == _packs.end()) RAWRBOX_CRITICAL("Failed to find pack id '{}'", id);
+		const auto& fnd = TextEngine::_packs.find(id);
+		if (fnd == TextEngine::_packs.end()) RAWRBOX_CRITICAL("Failed to find pack id '{}'", id);
 		return fnd->second.get();
 	}
 
 	rawrbox::Font* TextEngine::load(const std::filesystem::path& filename, uint16_t size, uint32_t index) {
-		std::string key = fmt::format("{}-{}", filename.generic_string(), size);
+		const std::string key = fmt::format("{}-{}", filename.generic_string(), size);
 
 		// Check cache
-		auto fnd = _fonts.find(key);
-		if (fnd != _fonts.end()) return fnd->second.get();
+		const auto& fnd = TextEngine::_fonts.find(key);
+		if (fnd != TextEngine::_fonts.end()) return fnd->second.get();
 		// ------
 
 		// Check our own content
 		auto pth = filename;
 		if (!rawrbox::VFS::contains(pth)) {
-			pth = getFontInSystem(pth);
+			pth = TextEngine::getFontInSystem(pth);
 
 			// Not found on content & system? Load fallback
 			if (!rawrbox::VFS::contains(pth)) {
-				_logger->warn("Failed to load '{}' ──> File not found\n  └── Loading fallback font!", filename.generic_string());
+				TextEngine::_logger->warn("Failed to load '{}' ──> File not found\n  └── Loading fallback font!", filename.generic_string());
 				return rawrbox::DEBUG_FONT_REGULAR;
 			}
 		}
@@ -87,9 +87,9 @@ namespace rawrbox {
 		auto bytes = rawrbox::FileUtils::getRawData(pth);
 		if (bytes.empty()) RAWRBOX_CRITICAL("Failed to load font '{}'", filename.generic_string());
 
-		_fonts[key] = std::make_unique<rawrbox::Font>(filename);
-		_fonts[key]->load(bytes, size, index);
+		TextEngine::_fonts[key] = std::make_unique<rawrbox::Font>(filename);
+		TextEngine::_fonts[key]->load(bytes, size, index);
 
-		return _fonts[key].get();
+		return TextEngine::_fonts[key].get();
 	}
 } // namespace rawrbox

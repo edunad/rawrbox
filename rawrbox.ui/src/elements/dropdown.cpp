@@ -119,7 +119,7 @@ namespace rawrbox {
 		// --------
 
 		// ICON ---
-		stencil.drawTexture({this->_originalSize.x - ICON_SIZE, (this->_originalSize.y - ICON_SIZE) / 2.F}, {ICON_SIZE, ICON_SIZE}, *this->_icon);
+		stencil.drawTexture({this->_originalSize.x - this->ICON_SIZE, (this->_originalSize.y - this->ICON_SIZE) / 2.F}, {this->ICON_SIZE, this->ICON_SIZE}, *this->_icon);
 		// -------
 	}
 	// -------

@@ -64,7 +64,7 @@ namespace gpu {
 			const bool isDown = action == 1;
 			if (!this->_ready || !isDown || button != rawrbox::MOUSE_BUTTON_1) return;
 
-			rawrbox::RENDERER->gpuPick(mousePos, [this](uint32_t id) {
+			this->_pick = rawrbox::RENDERER->gpuPick(mousePos, [this](uint32_t id) {
 				bool updateInstance = false;
 
 				if (this->_lastPickedMesh != nullptr) {

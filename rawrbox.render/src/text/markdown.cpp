@@ -4,7 +4,7 @@
 
 namespace rawrbox {
 	void Markdown::pushTextSoFar(const std::string& text, size_t& textStart, size_t endPos) {
-		MarkdownElement elm = _currentStyle;
+		MarkdownElement elm = this->_currentStyle;
 
 		// skip empty entries
 		if (text.empty() && elm.type == MarkdownType::text) {
@@ -15,7 +15,7 @@ namespace rawrbox {
 		// append the element
 		elm.text = {text.begin() + textStart, text.begin() + endPos};
 		elm.size = elm.font->getStringSize(elm.text);
-		_elements.push_back(elm);
+		this->_elements.push_back(elm);
 
 		// advance our position
 		textStart = endPos + 1;
@@ -36,7 +36,7 @@ namespace rawrbox {
 		rawrbox::Vector2f size = {};
 		rawrbox::Vector2f curpos = {};
 
-		for (const auto& elm : _elements) {
+		for (const auto& elm : this->_elements) {
 			if (elm.type == MarkdownType::linebreak) {
 				curpos.y += elm.size.y;
 				curpos.x = 0;
@@ -63,14 +63,14 @@ namespace rawrbox {
 			if (i > 0 && text[i] == '\\') continue;
 
 			if (text[i] == '\n') {
-				if (i > 0) pushTextSoFar(text, textStart, i);
+				if (i > 0) this->pushTextSoFar(text, textStart, i);
 				textStart = i + 1;
 
 				// push linebreak element
 				MarkdownElement elm;
 				elm.type = MarkdownType::linebreak;
-				elm.size.y = fontRegular->getLineHeight();
-				_elements.push_back(elm);
+				elm.size.y = this->fontRegular->getLineHeight();
+				this->_elements.push_back(elm);
 
 				continue;
 			}
@@ -78,7 +78,7 @@ namespace rawrbox {
 			// bold and italic
 			if (text[i] == '*') {
 				// push text so far before changing the mode
-				if (i > 0) pushTextSoFar(text, textStart, i);
+				if (i > 0) this->pushTextSoFar(text, textStart, i);
 
 				// figure out what mode
 				bool bold = false;
@@ -94,10 +94,10 @@ namespace rawrbox {
 				if (endPos == std::string::npos) continue;
 
 				// set current style, do chunk and set style back
-				auto* old = _currentStyle.font;
-				_currentStyle.font = bold ? fontBold : fontItalic;
+				auto* old = this->_currentStyle.font;
+				this->_currentStyle.font = bold ? this->fontBold : this->fontItalic;
 				this->parseChunk({text.begin() + textStart, text.begin() + endPos});
-				_currentStyle.font = old;
+				this->_currentStyle.font = old;
 
 				// move our text locations
 				i = endPos + 1;
@@ -110,18 +110,19 @@ namespace rawrbox {
 			// corrupt
 			if (text[i] == '~') {
 				// push text so far before changing the mode
-				if (i > 0) pushTextSoFar(text, textStart, i);
+				if (i > 0) this->pushTextSoFar(text, textStart, i);
 				textStart = i + 1;
 
 				// figure out what location to go to
-				auto endPos = text.find('~', i + 1);
+				const auto endPos = text.find('~', i + 1);
 				if (endPos == std::string::npos) continue;
 
 				// set current style, do chunk and set style back
-				auto old = _currentStyle.type;
-				_currentStyle.type = MarkdownType::corrupt;
+				const auto old = this->_currentStyle.type;
+
+				this->_currentStyle.type = MarkdownType::corrupt;
 				this->parseChunk({text.begin() + textStart, text.begin() + endPos});
-				_currentStyle.type = old;
+				this->_currentStyle.type = old;
 
 				i = endPos;
 				textStart = i + 1;
@@ -131,10 +132,10 @@ namespace rawrbox {
 			// color [#324234][/]
 			if (text[i] == '[') {
 				// push text so far before changing the mode
-				if (i > 0) pushTextSoFar(text, textStart, i);
+				if (i > 0) this->pushTextSoFar(text, textStart, i);
 
 				// figure out what location to go to
-				auto endPos = text.find(']', i + 1);
+				const auto endPos = text.find(']', i + 1);
 				if (endPos == std::string::npos) continue; // []
 
 				// get the color code string, if it's an end tag set it to default
@@ -144,7 +145,7 @@ namespace rawrbox {
 				if (colorStr.front() != '#' && colorStr != "/") continue;
 
 				if (colorStr == "/") {
-					_currentStyle.color = _currentStyle.defaultColor;
+					this->_currentStyle.color = this->_currentStyle.defaultColor;
 
 					// advance in our string
 					i = endPos;
@@ -166,7 +167,7 @@ namespace rawrbox {
 				if (parts.size() < 3) continue;
 
 				// convert it to a color
-				_currentStyle.color = {
+				this->_currentStyle.color = {
 				    parts[0] / 255.0F,
 				    parts[1] / 255.0F,
 				    parts[2] / 255.0F,
@@ -191,7 +192,7 @@ namespace rawrbox {
 	void Markdown::parse(const std::string& text, rawrbox::Colorf defaultColor) {
 		// init our default style
 		this->_currentStyle.type = MarkdownType::text;
-		this->_currentStyle.font = fontRegular;
+		this->_currentStyle.font = this->fontRegular;
 
 		this->_currentStyle.defaultColor = defaultColor;
 		this->_currentStyle.color = defaultColor;
@@ -204,7 +205,7 @@ namespace rawrbox {
 		auto curpos = pos;
 
 		// go trough every element
-		for (auto& elm : _elements) {
+		for (auto& elm : this->_elements) {
 			// if we're a linebreak then ajust position and continue
 			if (elm.type == MarkdownType::linebreak) {
 				curpos.y += elm.size.y;

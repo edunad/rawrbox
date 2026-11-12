@@ -11,28 +11,28 @@ namespace rawrbox {
 	// ------------
 
 	void SHADOWS::add(rawrbox::ShadowCaster& caster) {
-		_casters.push_back({&caster});
-		_revision++;
+		SHADOWS::_casters.push_back({&caster});
+		SHADOWS::_revision++;
 	}
 
 	void SHADOWS::remove(rawrbox::ShadowCaster& caster) {
-		const auto fnd = std::ranges::find(_casters, &caster, &rawrbox::ShadowCasterEntry::caster);
+		const auto& fnd = std::ranges::find(SHADOWS::_casters, &caster, &rawrbox::ShadowCasterEntry::caster);
 
-		if (fnd == _casters.end()) return;
-		if (fnd->cached) _invalid.push_back(fnd->bounds);
+		if (fnd == SHADOWS::_casters.end()) return;
+		if (fnd->cached) SHADOWS::_invalid.push_back(fnd->bounds);
 
-		*fnd = _casters.back();
-		_casters.pop_back();
-		_revision++;
+		*fnd = SHADOWS::_casters.back();
+		SHADOWS::_casters.pop_back();
+		SHADOWS::_revision++;
 	}
 
 	void SHADOWS::update() {
-		for (auto& entry : _casters) {
+		for (auto& entry : SHADOWS::_casters) {
 			const bool casts = entry.caster->canCastShadows();
 
 			// Update if changed to dynamic ---
 			if (entry.cached && (!casts || entry.caster->getShadowMode() != rawrbox::ShadowMode::STATIC)) {
-				_invalid.push_back(entry.bounds);
+				SHADOWS::_invalid.push_back(entry.bounds);
 				entry.cached = false;
 			}
 			// -----------
@@ -42,11 +42,11 @@ namespace rawrbox {
 
 			if (entry.caster->getShadowMode() == rawrbox::ShadowMode::STATIC) {
 				if (!entry.cached) {
-					_invalid.push_back(bounds);
+					SHADOWS::_invalid.push_back(bounds);
 					entry.cached = true;
 				} else if (entry.bounds != bounds) {
-					_invalid.push_back(entry.bounds);
-					_invalid.push_back(bounds);
+					SHADOWS::_invalid.push_back(entry.bounds);
+					SHADOWS::_invalid.push_back(bounds);
 				}
 			}
 
@@ -54,11 +54,11 @@ namespace rawrbox {
 		}
 	}
 
-	void SHADOWS::addInvalid(const rawrbox::BBOX& bounds) { _invalid.push_back(bounds); }
-	void SHADOWS::clearInvalid() { _invalid.clear(); }
+	void SHADOWS::addInvalid(const rawrbox::BBOX& bounds) { SHADOWS::_invalid.push_back(bounds); }
+	void SHADOWS::clearInvalid() { SHADOWS::_invalid.clear(); }
 
-	const std::vector<rawrbox::BBOX>& SHADOWS::getInvalid() { return _invalid; }
-	const std::vector<rawrbox::ShadowCasterEntry>& SHADOWS::getCasters() { return _casters; }
+	const std::vector<rawrbox::BBOX>& SHADOWS::getInvalid() { return SHADOWS::_invalid; }
+	const std::vector<rawrbox::ShadowCasterEntry>& SHADOWS::getCasters() { return SHADOWS::_casters; }
 
-	uint32_t SHADOWS::revision() { return _revision; }
+	uint32_t SHADOWS::revision() { return SHADOWS::_revision; }
 } // namespace rawrbox

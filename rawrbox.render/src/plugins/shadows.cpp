@@ -16,33 +16,11 @@
 #include <limits>
 
 namespace rawrbox {
-	namespace {
-		const std::array<rawrbox::Vector3f, 6> FACE_FORWARD = {{{1, 0, 0}, {-1, 0, 0}, {0, 1, 0}, {0, -1, 0}, {0, 0, 1}, {0, 0, -1}}};
-		const std::array<rawrbox::Vector3f, 6> FACE_RIGHT = {{{0, 0, -1}, {0, 0, 1}, {1, 0, 0}, {1, 0, 0}, {1, 0, 0}, {-1, 0, 0}}};
-		const std::array<rawrbox::Vector3f, 6> FACE_UP = {{{0, 1, 0}, {0, 1, 0}, {0, 0, -1}, {0, 0, 1}, {0, 1, 0}, {0, 1, 0}}};
+	const std::array<rawrbox::Vector3f, 6> FACE_FORWARD = {{{1, 0, 0}, {-1, 0, 0}, {0, 1, 0}, {0, -1, 0}, {0, 0, 1}, {0, 0, -1}}};
+	const std::array<rawrbox::Vector3f, 6> FACE_RIGHT = {{{0, 0, -1}, {0, 0, 1}, {1, 0, 0}, {1, 0, 0}, {1, 0, 0}, {-1, 0, 0}}};
+	const std::array<rawrbox::Vector3f, 6> FACE_UP = {{{0, 1, 0}, {0, 1, 0}, {0, 0, -1}, {0, 0, 1}, {0, 1, 0}, {0, 1, 0}}};
 
-		constexpr float FACE_CORNER_ANGLE = 0.9553166F;
-
-		Diligent::RefCntAutoPtr<Diligent::IBuffer> createBuffer(const char* name, uint32_t stride, uint32_t count, const Diligent::BIND_FLAGS flags, const void* data = nullptr, const Diligent::BUFFER_MODE mode = Diligent::BUFFER_MODE_STRUCTURED) {
-			Diligent::BufferDesc desc;
-			desc.Name = name;
-			desc.Usage = Diligent::USAGE_DEFAULT;
-			desc.Mode = mode;
-			desc.BindFlags = flags;
-			desc.ElementByteStride = stride;
-			desc.Size = static_cast<uint64_t>(stride) * count;
-
-			Diligent::BufferData bufferData;
-			bufferData.pData = data;
-			bufferData.DataSize = data != nullptr ? desc.Size : 0;
-
-			Diligent::RefCntAutoPtr<Diligent::IBuffer> buffer;
-			rawrbox::RENDERER->device()->CreateBuffer(desc, data != nullptr ? &bufferData : nullptr, &buffer);
-			if (buffer == nullptr) RAWRBOX_CRITICAL("Failed to create buffer '{}'", name);
-
-			return buffer;
-		}
-	} // namespace
+	constexpr float FACE_CORNER_ANGLE = 0.9553166F;
 
 	ShadowPlugin::ShadowPlugin(const rawrbox::ShadowSettings& settings) : _settings(settings) {
 		const uint32_t pageSize = std::max(this->_settings.pageSize, 1U);
@@ -125,7 +103,7 @@ namespace rawrbox {
 		if (settings.pageSize > settings.virtualSize || settings.pageSize > settings.poolSize)
 			RAWRBOX_CRITICAL("Invalid ShadowSettings pageSize! Cannot be bigger than the virtual & pool size");
 
-		if (this->_pages > 256 || this->_mips > MAX_MIPS)
+		if (this->_pages > 256 || this->_mips > this->MAX_MIPS)
 			RAWRBOX_CRITICAL("Invalid ShadowSettings! Too many shadow pages per face ({}), pageSize needs to be bigger", this->_pages);
 
 		if (settings.virtualSize > 16384)
@@ -137,8 +115,8 @@ namespace rawrbox {
 		if (settings.pageCache == 0)
 			RAWRBOX_CRITICAL("Invalid ShadowSettings! pageCache must be at least 1!");
 
-		if (settings.maxLights == 0 || settings.maxLights > MAX_SLOTS)
-			RAWRBOX_CRITICAL("Invalid ShadowSettings! maxLights must be between 1 and {}", MAX_SLOTS);
+		if (settings.maxLights == 0 || settings.maxLights > this->MAX_SLOTS)
+			RAWRBOX_CRITICAL("Invalid ShadowSettings! maxLights must be between 1 and {}", this->MAX_SLOTS);
 
 		if (settings.clipmapExtent <= 0.F)
 			RAWRBOX_CRITICAL("Invalid ShadowSettings! clipmapExtent must be bigger than 0");
@@ -158,10 +136,10 @@ namespace rawrbox {
 		this->_facePending.resize(this->_totalFaces, 0U);
 		this->_receiverClear.resize(this->_totalFaces, 0U);
 		this->_faceRects.resize(this->_totalFaces, rawrbox::Recti::empty());
-		this->_batchRects.resize(this->_totalFaces * 2U, EMPTY_PACKED_RECT);
+		this->_batchRects.resize(this->_totalFaces * 2U, this->EMPTY_PACKED_RECT);
 
-		this->_drawRecords.reserve(MAX_DRAWS);
-		this->_drawArgs.reserve(MAX_DRAWS * DRAW_ARGS);
+		this->_drawRecords.reserve(this->MAX_DRAWS);
+		this->_drawArgs.reserve(this->MAX_DRAWS * this->DRAW_ARGS);
 		// -----------
 
 		this->buildBuffers();
@@ -279,7 +257,7 @@ namespace rawrbox {
 			const auto held = light->getShadowSlot();
 			if (held.has_value() && (held.value() >= this->_slots.size() || this->_slots[held.value()].light.lock() != light)) light->setShadowSlot(std::nullopt);
 
-			if (!requestShadow(*light)) continue;
+			if (!this->requestShadow(*light)) continue;
 
 			if (light->getType() == rawrbox::LightType::DIRECTIONAL) {
 				this->_lightCandidate.push_back({.light = light, .hidden = false, .priority = -1.F});
@@ -291,7 +269,7 @@ namespace rawrbox {
 			const float radius = light->getRadius();
 
 			const bool visible = distance <= radius || offset.dot(cameraForward) >= distance * std::cos(std::min(viewAngle + std::asin(radius / distance), rawrbox::pi<float>));
-			const float keep = light->getShadowSlot().has_value() ? SLOT_KEEP : 1.F;
+			const float keep = light->getShadowSlot().has_value() ? this->SLOT_KEEP : 1.F;
 
 			this->_lightCandidate.push_back({.light = light, .hidden = !visible, .priority = distance / std::max(radius, 1e-4F) * keep});
 		}
@@ -374,8 +352,8 @@ namespace rawrbox {
 		context->CommitShaderResources(this->_markBind, Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
 
 		Diligent::DispatchComputeAttribs dispatch;
-		dispatch.ThreadGroupCountX = rawrbox::MathUtils::divideRound<uint32_t>(size.x, MARK_THREADS);
-		dispatch.ThreadGroupCountY = rawrbox::MathUtils::divideRound<uint32_t>(size.y, MARK_THREADS);
+		dispatch.ThreadGroupCountX = rawrbox::MathUtils::divideRound<uint32_t>(size.x, this->MARK_THREADS);
+		dispatch.ThreadGroupCountY = rawrbox::MathUtils::divideRound<uint32_t>(size.y, this->MARK_THREADS);
 		context->DispatchCompute(dispatch);
 
 #ifdef _DEBUG
@@ -405,11 +383,11 @@ namespace rawrbox {
 			std::memcpy(&failed, data + 2U * sizeof(uint32_t), sizeof(uint32_t));
 
 			const size_t faces = this->_totalFaces * sizeof(uint32_t);
-			std::memcpy(this->_receiverDepth.data(), data + ALLOCATOR_ENTRIES * sizeof(uint32_t), faces);
-			std::memcpy(this->_facePending.data(), data + ALLOCATOR_ENTRIES * sizeof(uint32_t) + faces, faces);
+			std::memcpy(this->_receiverDepth.data(), data + this->ALLOCATOR_ENTRIES * sizeof(uint32_t), faces);
+			std::memcpy(this->_facePending.data(), data + this->ALLOCATOR_ENTRIES * sizeof(uint32_t) + faces, faces);
 
 			std::vector<uint32_t> rects(this->_totalFaces * 4U);
-			std::memcpy(rects.data(), data + ALLOCATOR_ENTRIES * sizeof(uint32_t) + faces * 2U, rects.size() * sizeof(uint32_t));
+			std::memcpy(rects.data(), data + this->ALLOCATOR_ENTRIES * sizeof(uint32_t) + faces * 2U, rects.size() * sizeof(uint32_t));
 			for (size_t i = 0; i < this->_faceRects.size(); i++) {
 				this->_faceRects[i] = {static_cast<int>(rects[i * 4U]), static_cast<int>(rects[i * 4U + 1U]), static_cast<int>(rects[i * 4U + 2U]), static_cast<int>(rects[i * 4U + 3U])};
 			}
@@ -438,7 +416,7 @@ namespace rawrbox {
 			auto& slot = this->_slots[i];
 
 			const auto light = slot.light.lock();
-			if (light == nullptr || !requestShadow(*light)) {
+			if (light == nullptr || !this->requestShadow(*light)) {
 				if (light != nullptr) light->setShadowSlot(std::nullopt);
 
 				slot = {};
@@ -461,7 +439,7 @@ namespace rawrbox {
 
 			slot.direction = direction;
 			slot.cosCone = -1.F;
-			
+
 			if (light->getType() == rawrbox::LightType::SPOT) slot.cosCone = std::cos(rawrbox::MathUtils::toRad(light->getData().y) / 2.F);
 			if (light->getType() == rawrbox::LightType::RECT) slot.cosCone = 0.F;
 
@@ -485,9 +463,9 @@ namespace rawrbox {
 		for (const auto& bounds : rawrbox::SHADOWS::getInvalid()) {
 			for (uint32_t i = 0; i < this->_activeSlots; i++) {
 				const auto& slot = this->_slots[i];
-				if (slot.light.expired() || !sphereIntersects(bounds, slot)) continue;
+				if (slot.light.expired() || !this->sphereIntersects(bounds, slot)) continue;
 
-				const uint32_t faces = getCasterFaces(bounds, slot);
+				const uint32_t faces = this->getCasterFaces(bounds, slot);
 				for (uint32_t face = 0; face < 6; face++) {
 					if (((faces >> face) & 1U) != 0) this->_rects[i * 6U + face].combine(this->getFaceRect(bounds, slot, face));
 				}
@@ -500,7 +478,7 @@ namespace rawrbox {
 			const auto& rect = this->_rects[i];
 			if (rect.isEmpty()) continue;
 
-			this->_invalids.emplace_back((i / 6U) | ((i % 6U) << VIEW_FACE_SHIFT), rect.pack());
+			this->_invalids.emplace_back((i / 6U) | ((i % 6U) << this->VIEW_FACE_SHIFT), rect.pack());
 		}
 	}
 
@@ -528,7 +506,7 @@ namespace rawrbox {
 			slot.up = forward.cross(slot.right);
 
 			const float depth = pos.dot(forward);
-			if (std::abs(depth - slot.depthOrigin) > CLIPMAP_REBASE) {
+			if (std::abs(depth - slot.depthOrigin) > this->CLIPMAP_REBASE) {
 				slot.depthOrigin = depth;
 				for (uint32_t level = 0; level < 6; level++) {
 					this->_rects[i * 6U + level] = this->getFullRect();
@@ -538,7 +516,7 @@ namespace rawrbox {
 
 			clipmap.right = {slot.right.x, slot.right.y, slot.right.z, this->_settings.clipmapExtent};
 			clipmap.up = {slot.up.x, slot.up.y, slot.up.z, 1.F};
-			clipmap.forward = {forward.x, forward.y, forward.z, CLIPMAP_DEPTH - slot.depthOrigin};
+			clipmap.forward = {forward.x, forward.y, forward.z, this->CLIPMAP_DEPTH - slot.depthOrigin};
 
 			// Pack pages ----
 			for (uint32_t level = 0; level < 6; level++) {
@@ -552,7 +530,7 @@ namespace rawrbox {
 				if (current != origin) {
 					const rawrbox::Vector2i pages = {(origin.x - current.x) / pageSize, (origin.y - current.y) / pageSize};
 					const int last = static_cast<int>(this->_pages) - 1;
-					const uint32_t id = i | (level << VIEW_FACE_SHIFT);
+					const uint32_t id = i | (level << this->VIEW_FACE_SHIFT);
 
 					if (std::abs(pages.x) > last || std::abs(pages.y) > last) {
 						this->_invalids.emplace_back(id, this->getFullRect().pack());
@@ -601,8 +579,8 @@ namespace rawrbox {
 	}
 
 	void ShadowPlugin::recordCasters() {
-		const bool cameraCut = rawrbox::FRAME <= rawrbox::MAIN_CAMERA->getTeleportRevision() + MOTION_FRAMES;
-		const bool cameraMoved = rawrbox::FRAME <= rawrbox::MAIN_CAMERA->getMoveRevision() + MOTION_FRAMES;
+		const bool cameraCut = rawrbox::FRAME <= rawrbox::MAIN_CAMERA->getTeleportRevision() + this->MOTION_FRAMES;
+		const bool cameraMoved = rawrbox::FRAME <= rawrbox::MAIN_CAMERA->getMoveRevision() + this->MOTION_FRAMES;
 
 		for (uint32_t attempt = 0; attempt < 2; attempt++) {
 			this->_batches.clear();
@@ -613,7 +591,7 @@ namespace rawrbox {
 			this->_drawArgs.clear();
 			this->_drawOverflow = false;
 
-			std::ranges::fill(this->_batchRects, EMPTY_PACKED_RECT);
+			std::ranges::fill(this->_batchRects, this->EMPTY_PACKED_RECT);
 
 			this->_revision = rawrbox::SHADOWS::revision();
 
@@ -636,7 +614,7 @@ namespace rawrbox {
 				// CASTER IN RANGE? ---
 				this->_slotCasters.clear();
 				for (const auto& entry : rawrbox::SHADOWS::getCasters()) {
-					if (!entry.caster->canCastShadows() || !sphereIntersects(entry.bounds, slot)) continue;
+					if (!entry.caster->canCastShadows() || !this->sphereIntersects(entry.bounds, slot)) continue;
 
 					const uint32_t faces = this->getCasterFaces(entry.bounds, slot);
 					if (faces == 0) continue;
@@ -659,7 +637,7 @@ namespace rawrbox {
 					if (cameraCut || !this->_rects[index].isEmpty()) {
 						rect = this->getFullRect();
 					} else if ((cameraMoved || this->_facePending[index] != 0) && !requested.isEmpty()) {
-						rect = requested.expand(MOTION_MARGIN).clamp(this->getFullRect());
+						rect = requested.expand(this->MOTION_MARGIN).clamp(this->getFullRect());
 					}
 
 					if (!rect.isEmpty()) this->recordBatch(i, face, rawrbox::ShadowMode::STATIC, rect);
@@ -680,7 +658,7 @@ namespace rawrbox {
 
 			for (uint32_t pass = 0; pass < 2; pass++) {
 				this->bindDrawView(cull.entry, pass);
-				this->dispatch(this->_cullProgram, rawrbox::MathUtils::divideRound<uint32_t>(cull.instances.total, THREADS));
+				this->dispatch(this->_cullProgram, rawrbox::MathUtils::divideRound<uint32_t>(cull.instances.total, this->THREADS));
 			}
 		}
 		// -----------
@@ -701,13 +679,13 @@ namespace rawrbox {
 			if (mode == rawrbox::ShadowMode::DYNAMIC && this->isBehindReceivers(caster.bounds, slot, face)) continue;
 
 			// INSTANCED CASTERS (directional lights keep every instance) ---
-			this->_drawCounter = NO_COUNTER;
+			this->_drawCounter = this->NO_COUNTER;
 
 			if (!this->_slots[slot].directional) {
 				auto cull = std::ranges::find(this->_cullCasters, caster.caster, &rawrbox::ShadowCullCaster::caster);
 				rawrbox::ShadowInstances instances = {};
 
-				if (cull == this->_cullCasters.end() && this->_cullData.size() + CULL_PARAMS + this->_activeSlots <= MAX_CULL_ENTRIES && caster.caster->getShadowInstances(instances)) {
+				if (cull == this->_cullCasters.end() && this->_cullData.size() + this->CULL_PARAMS + this->_activeSlots <= this->MAX_CULL_ENTRIES && caster.caster->getShadowInstances(instances)) {
 					const auto& mtx = instances.matrix;
 					const auto center = (instances.bounds.min + instances.bounds.max) * 0.5F;
 
@@ -723,7 +701,7 @@ namespace rawrbox {
 					this->_cullData.resize(this->_cullData.size() + this->_activeSlots);
 				}
 
-				if (cull != this->_cullCasters.end()) this->_drawCounter = cull->entry + CULL_PARAMS + slot;
+				if (cull != this->_cullCasters.end()) this->_drawCounter = cull->entry + this->CULL_PARAMS + slot;
 			}
 			// -----------
 
@@ -731,10 +709,10 @@ namespace rawrbox {
 			caster.caster->drawShadow(draw);
 
 			if (this->_drawRecords.size() == before) continue;
-			this->_batchCasters.push_back({.caster = caster.caster, .draws = static_cast<uint32_t>(this->_drawRecords.size() - before), .culled = this->_drawCounter != NO_COUNTER});
+			this->_batchCasters.push_back({.caster = caster.caster, .draws = static_cast<uint32_t>(this->_drawRecords.size() - before), .culled = this->_drawCounter != this->NO_COUNTER});
 		}
 
-		if (mode == rawrbox::ShadowMode::STATIC && this->_drawOverflow) this->_batchRects[batch.batch] = EMPTY_PACKED_RECT;
+		if (mode == rawrbox::ShadowMode::STATIC && this->_drawOverflow) this->_batchRects[batch.batch] = this->EMPTY_PACKED_RECT;
 		if (this->_drawRecords.size() == firstDraw) return;
 
 		auto& recorded = this->_batches.emplace_back(batch);
@@ -748,7 +726,8 @@ namespace rawrbox {
 		draw.bind = bind;
 		draw.isVisible = [this, batch](const rawrbox::BBOX& bounds) {
 			const auto& data = this->_slots[batch.slot];
-			if (!sphereIntersects(bounds, data) || ((getCasterFaces(bounds, data) >> batch.face) & 1U) == 0) return false;
+
+			if (!this->sphereIntersects(bounds, data) || ((this->getCasterFaces(bounds, data) >> batch.face) & 1U) == 0) return false;
 			if (!this->getFaceRect(bounds, data, batch.face).overlaps(batch.rect)) return false;
 
 			return batch.mode != rawrbox::ShadowMode::DYNAMIC || !this->isBehindReceivers(bounds, batch.slot, batch.face);
@@ -762,7 +741,7 @@ namespace rawrbox {
 
 				Diligent::DrawIndexedIndirectAttribs attribs;
 				attribs.pAttribsBuffer = this->_drawArgsBuffer;
-				attribs.DrawArgsOffset = static_cast<uint64_t>(this->_drawCursor++) * DRAW_ARGS * sizeof(uint32_t);
+				attribs.DrawArgsOffset = static_cast<uint64_t>(this->_drawCursor++) * this->DRAW_ARGS * sizeof(uint32_t);
 				attribs.IndexType = Diligent::VT_UINT32;
 				attribs.Flags = Diligent::DRAW_FLAG_VERIFY_ALL;
 				attribs.AttribsBufferStateTransitionMode = Diligent::RESOURCE_STATE_TRANSITION_MODE_VERIFY;
@@ -772,9 +751,9 @@ namespace rawrbox {
 		} else {
 			draw.setView = [](uint32_t /*view*/) {};
 			draw.submit = [this, batch](const rawrbox::ShadowSubmit& submit) {
-				if (this->_drawRecords.size() >= MAX_DRAWS) {
+				if (this->_drawRecords.size() >= this->MAX_DRAWS) {
 #ifdef _DEBUG
-					this->_logger->warn("Too many shadow caster draws! Only drawing {}", MAX_DRAWS);
+					this->_logger->warn("Too many shadow caster draws! Only drawing {}", this->MAX_DRAWS);
 #endif
 
 					this->_drawOverflow = true;
@@ -783,7 +762,7 @@ namespace rawrbox {
 
 				const auto rect = this->getFaceRect(submit.bounds, this->_slots[batch.slot], batch.face);
 
-				this->_drawRecords.push_back({batch.batch, submit.view, this->_drawCounter == NO_COUNTER ? submit.instances : COUNTED | this->_drawCounter, rect.pack()});
+				this->_drawRecords.push_back({batch.batch, submit.view, this->_drawCounter == this->NO_COUNTER ? submit.instances : this->COUNTED | this->_drawCounter, rect.pack()});
 				this->_drawArgs.insert(this->_drawArgs.end(), {submit.indices, 0U, submit.firstIndex, submit.baseVertex, 0U});
 			};
 		}
@@ -793,15 +772,15 @@ namespace rawrbox {
 
 	void ShadowPlugin::allocatePages() {
 		auto* context = rawrbox::RENDERER->context();
-		const uint32_t entries = rawrbox::MathUtils::divideRound<uint32_t>(this->_activeSlots * this->total(), THREADS);
+		const uint32_t entries = rawrbox::MathUtils::divideRound<uint32_t>(this->_activeSlots * this->total(), this->THREADS);
 
 		if (!this->_invalids.empty()) {
 			context->UpdateBuffer(this->_invalidationBuffer, 0, this->_invalids.size() * sizeof(rawrbox::Vector2u), this->_invalids.data(), Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
 			this->dispatch(this->_invalidateProgram, static_cast<uint32_t>(this->_invalids.size()));
 		}
 
-		this->dispatch(this->_freeProgram, rawrbox::MathUtils::divideRound<uint32_t>(std::max({this->_totalPages, this->_activeSlots * this->total(), this->_activeSlots * 12U * this->_mips}), THREADS));
-		this->dispatch(this->_evictProgram, rawrbox::MathUtils::divideRound<uint32_t>(this->_totalPages, THREADS));
+		this->dispatch(this->_freeProgram, rawrbox::MathUtils::divideRound<uint32_t>(std::max({this->_totalPages, this->_activeSlots * this->total(), this->_activeSlots * 12U * this->_mips}), this->THREADS));
+		this->dispatch(this->_evictProgram, rawrbox::MathUtils::divideRound<uint32_t>(this->_totalPages, this->THREADS));
 		if (this->_activeSlots > 0) context->UpdateBuffer(this->_batchRectBuffer, 0, this->_activeSlots * 12U * sizeof(uint32_t), this->_batchRects.data(), Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
 		this->dispatch(this->_allocateProgram, entries);
 
@@ -811,7 +790,7 @@ namespace rawrbox {
 		if (!this->_drawRecords.empty()) {
 			context->UpdateBuffer(this->_drawRecordBuffer, 0, this->_drawRecords.size() * sizeof(rawrbox::Vector4u), this->_drawRecords.data(), Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
 			context->UpdateBuffer(this->_drawArgsBuffer, 0, this->_drawArgs.size() * sizeof(uint32_t), this->_drawArgs.data(), Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
-			this->dispatch(this->_patchProgram, rawrbox::MathUtils::divideRound<uint32_t>(static_cast<uint32_t>(this->_drawRecords.size()), THREADS));
+			this->dispatch(this->_patchProgram, rawrbox::MathUtils::divideRound<uint32_t>(static_cast<uint32_t>(this->_drawRecords.size()), this->THREADS));
 		}
 		// ----------
 
@@ -819,7 +798,7 @@ namespace rawrbox {
 		constexpr std::array<uint32_t, 4> args = {0U, 1U, 1U, 0U};
 		context->UpdateBuffer(this->_clearArgs, 0, sizeof(args), args.data(), Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
 
-		this->dispatch(this->_prepareProgram, rawrbox::MathUtils::divideRound<uint32_t>(this->_totalPages, THREADS));
+		this->dispatch(this->_prepareProgram, rawrbox::MathUtils::divideRound<uint32_t>(this->_totalPages, this->THREADS));
 
 		context->SetPipelineState(this->_clearProgram);
 		context->CommitShaderResources(this->_signatureBind, Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
@@ -884,12 +863,12 @@ namespace rawrbox {
 
 	void ShadowPlugin::resolvePages() {
 		auto* context = rawrbox::RENDERER->context();
-		if (this->_activeSlots > 0) this->dispatch(this->_revision != rawrbox::SHADOWS::revision() ? this->_discardProgram : this->_resolveProgram, rawrbox::MathUtils::divideRound<uint32_t>(this->_activeSlots * this->total(), THREADS));
+		if (this->_activeSlots > 0) this->dispatch(this->_revision != rawrbox::SHADOWS::revision() ? this->_discardProgram : this->_resolveProgram, rawrbox::MathUtils::divideRound<uint32_t>(this->_activeSlots * this->total(), this->THREADS));
 
 		// Read compute data ---
-		if (this->_readbackPending < READBACK_FRAMES) {
+		if (this->_readbackPending < this->READBACK_FRAMES) {
 			const uint64_t faces = this->_totalFaces * sizeof(uint32_t);
-			constexpr uint64_t allocator = ALLOCATOR_ENTRIES * sizeof(uint32_t);
+			constexpr uint64_t allocator = this->ALLOCATOR_ENTRIES * sizeof(uint32_t);
 
 			auto staging = this->_readback->GetRecycled();
 			if (staging.buffer == nullptr) {
@@ -1000,7 +979,7 @@ namespace rawrbox {
 		    std::clamp(data.position.y, bounds.min.y, bounds.max.y),
 		    std::clamp(data.position.z, bounds.min.z, bounds.max.z)};
 
-		return (closest - data.position).length() / data.radius > receiver * RECEIVER_MARGIN;
+		return (closest - data.position).length() / data.radius > receiver * this->RECEIVER_MARGIN;
 	}
 
 	void ShadowPlugin::resetFeedback(uint32_t slot) {
@@ -1026,6 +1005,26 @@ namespace rawrbox {
 	// ---------
 
 	// UTILS ---
+	Diligent::RefCntAutoPtr<Diligent::IBuffer> ShadowPlugin::createBuffer(const char* name, uint32_t stride, uint32_t count, const Diligent::BIND_FLAGS flags, const void* data, const Diligent::BUFFER_MODE mode) {
+		Diligent::BufferDesc desc;
+		desc.Name = name;
+		desc.Usage = Diligent::USAGE_DEFAULT;
+		desc.Mode = mode;
+		desc.BindFlags = flags;
+		desc.ElementByteStride = stride;
+		desc.Size = static_cast<uint64_t>(stride) * count;
+
+		Diligent::BufferData bufferData;
+		bufferData.pData = data;
+		bufferData.DataSize = data != nullptr ? desc.Size : 0;
+
+		Diligent::RefCntAutoPtr<Diligent::IBuffer> buffer;
+		rawrbox::RENDERER->device()->CreateBuffer(desc, data != nullptr ? &bufferData : nullptr, &buffer);
+		if (buffer == nullptr) RAWRBOX_CRITICAL("Failed to create buffer '{}'", name);
+
+		return buffer;
+	}
+
 	void ShadowPlugin::createSignature(const char* name, uint8_t index, const std::vector<Diligent::PipelineResourceDesc>& resources, Diligent::RefCntAutoPtr<Diligent::IPipelineResourceSignature>& signature) {
 		Diligent::PipelineResourceSignatureDesc desc;
 		desc.Name = name;
@@ -1246,7 +1245,7 @@ namespace rawrbox {
 
 		// Page table, the coarse mip of every face is always backed by a reserved page ---
 		const std::vector<uint32_t> pageTable(this->total() * this->_settings.maxLights, 0U);
-		const std::vector<uint32_t> owners(this->_totalPages, PAGE_EMPTY);
+		const std::vector<uint32_t> owners(this->_totalPages, this->PAGE_EMPTY);
 
 		std::vector<uint32_t> freeStack(this->_totalPages, 0U);
 		for (uint32_t i = 0; i < this->_totalPages; i++) {
@@ -1256,7 +1255,7 @@ namespace rawrbox {
 		const std::vector<uint32_t> requests(this->total() * this->_settings.maxLights, 0U);
 		const std::vector<uint32_t> touched(this->_totalPages, 0U);
 		const std::vector<uint32_t> clear(this->_totalPages, 3U);
-		std::vector<uint32_t> allocator(ALLOCATOR_ENTRIES + this->_mips * 4U, 0U);
+		std::vector<uint32_t> allocator(this->ALLOCATOR_ENTRIES + this->_mips * 4U, 0U);
 		allocator[0] = this->_totalPages;
 		const std::array<uint32_t, 4> args = {0U, 1U, 1U, 0U};
 		const std::vector<uint32_t> ages(this->_settings.pageCache + 1U, 0U);
@@ -1264,38 +1263,38 @@ namespace rawrbox {
 
 		const auto rw = Diligent::BIND_UNORDERED_ACCESS | Diligent::BIND_SHADER_RESOURCE;
 
-		this->_pageTable = createBuffer("RawrBox::Shadows::PageTable", sizeof(uint32_t), this->total() * this->_settings.maxLights, rw, pageTable.data());
-		this->_requests = createBuffer("RawrBox::Shadows::Requests", sizeof(uint32_t), this->total() * this->_settings.maxLights, rw, requests.data());
+		this->_pageTable = this->createBuffer("RawrBox::Shadows::PageTable", sizeof(uint32_t), this->total() * this->_settings.maxLights, rw, pageTable.data());
+		this->_requests = this->createBuffer("RawrBox::Shadows::Requests", sizeof(uint32_t), this->total() * this->_settings.maxLights, rw, requests.data());
 
-		this->_physOwner = createBuffer("RawrBox::Shadows::PhysOwner", sizeof(uint32_t), this->_totalPages, rw, owners.data());
-		this->_physClear = createBuffer("RawrBox::Shadows::PhysClear", sizeof(uint32_t), this->_totalPages, rw, clear.data());
-		this->_touched = createBuffer("RawrBox::Shadows::Touched", sizeof(uint32_t), this->_totalPages, rw, touched.data());
+		this->_physOwner = this->createBuffer("RawrBox::Shadows::PhysOwner", sizeof(uint32_t), this->_totalPages, rw, owners.data());
+		this->_physClear = this->createBuffer("RawrBox::Shadows::PhysClear", sizeof(uint32_t), this->_totalPages, rw, clear.data());
+		this->_touched = this->createBuffer("RawrBox::Shadows::Touched", sizeof(uint32_t), this->_totalPages, rw, touched.data());
 
-		this->_freeStack = createBuffer("RawrBox::Shadows::FreeStack", sizeof(uint32_t), this->_totalPages, rw, freeStack.data());
-		this->_allocator = createBuffer("RawrBox::Shadows::Allocator", sizeof(uint32_t), static_cast<uint32_t>(allocator.size()), rw, allocator.data());
-		this->_ages = createBuffer("RawrBox::Shadows::Ages", sizeof(uint32_t), static_cast<uint32_t>(ages.size()), rw, ages.data());
+		this->_freeStack = this->createBuffer("RawrBox::Shadows::FreeStack", sizeof(uint32_t), this->_totalPages, rw, freeStack.data());
+		this->_allocator = this->createBuffer("RawrBox::Shadows::Allocator", sizeof(uint32_t), static_cast<uint32_t>(allocator.size()), rw, allocator.data());
+		this->_ages = this->createBuffer("RawrBox::Shadows::Ages", sizeof(uint32_t), static_cast<uint32_t>(ages.size()), rw, ages.data());
 
-		this->_clearList = createBuffer("RawrBox::Shadows::ClearList", sizeof(uint32_t), this->_totalPages, rw);
-		this->_clearArgs = createBuffer("RawrBox::Shadows::ClearArgs", sizeof(uint32_t), static_cast<uint32_t>(args.size()), Diligent::BIND_UNORDERED_ACCESS | Diligent::BIND_INDIRECT_DRAW_ARGS, args.data(), Diligent::BUFFER_MODE_RAW);
+		this->_clearList = this->createBuffer("RawrBox::Shadows::ClearList", sizeof(uint32_t), this->_totalPages, rw);
+		this->_clearArgs = this->createBuffer("RawrBox::Shadows::ClearArgs", sizeof(uint32_t), static_cast<uint32_t>(args.size()), Diligent::BIND_UNORDERED_ACCESS | Diligent::BIND_INDIRECT_DRAW_ARGS, args.data(), Diligent::BUFFER_MODE_RAW);
 
-		this->_invalidationBuffer = createBuffer("RawrBox::Shadows::Invalidations", sizeof(rawrbox::Vector2u), this->_totalFaces * 3U, Diligent::BIND_SHADER_RESOURCE);
-		this->_receiverBuffer = createBuffer("RawrBox::Shadows::ReceiverDepth", sizeof(uint32_t), this->_totalFaces, rw, this->_receiverClear.data());
-		this->_feedbackBuffer = createBuffer("RawrBox::Shadows::Feedback", sizeof(uint32_t), this->_totalFaces, rw, this->_facePending.data());
+		this->_invalidationBuffer = this->createBuffer("RawrBox::Shadows::Invalidations", sizeof(rawrbox::Vector2u), this->_totalFaces * 3U, Diligent::BIND_SHADER_RESOURCE);
+		this->_receiverBuffer = this->createBuffer("RawrBox::Shadows::ReceiverDepth", sizeof(uint32_t), this->_totalFaces, rw, this->_receiverClear.data());
+		this->_feedbackBuffer = this->createBuffer("RawrBox::Shadows::Feedback", sizeof(uint32_t), this->_totalFaces, rw, this->_facePending.data());
 
 		const std::vector<uint32_t> batches(this->_totalFaces * 4U, 0U);
-		this->_viewBuffer = createBuffer("RawrBox::Shadows::Views", sizeof(uint32_t), this->_totalFaces * this->_mips * 2U, rw);
-		this->_rectBuffer = createBuffer("RawrBox::Shadows::Rects", sizeof(uint32_t), this->_totalFaces * this->_mips * 8U, rw);
-		this->_batchBuffer = createBuffer("RawrBox::Shadows::Batches", sizeof(uint32_t), this->_totalFaces * 4U, Diligent::BIND_UNORDERED_ACCESS, batches.data());
+		this->_viewBuffer = this->createBuffer("RawrBox::Shadows::Views", sizeof(uint32_t), this->_totalFaces * this->_mips * 2U, rw);
+		this->_rectBuffer = this->createBuffer("RawrBox::Shadows::Rects", sizeof(uint32_t), this->_totalFaces * this->_mips * 8U, rw);
+		this->_batchBuffer = this->createBuffer("RawrBox::Shadows::Batches", sizeof(uint32_t), this->_totalFaces * 4U, Diligent::BIND_UNORDERED_ACCESS, batches.data());
 		const std::vector<uint32_t> faceRects(this->_totalFaces * 4U, 0U);
-		this->_batchRectBuffer = createBuffer("RawrBox::Shadows::BatchRects", sizeof(uint32_t), this->_totalFaces * 2U, Diligent::BIND_SHADER_RESOURCE, this->_batchRects.data());
-		this->_faceRectBuffer = createBuffer("RawrBox::Shadows::FaceRects", sizeof(uint32_t), this->_totalFaces * 4U, rw, faceRects.data());
-		this->_drawRecordBuffer = createBuffer("RawrBox::Shadows::DrawRecords", sizeof(rawrbox::Vector4u), MAX_DRAWS, Diligent::BIND_SHADER_RESOURCE);
-		this->_drawArgsBuffer = createBuffer("RawrBox::Shadows::DrawArgs", sizeof(uint32_t), MAX_DRAWS * DRAW_ARGS, Diligent::BIND_UNORDERED_ACCESS | Diligent::BIND_INDIRECT_DRAW_ARGS, nullptr, Diligent::BUFFER_MODE_RAW);
-		this->_slotBuffer = createBuffer("RawrBox::Shadows::Slots", sizeof(rawrbox::ShadowSlotData), this->_settings.maxLights, Diligent::BIND_SHADER_RESOURCE, this->_slotData.data());
+		this->_batchRectBuffer = this->createBuffer("RawrBox::Shadows::BatchRects", sizeof(uint32_t), this->_totalFaces * 2U, Diligent::BIND_SHADER_RESOURCE, this->_batchRects.data());
+		this->_faceRectBuffer = this->createBuffer("RawrBox::Shadows::FaceRects", sizeof(uint32_t), this->_totalFaces * 4U, rw, faceRects.data());
+		this->_drawRecordBuffer = this->createBuffer("RawrBox::Shadows::DrawRecords", sizeof(rawrbox::Vector4u), this->MAX_DRAWS, Diligent::BIND_SHADER_RESOURCE);
+		this->_drawArgsBuffer = this->createBuffer("RawrBox::Shadows::DrawArgs", sizeof(uint32_t), this->MAX_DRAWS * this->DRAW_ARGS, Diligent::BIND_UNORDERED_ACCESS | Diligent::BIND_INDIRECT_DRAW_ARGS, nullptr, Diligent::BUFFER_MODE_RAW);
+		this->_slotBuffer = this->createBuffer("RawrBox::Shadows::Slots", sizeof(rawrbox::ShadowSlotData), this->_settings.maxLights, Diligent::BIND_SHADER_RESOURCE, this->_slotData.data());
 
 		// Instanced casters (params + one counter per active slot) ---
-		this->_cullData.reserve(MAX_CULL_ENTRIES);
-		this->_cullBuffer = createBuffer("RawrBox::Shadows::Cull", sizeof(rawrbox::Vector4u), MAX_CULL_ENTRIES, rw);
+		this->_cullData.reserve(this->MAX_CULL_ENTRIES);
+		this->_cullBuffer = this->createBuffer("RawrBox::Shadows::Cull", sizeof(rawrbox::Vector4u), this->MAX_CULL_ENTRIES, rw);
 		// -------------
 
 		// BARRIER -----
@@ -1389,7 +1388,7 @@ namespace rawrbox {
 		const auto stat = Diligent::SHADER_RESOURCE_VARIABLE_TYPE_STATIC;
 
 		// Bookkeeping ---
-		createSignature("RawrBox::SIGNATURE::Shadows", 0,
+		this->createSignature("RawrBox::SIGNATURE::Shadows", 0,
 		    {
 			{Diligent::SHADER_TYPE_COMPUTE, "ShadowConstants", 1, Diligent::SHADER_RESOURCE_TYPE_CONSTANT_BUFFER, stat, buffer},
 
@@ -1427,7 +1426,7 @@ namespace rawrbox {
 		// ---------------
 
 		// Marking ---
-		createSignature("RawrBox::SIGNATURE::Shadows::Mark", 0,
+		this->createSignature("RawrBox::SIGNATURE::Shadows::Mark", 0,
 		    {
 			{Diligent::SHADER_TYPE_COMPUTE, "Camera", 1, Diligent::SHADER_RESOURCE_TYPE_CONSTANT_BUFFER, stat, buffer},
 			{Diligent::SHADER_TYPE_COMPUTE, "SCamera", 1, Diligent::SHADER_RESOURCE_TYPE_CONSTANT_BUFFER, stat, buffer},
@@ -1447,7 +1446,7 @@ namespace rawrbox {
 		// ---------------
 
 		// Casters, used alongside the bindless signature ---
-		createSignature("RawrBox::SIGNATURE::Shadows::Caster", 1,
+		this->createSignature("RawrBox::SIGNATURE::Shadows::Caster", 1,
 		    {
 			{Diligent::SHADER_TYPE_VERTEX, "ShadowViews", 1, Diligent::SHADER_RESOURCE_TYPE_BUFFER_SRV, stat, buffer},
 			{Diligent::SHADER_TYPE_VERTEX, "ShadowDraw", 4, Diligent::SHADER_RESOURCE_TYPE_CONSTANT_BUFFER, Diligent::SHADER_RESOURCE_VARIABLE_TYPE_DYNAMIC, Diligent::PIPELINE_RESOURCE_FLAG_INLINE_CONSTANTS},

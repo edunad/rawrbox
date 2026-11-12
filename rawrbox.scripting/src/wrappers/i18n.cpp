@@ -25,6 +25,22 @@ namespace rawrbox {
 		return rawrbox::I18N::get(id, key, {args.begin() + 2, args.end()});
 	}
 
+	std::optional<std::string> I18NWrapper::find(const luabridge::LuaRef& ref) {
+		auto* state = ref.state();
+		auto args = rawrbox::LuaUtils::argsToString(state, true);
+		if (args.size() < 2) throw std::runtime_error("Missing params");
+
+		std::string id = args[0];
+		if (id.empty()) {
+			const auto* mod = rawrbox::SCRIPTING::getMod(state);
+			if (mod == nullptr) throw std::runtime_error("Missing i18n id");
+
+			id = mod->getID();
+		}
+
+		return rawrbox::I18N::find(id, args[1], {args.begin() + 2, args.end()});
+	}
+
 	std::string I18NWrapper::resolve(const std::string& text, lua_State* L) {
 		const auto* mod = rawrbox::SCRIPTING::getMod(L);
 		return rawrbox::I18N::resolve(text, mod == nullptr ? std::string_view() : std::string_view(mod->getID()));
@@ -38,6 +54,7 @@ namespace rawrbox {
 		    .addFunction("setLanguage", &rawrbox::I18NWrapper::setLanguage)
 		    // --------
 		    .addFunction("get", &rawrbox::I18NWrapper::get)
+		    .addFunction("find", &rawrbox::I18NWrapper::find)
 		    .addFunction("resolve", &rawrbox::I18NWrapper::resolve)
 		    .endNamespace();
 	}

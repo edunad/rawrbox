@@ -26,6 +26,18 @@ namespace rawrbox {
 		return str;
 	}
 
+	std::string StrUtils::replaceAll(std::string str, const std::string& find, const std::string& replace) {
+		if (str.empty() || find.empty()) return str;
+
+		size_t pos = 0;
+		while ((pos = str.find(find, pos)) != std::string::npos) {
+			str.replace(pos, find.size(), replace);
+			pos += replace.size();
+		}
+
+		return str;
+	}
+
 	std::string StrUtils::truncate(std::string str, size_t length) {
 		if (length < str.size()) return str.substr(0, length) + "...";
 		return str;

@@ -16,8 +16,8 @@ namespace rawrbox {
 	CameraBase::~CameraBase() { this->_renderTarget.reset(); }
 
 	void CameraBase::shutdown() {
-		RAWRBOX_DESTROY(uniforms);
-		RAWRBOX_DESTROY(staticUniforms);
+		RAWRBOX_DESTROY(CameraBase::uniforms);
+		RAWRBOX_DESTROY(CameraBase::staticUniforms);
 	}
 
 	void CameraBase::initialize() {
@@ -37,8 +37,8 @@ namespace rawrbox {
 		if (device == nullptr) RAWRBOX_CRITICAL("Device not initialized!");
 
 		// Shared across all the cameras
-		if (staticUniforms != nullptr || uniforms != nullptr) RAWRBOX_CRITICAL("Camera buffers already initialized!");
-		_uploadedStatic = this->getStaticData();
+		if (this->staticUniforms != nullptr || this->uniforms != nullptr) RAWRBOX_CRITICAL("Camera buffers already initialized!");
+		this->_uploadedStatic = this->getStaticData();
 
 		// STATIC BUFFER ---
 		Diligent::BufferDesc StaticDesc;
@@ -49,9 +49,9 @@ namespace rawrbox {
 
 		Diligent::BufferData sData;
 		sData.DataSize = StaticDesc.Size;
-		sData.pData = &_uploadedStatic;
+		sData.pData = &this->_uploadedStatic;
 
-		device->CreateBuffer(StaticDesc, &sData, &staticUniforms);
+		device->CreateBuffer(StaticDesc, &sData, &this->staticUniforms);
 		// ------------
 
 		// DYNAMIC BUFFER ---
@@ -61,12 +61,12 @@ namespace rawrbox {
 		CBDesc.BindFlags = Diligent::BIND_UNIFORM_BUFFER;
 		CBDesc.Size = sizeof(rawrbox::CameraUniforms);
 
-		device->CreateBuffer(CBDesc, nullptr, &uniforms);
+		device->CreateBuffer(CBDesc, nullptr, &this->uniforms);
 		// ------------
 
 		// BARRIER -----
-		rawrbox::BarrierUtils::barrier({{staticUniforms, Diligent::RESOURCE_STATE_UNKNOWN, Diligent::RESOURCE_STATE_CONSTANT_BUFFER, Diligent::STATE_TRANSITION_FLAG_UPDATE_STATE},
-		    {uniforms, Diligent::RESOURCE_STATE_UNKNOWN, Diligent::RESOURCE_STATE_CONSTANT_BUFFER, Diligent::STATE_TRANSITION_FLAG_UPDATE_STATE}});
+		rawrbox::BarrierUtils::barrier({{this->staticUniforms, Diligent::RESOURCE_STATE_UNKNOWN, Diligent::RESOURCE_STATE_CONSTANT_BUFFER, Diligent::STATE_TRANSITION_FLAG_UPDATE_STATE},
+		    {this->uniforms, Diligent::RESOURCE_STATE_UNKNOWN, Diligent::RESOURCE_STATE_CONSTANT_BUFFER, Diligent::STATE_TRANSITION_FLAG_UPDATE_STATE}});
 		// -----------
 
 		this->_logger->info("Initializing camera buffers");
@@ -75,15 +75,15 @@ namespace rawrbox {
 	void CameraBase::updateMtx() { RAWRBOX_CRITICAL("Not implemented"); };
 
 	void CameraBase::updateStatic() {
-		if (staticUniforms == nullptr) return;
+		if (this->staticUniforms == nullptr) return;
 
 		const auto data = this->getStaticData();
-		if (data == _uploadedStatic) return; // Shared across all the cameras
-		_uploadedStatic = data;
+		if (data == this->_uploadedStatic) return; // Shared across all the cameras
+		this->_uploadedStatic = data;
 
-		rawrbox::BarrierUtils::barrier({{staticUniforms, Diligent::RESOURCE_STATE_CONSTANT_BUFFER, Diligent::RESOURCE_STATE_COPY_DEST, Diligent::STATE_TRANSITION_FLAG_UPDATE_STATE}});
-		rawrbox::RENDERER->context()->UpdateBuffer(staticUniforms, 0, sizeof(rawrbox::CameraStaticUniforms), &data, Diligent::RESOURCE_STATE_TRANSITION_MODE_VERIFY);
-		rawrbox::BarrierUtils::barrier({{staticUniforms, Diligent::RESOURCE_STATE_COPY_DEST, Diligent::RESOURCE_STATE_CONSTANT_BUFFER, Diligent::STATE_TRANSITION_FLAG_UPDATE_STATE}});
+		rawrbox::BarrierUtils::barrier({{this->staticUniforms, Diligent::RESOURCE_STATE_CONSTANT_BUFFER, Diligent::RESOURCE_STATE_COPY_DEST, Diligent::STATE_TRANSITION_FLAG_UPDATE_STATE}});
+		rawrbox::RENDERER->context()->UpdateBuffer(this->staticUniforms, 0, sizeof(rawrbox::CameraStaticUniforms), &data, Diligent::RESOURCE_STATE_TRANSITION_MODE_VERIFY);
+		rawrbox::BarrierUtils::barrier({{this->staticUniforms, Diligent::RESOURCE_STATE_COPY_DEST, Diligent::RESOURCE_STATE_CONSTANT_BUFFER, Diligent::STATE_TRANSITION_FLAG_UPDATE_STATE}});
 	}
 
 	rawrbox::CameraStaticUniforms CameraBase::getStaticData() {
@@ -100,7 +100,7 @@ namespace rawrbox {
 	// UTILS -----
 	void CameraBase::setPos(const rawrbox::Vector3f& pos) {
 		if (this->_pos == pos) return;
-		if ((pos - this->_pos).length() > TELEPORT_DISTANCE) this->_teleportRevision = rawrbox::FRAME;
+		if ((pos - this->_pos).length() > this->TELEPORT_DISTANCE) this->_teleportRevision = rawrbox::FRAME;
 
 		this->_pos = pos;
 		this->_moveRevision = rawrbox::FRAME;
@@ -111,13 +111,17 @@ namespace rawrbox {
 		return this->_pos;
 	}
 
+	rawrbox::Vector3f CameraBase::getEyePos() const {
+		return this->getPos();
+	}
+
 	void CameraBase::setAngle(const rawrbox::Vector4f& angle) {
 		if (this->_angle == angle) return;
 
 		const auto forward = this->getForward();
 		this->_angle = angle;
 
-		if (this->getForward().dot(forward) < TELEPORT_ANGLE) this->_teleportRevision = rawrbox::FRAME;
+		if (this->getForward().dot(forward) < this->TELEPORT_ANGLE) this->_teleportRevision = rawrbox::FRAME;
 
 		this->_moveRevision = rawrbox::FRAME;
 		this->updateMtx();
@@ -249,22 +253,22 @@ namespace rawrbox {
 	// ----------------
 
 	void CameraBase::updateBuffer() {
-		if (uniforms == nullptr) RAWRBOX_CRITICAL("Buffer not initialized! Did you call initialize?");
+		if (this->uniforms == nullptr) RAWRBOX_CRITICAL("Buffer not initialized! Did you call initialize?");
 
-		auto view = rawrbox::Matrix4x4::mtxTranspose(this->getViewMtx());
-		auto viewInv = rawrbox::Matrix4x4::mtxInverse(this->getViewMtx());
-		auto projection = rawrbox::Matrix4x4::mtxTranspose(this->getProjMtx());
+		const auto view = rawrbox::Matrix4x4::mtxTranspose(this->getViewMtx());
+		const auto viewInv = rawrbox::Matrix4x4::mtxInverse(this->getViewMtx());
+		const auto projection = rawrbox::Matrix4x4::mtxTranspose(this->getProjMtx());
 
 		rawrbox::CameraUniforms data = {};
 		data.gView = view;
 		data.gViewInv = viewInv;
 		data.gViewProj = data.gView * projection;
-		data.gPos = this->getPos();
+		data.gPos = this->getEyePos();
 		data.gDeltaTime = rawrbox::DELTA_TIME;
 
-		rawrbox::BarrierUtils::barrier({{uniforms, Diligent::RESOURCE_STATE_CONSTANT_BUFFER, Diligent::RESOURCE_STATE_COPY_DEST, Diligent::STATE_TRANSITION_FLAG_UPDATE_STATE}});
-		rawrbox::RENDERER->context()->UpdateBuffer(uniforms, 0, sizeof(rawrbox::CameraUniforms), &data, Diligent::RESOURCE_STATE_TRANSITION_MODE_VERIFY);
-		rawrbox::BarrierUtils::barrier({{uniforms, Diligent::RESOURCE_STATE_COPY_DEST, Diligent::RESOURCE_STATE_CONSTANT_BUFFER, Diligent::STATE_TRANSITION_FLAG_UPDATE_STATE}});
+		rawrbox::BarrierUtils::barrier({{this->uniforms, Diligent::RESOURCE_STATE_CONSTANT_BUFFER, Diligent::RESOURCE_STATE_COPY_DEST, Diligent::STATE_TRANSITION_FLAG_UPDATE_STATE}});
+		rawrbox::RENDERER->context()->UpdateBuffer(this->uniforms, 0, sizeof(rawrbox::CameraUniforms), &data, Diligent::RESOURCE_STATE_TRANSITION_MODE_VERIFY);
+		rawrbox::BarrierUtils::barrier({{this->uniforms, Diligent::RESOURCE_STATE_COPY_DEST, Diligent::RESOURCE_STATE_CONSTANT_BUFFER, Diligent::STATE_TRANSITION_FLAG_UPDATE_STATE}});
 	}
 
 	void CameraBase::update() {}

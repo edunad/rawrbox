@@ -340,9 +340,9 @@ namespace rawrbox {
 		// World transforms ---
 		this->_nodeWorld.resize(scene.nodes.size());
 		for (size_t i = 0; i < scene.nodes.size(); i++) {
-			rawrbox::Matrix4x4 world = getLocalMatrix(scene.nodes[i]);
+			rawrbox::Matrix4x4 world = this->getLocalMatrix(scene.nodes[i]);
 			for (auto parent = this->_nodeParents[i]; parent.has_value(); parent = this->_nodeParents[parent.value()]) {
-				world = getLocalMatrix(scene.nodes[parent.value()]) * world;
+				world = this->getLocalMatrix(scene.nodes[parent.value()]) * world;
 			}
 
 			this->_nodeWorld[i] = world;
@@ -685,7 +685,7 @@ namespace rawrbox {
 			std::vector<int> jointRemap(skin.joints.size());
 
 			for (size_t k = 0; k < skin.joints.size(); k++) {
-				auto fnd = std::ranges::find(jointNodes, skin.joints[k]);
+				const auto& fnd = std::ranges::find(jointNodes, skin.joints[k]);
 				if (fnd == jointNodes.end()) {
 					this->_logger->warn("Skin '{}' joint node '{}' not found in the skeleton, skipping...", skinName, skin.joints[k]);
 					validRemap = false;
@@ -716,7 +716,7 @@ namespace rawrbox {
 			const auto& node = scene.nodes[i];
 			if (!node.skinIndex.has_value()) continue;
 
-			auto fnd = this->_nodeMeshes.find(i);
+			const auto& fnd = this->_nodeMeshes.find(i);
 			if (fnd == this->_nodeMeshes.end()) continue; // Invalid mesh / skipped
 
 			const size_t skinIndex = node.skinIndex.value();
@@ -908,7 +908,7 @@ namespace rawrbox {
 			for (const auto& node : targetNodes) {
 				bool found = false;
 
-				if (auto fndSkeletons = this->_nodeSkeletons.find(node); fndSkeletons != this->_nodeSkeletons.end()) {
+				if (const auto& fndSkeletons = this->_nodeSkeletons.find(node); fndSkeletons != this->_nodeSkeletons.end()) {
 					found = true;
 
 					for (auto* skeleton : fndSkeletons->second) {
@@ -929,7 +929,7 @@ namespace rawrbox {
 
 			// SKELETON PARTS ----
 			for (auto* skeleton : targetSkeletons) {
-				auto fndJoints = this->_skeletonJoints.find(skeleton);
+				const auto& fndJoints = this->_skeletonJoints.find(skeleton);
 				if (fndJoints == this->_skeletonJoints.end()) continue;
 
 				const auto& jointNodes = fndJoints->second;
@@ -940,7 +940,7 @@ namespace rawrbox {
 				rawAnim.tracks.reserve(jointNodes.size());
 
 				for (const auto& node : jointNodes) {
-					auto fnd = anim.tracks.find(node);
+					const auto& fnd = anim.tracks.find(node);
 
 					ozz::animation::offline::RawAnimation::JointTrack track = fnd != anim.tracks.end() ? fnd->second : ozz::animation::offline::RawAnimation::JointTrack{};
 					this->fillRestPose(track, this->getRestPose(scene.nodes[node]));
@@ -1377,7 +1377,7 @@ namespace rawrbox {
 					      const fastgltf::Buffer& buffer = scene.buffers.at(view.bufferIndex);
 
 					      auto data = this->getSourceData(scene, buffer.data);
-					      return {subspan(data.bytes, view.byteOffset, view.byteLength), buffer_view.mimeType};
+					      return {this->subspan(data.bytes, view.byteOffset, view.byteLength), buffer_view.mimeType};
 				      },
 				      [&](const fastgltf::sources::URI& /*filePath*/) -> fastgltf::sources::ByteView {
 					      RAWRBOX_CRITICAL("Use fastgltf::Options::LoadExternalImages instead!");

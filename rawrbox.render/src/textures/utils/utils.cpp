@@ -238,7 +238,7 @@ namespace rawrbox {
 	}
 
 	rawrbox::ImageData TextureUtils::decodeImage(const std::vector<uint8_t>& data) {
-		switch (getImageType(data)) {
+		switch (TextureUtils::getImageType(data)) {
 			case IMAGE_JPG:
 			case IMAGE_PNG:
 			case IMAGE_TIFF:

@@ -36,13 +36,13 @@ namespace rawrbox {
 		// PIPELINES ----
 		Diligent::ShaderMacroHelper preFilter;
 		preFilter.Add("BLOOM_PREFILTER", true);
-		this->_preFilter = createPipeline("PostProcess::QuickBloom::Prefilter", "post_process/quick_bloom.psh", preFilter);
+		this->_preFilter = this->createPipeline("PostProcess::QuickBloom::Prefilter", "post_process/quick_bloom.psh", preFilter);
 
 		Diligent::ShaderMacroHelper blur;
 		blur.Add("BLOOM_BLUR", true);
-		this->_blur = createPipeline("PostProcess::QuickBloom::Blur", "post_process/quick_bloom.psh", blur);
+		this->_blur = this->createPipeline("PostProcess::QuickBloom::Blur", "post_process/quick_bloom.psh", blur);
 
-		this->_pipeline = createPipeline("PostProcess::QuickBloom", "post_process/quick_bloom.psh");
+		this->_pipeline = this->createPipeline("PostProcess::QuickBloom", "post_process/quick_bloom.psh");
 		// ----------
 	}
 

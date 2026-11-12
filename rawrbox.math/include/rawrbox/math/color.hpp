@@ -62,11 +62,11 @@ namespace rawrbox {
 		}
 
 		[[nodiscard]] Color_t<NumberType> toLinear() const {
-			return {GammaToLinear(r), GammaToLinear(g), GammaToLinear(b), a};
+			return {this->GammaToLinear(this->r), this->GammaToLinear(this->g), this->GammaToLinear(this->b), this->a};
 		}
 
 		[[nodiscard]] Color_t<NumberType> toSRGB() const {
-			return {LinearToGamma(r), LinearToGamma(g), LinearToGamma(b), a};
+			return {this->LinearToGamma(this->r), this->LinearToGamma(this->g), this->LinearToGamma(this->b), this->a};
 		}
 
 		[[nodiscard]] std::string toHEX() const {
@@ -87,16 +87,16 @@ namespace rawrbox {
 		[[nodiscard]] Color_t<ReturnType> cast() const {
 			if constexpr (std::is_floating_point_v<NumberType>) {
 				return Color_t<ReturnType>(
-				    static_cast<ReturnType>(r * 255.0F),
-				    static_cast<ReturnType>(g * 255.0F),
-				    static_cast<ReturnType>(b * 255.0F),
-				    static_cast<ReturnType>(a * 255.0F));
+				    static_cast<ReturnType>(this->r * 255.0F),
+				    static_cast<ReturnType>(this->g * 255.0F),
+				    static_cast<ReturnType>(this->b * 255.0F),
+				    static_cast<ReturnType>(this->a * 255.0F));
 			} else {
 				return Color_t<ReturnType>(
-				    static_cast<ReturnType>(r) / 255.0F,
-				    static_cast<ReturnType>(g) / 255.0F,
-				    static_cast<ReturnType>(b) / 255.0F,
-				    static_cast<ReturnType>(a) / 255.0F);
+				    static_cast<ReturnType>(this->r) / 255.0F,
+				    static_cast<ReturnType>(this->g) / 255.0F,
+				    static_cast<ReturnType>(this->b) / 255.0F,
+				    static_cast<ReturnType>(this->a) / 255.0F);
 			}
 		}
 
@@ -127,165 +127,165 @@ namespace rawrbox {
 			if ((*this) == other) return other;
 			ColorType ret;
 
-			ret.r = static_cast<NumberType>(static_cast<float>(r) + static_cast<float>(other.r - r) * timestep);
-			ret.g = static_cast<NumberType>(static_cast<float>(g) + static_cast<float>(other.g - g) * timestep);
-			ret.b = static_cast<NumberType>(static_cast<float>(b) + static_cast<float>(other.b - b) * timestep);
-			ret.a = static_cast<NumberType>(static_cast<float>(a) + static_cast<float>(other.a - a) * timestep);
+			ret.r = static_cast<NumberType>(static_cast<float>(this->r) + static_cast<float>(other.r - this->r) * timestep);
+			ret.g = static_cast<NumberType>(static_cast<float>(this->g) + static_cast<float>(other.g - this->g) * timestep);
+			ret.b = static_cast<NumberType>(static_cast<float>(this->b) + static_cast<float>(other.b - this->b) * timestep);
+			ret.a = static_cast<NumberType>(static_cast<float>(this->a) + static_cast<float>(other.a - this->a) * timestep);
 
 			return ret;
 		}
 
 		[[nodiscard]] ColorType strength(float strength) const {
 			if constexpr (std::is_floating_point_v<NumberType>) {
-				return {r * strength, g * strength, b * strength, 1.F};
+				return {this->r * strength, this->g * strength, this->b * strength, 1.F};
 			} else {
-				return {static_cast<NumberType>(r * strength), static_cast<NumberType>(g * strength), static_cast<NumberType>(b * strength), 255};
+				return {static_cast<NumberType>(this->r * strength), static_cast<NumberType>(this->g * strength), static_cast<NumberType>(this->b * strength), 255};
 			}
 		}
 
-		[[nodiscard]] std::array<NumberType, 4> array() const {
-			return {r, g, b, a};
+		[[nodiscard]] std::array<NumberType, 4> data() const {
+			return {this->r, this->g, this->b, this->a};
 		}
 
 		[[nodiscard]] rawrbox::Vector3_t<NumberType> rgb() const {
-			return {r, g, b};
+			return {this->r, this->g, this->b};
 		}
 
 		[[nodiscard]] rawrbox::Vector3_t<NumberType> bgr() const {
-			return {b, g, r};
+			return {this->b, this->g, this->r};
 		}
 
 		[[nodiscard]] ColorType bgra() const {
-			return {b, g, r, a};
+			return {this->b, this->g, this->r, this->a};
 		}
 
 		[[nodiscard]] NumberType max() const {
-			return std::max(std::max(r, g), b);
+			return std::max(std::max(this->r, this->g), this->b);
 		}
 
-		[[nodiscard]] bool invisible() const { return a == 0; }
+		[[nodiscard]] bool invisible() const { return this->a == 0; }
 		[[nodiscard]] bool hasTransparency() const {
 			if constexpr (std::is_floating_point_v<NumberType>) {
-				return a != 1.F;
+				return this->a != 1.F;
 			} else {
-				return a != 255;
+				return this->a != 255;
 			}
 		}
 
 		[[nodiscard]] NumberType dot(const ColorType& other) const {
-			return r * other.r + g * other.g + b * other.b + a * other.a;
+			return this->r * other.r + this->g * other.g + this->b * other.b + this->a * other.a;
 		}
 
 		[[nodiscard]] uint32_t pack() const {
-			return rawrbox::PackUtils::packRgba8(static_cast<float>(r), static_cast<float>(g), static_cast<float>(b), static_cast<float>(a));
+			return rawrbox::PackUtils::packRgba8(static_cast<float>(this->r), static_cast<float>(this->g), static_cast<float>(this->b), static_cast<float>(this->a));
 		}
 
 		ColorType operator-(const ColorType& other) const {
-			return ColorType(r - other.r, g - other.g, b - other.b, a - other.a);
+			return ColorType(this->r - other.r, this->g - other.g, this->b - other.b, this->a - other.a);
 		}
 
 		ColorType operator+(const ColorType& other) const {
-			return ColorType(r + other.r, g + other.g, b + other.b, a + other.a);
+			return ColorType(this->r + other.r, this->g + other.g, this->b + other.b, this->a + other.a);
 		}
 
 		ColorType operator*(const ColorType& other) const {
-			return ColorType(r * other.r, g * other.g, b * other.b, a * other.a);
+			return ColorType(this->r * other.r, this->g * other.g, this->b * other.b, this->a * other.a);
 		}
 
 		ColorType operator/(const ColorType& other) const {
-			return ColorType(r / other.r, g / other.g, b / other.b, a / other.a);
+			return ColorType(this->r / other.r, this->g / other.g, this->b / other.b, this->a / other.a);
 		}
 
 		ColorType operator-(NumberType other) const {
-			return ColorType(r - other, g - other, b - other, a - other);
+			return ColorType(this->r - other, this->g - other, this->b - other, this->a - other);
 		}
 
 		ColorType operator+(NumberType other) const {
-			return ColorType(r + other, g + other, b + other, a + other);
+			return ColorType(this->r + other, this->g + other, this->b + other, this->a + other);
 		}
 
 		ColorType operator*(NumberType scale) const {
-			return ColorType(r * scale, g * scale, b * scale, a * scale);
+			return ColorType(this->r * scale, this->g * scale, this->b * scale, this->a * scale);
 		}
 
 		ColorType operator/(NumberType scale) const {
-			return ColorType(r / scale, g / scale, b / scale, a / scale);
+			return ColorType(this->r / scale, this->g / scale, this->b / scale, this->a / scale);
 		}
 
 		ColorType& operator-=(const ColorType& other) {
-			r -= other.r;
-			g -= other.g;
-			b -= other.b;
-			a -= other.a;
+			this->r -= other.r;
+			this->g -= other.g;
+			this->b -= other.b;
+			this->a -= other.a;
 			return *this;
 		}
 
 		ColorType& operator+=(const ColorType& other) {
-			r += other.r;
-			g += other.g;
-			b += other.b;
-			a += other.a;
+			this->r += other.r;
+			this->g += other.g;
+			this->b += other.b;
+			this->a += other.a;
 			return *this;
 		}
 
 		ColorType& operator*=(const ColorType& other) {
-			r *= other.r;
-			g *= other.g;
-			b *= other.b;
-			a *= other.a;
+			this->r *= other.r;
+			this->g *= other.g;
+			this->b *= other.b;
+			this->a *= other.a;
 			return *this;
 		}
 
 		ColorType& operator/=(const ColorType& other) {
-			r /= other.r;
-			g /= other.g;
-			b /= other.b;
-			a /= other.a;
+			this->r /= other.r;
+			this->g /= other.g;
+			this->b /= other.b;
+			this->a /= other.a;
 			return *this;
 		}
 
 		ColorType& operator-=(NumberType other) {
-			r -= other;
-			g -= other;
-			b -= other;
-			a -= other;
+			this->r -= other;
+			this->g -= other;
+			this->b -= other;
+			this->a -= other;
 			return *this;
 		}
 
 		ColorType& operator+=(NumberType other) {
-			r += other;
-			g += other;
-			b += other;
-			a += other;
+			this->r += other;
+			this->g += other;
+			this->b += other;
+			this->a += other;
 			return *this;
 		}
 
 		ColorType& operator*=(NumberType other) {
-			r *= other;
-			g *= other;
-			b *= other;
-			a *= other;
+			this->r *= other;
+			this->g *= other;
+			this->b *= other;
+			this->a *= other;
 			return *this;
 		}
 
 		ColorType& operator/=(NumberType other) {
-			r /= other;
-			g /= other;
-			b /= other;
-			a /= other;
+			this->r /= other;
+			this->g /= other;
+			this->b /= other;
+			this->a /= other;
 			return *this;
 		}
 
 		ColorType operator-() const {
-			return ColorType(-r, -g, -b, -a);
+			return ColorType(-this->r, -this->g, -this->b, -this->a);
 		}
 
 		bool operator==(const ColorType& other) const {
-			return r == other.r && g == other.g && b == other.b && a == other.a;
+			return this->r == other.r && this->g == other.g && this->b == other.b && this->a == other.a;
 		}
 
 		bool operator!=(const ColorType& other) const {
-			return !operator==(other);
+			return !this->operator==(other);
 		}
 	};
 

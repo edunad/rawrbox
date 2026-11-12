@@ -6,9 +6,9 @@ namespace rawrbox {
 	};
 
 	rawrbox::LightType SpotLight::getType() const { return LightType::SPOT; };
-	rawrbox::Vector4f SpotLight::getData() const { return {_penumbra, _umbra, 0, 0}; }
+	rawrbox::Vector4f SpotLight::getData() const { return {this->_penumbra, this->_umbra, 0, 0}; }
 
-	float SpotLight::getUmbra() const { return _umbra; };
-	float SpotLight::getPenumbra() const { return _penumbra; };
+	float SpotLight::getUmbra() const { return this->_umbra; };
+	float SpotLight::getPenumbra() const { return this->_penumbra; };
 
 } // namespace rawrbox

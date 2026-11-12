@@ -95,7 +95,7 @@ namespace rawrbox {
 
 	// QUERY ---
 	void SteamCALLBACKS::addUGCQueryCallback(SteamAPICall_t apicall, const std::function<void(std::vector<rawrbox::WorkshopMod>)>& callback) {
-		auto fnd = this->_ugcQueries.find(apicall);
+		const auto& fnd = this->_ugcQueries.find(apicall);
 		if (fnd != this->_ugcQueries.end()) RAWRBOX_CRITICAL("AddUGCQueryCallback with api call {} already called! Wait for previous call to complete", apicall);
 
 		std::unique_ptr<rawrbox::SteamUGCQuery> query = std::make_unique<rawrbox::SteamUGCQuery>(apicall, [this, apicall, callback](std::vector<rawrbox::WorkshopMod> details) {
@@ -125,7 +125,7 @@ namespace rawrbox {
 
 	// STORAGE ---
 	void SteamCALLBACKS::cancelUGCRequest(SteamAPICall_t handle) {
-		auto fnd = this->_ugcStorageQueries.find(handle);
+		const auto& fnd = this->_ugcStorageQueries.find(handle);
 		if (fnd == this->_ugcStorageQueries.end()) return;
 		this->_ugcStorageQueries.erase(handle);
 	}
@@ -135,7 +135,7 @@ namespace rawrbox {
 	}
 
 	void SteamCALLBACKS::addUGCRequest(UGCHandle_t handle, SteamAPICall_t apicall, const std::function<void(std::vector<uint8_t>)>& callback) {
-		auto fnd = this->_ugcStorageQueries.find(apicall);
+		const auto& fnd = this->_ugcStorageQueries.find(apicall);
 		if (fnd != this->_ugcStorageQueries.end()) RAWRBOX_CRITICAL("addUGCRequest with api call {} already called! Wait for previous call to complete", apicall);
 
 		std::unique_ptr<rawrbox::SteamStorageRequest> query = std::make_unique<rawrbox::SteamStorageRequest>(handle, apicall, [this, apicall, callback](std::vector<uint8_t> data) {

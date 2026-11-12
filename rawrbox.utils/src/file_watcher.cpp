@@ -30,7 +30,7 @@ namespace rawrbox {
 	void FileWatcher::unwatchFile(const std::filesystem::path& path) {
 		const std::scoped_lock lock(this->_filesLock);
 
-		const auto fnd = this->_files.find(path.generic_string());
+		const auto& fnd = this->_files.find(path.generic_string());
 		if (fnd == this->_files.end()) return;
 
 		this->_files.erase(fnd);

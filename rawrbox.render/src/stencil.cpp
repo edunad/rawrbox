@@ -33,8 +33,8 @@ namespace rawrbox {
 			return std::make_unique<Diligent::StreamingBuffer>(info);
 		};
 
-		this->_streamingVB = createStreaming("RawrBox::Stencil::VertexBuffer", Diligent::BIND_VERTEX_BUFFER, Diligent::RESOURCE_STATE_VERTEX_BUFFER, MAX_VERTS_STREAMING_BUFFER * sizeof(rawrbox::PosUVColorVertexData));
-		this->_streamingIB = createStreaming("RawrBox::Stencil::IndexBuffer", Diligent::BIND_INDEX_BUFFER, Diligent::RESOURCE_STATE_INDEX_BUFFER, MAX_VERTS_STREAMING_BUFFER * 3 * sizeof(uint32_t));
+		this->_streamingVB = createStreaming("RawrBox::Stencil::VertexBuffer", Diligent::BIND_VERTEX_BUFFER, Diligent::RESOURCE_STATE_VERTEX_BUFFER, this->MAX_VERTS_STREAMING_BUFFER * sizeof(rawrbox::PosUVColorVertexData));
+		this->_streamingIB = createStreaming("RawrBox::Stencil::IndexBuffer", Diligent::BIND_INDEX_BUFFER, Diligent::RESOURCE_STATE_INDEX_BUFFER, this->MAX_VERTS_STREAMING_BUFFER * 3 * sizeof(uint32_t));
 	}
 
 	Stencil::~Stencil() {
@@ -97,18 +97,18 @@ namespace rawrbox {
 		if (this->_rotation.rotation == 0) return;
 
 		rawrbox::Matrix4x4 translationMatrix = {};
-		translationMatrix.translate({-_rotation.origin.x, -_rotation.origin.y, 0});
+		translationMatrix.translate({-this->_rotation.origin.x, -this->_rotation.origin.y, 0});
 
 		rawrbox::Matrix4x4 rotationMatrix = {};
-		rotationMatrix.rotateZ(-rawrbox::MathUtils::toRad(_rotation.rotation));
+		rotationMatrix.rotateZ(-rawrbox::MathUtils::toRad(this->_rotation.rotation));
 
 		rawrbox::Matrix4x4 reverseTranslationMatrix = {};
-		reverseTranslationMatrix.translate({_rotation.origin.x, _rotation.origin.y, 0});
+		reverseTranslationMatrix.translate({this->_rotation.origin.x, this->_rotation.origin.y, 0});
 
-		rawrbox::Matrix4x4 mul = translationMatrix * rotationMatrix * reverseTranslationMatrix;
+		const rawrbox::Matrix4x4 mul = translationMatrix * rotationMatrix * reverseTranslationMatrix;
 
-		rawrbox::Vector4f v = {vert.x, vert.y, 0, -1.0F};
-		auto res = mul.mulVec(v);
+		const rawrbox::Vector4f v = {vert.x, vert.y, 0, -1.0F};
+		const auto res = mul.mulVec(v);
 
 		vert.x = res.x;
 		vert.y = res.y;
@@ -462,13 +462,13 @@ namespace rawrbox {
 		if (this->_currentDraw.optimize && !this->_drawCalls.empty()) {
 			auto& oldCall = this->_drawCalls.back();
 
-			bool canMerge = oldCall.clip == this->_currentDraw.clip &&
-					oldCall.cull == this->_currentDraw.cull &&
-					oldCall.stencilProgram == this->_currentDraw.stencilProgram &&
-					oldCall.vertices.size() + this->_currentDraw.vertices.size() < MAX_VERTS_STREAMING_BUFFER;
+			const bool canMerge = oldCall.clip == this->_currentDraw.clip &&
+					      oldCall.cull == this->_currentDraw.cull &&
+					      oldCall.stencilProgram == this->_currentDraw.stencilProgram &&
+					      oldCall.vertices.size() + this->_currentDraw.vertices.size() < this->MAX_VERTS_STREAMING_BUFFER;
 
 			if (canMerge) {
-				for (auto& ind : this->_currentDraw.indices) {
+				for (const auto& ind : this->_currentDraw.indices) {
 					oldCall.indices.push_back(static_cast<uint32_t>(oldCall.vertices.size()) + ind);
 				}
 

@@ -45,13 +45,11 @@ namespace rawrbox {
 		void setColor(const rawrbox::Colorf& color) { this->_color = color; }
 
 		void addEntry(float data) {
-			// move times one to the right
-			for (size_t i = 0; i < entries.size() - 1; i++) {
-				this->entries[i] = entries[i + 1];
-				this->smoothed[i] = smoothed[i + 1];
+			for (size_t i = 0; i < this->entries.size() - 1; i++) {
+				this->entries[i] = this->entries[i + 1];
+				this->smoothed[i] = this->smoothed[i + 1];
 			}
 
-			// overwrite current
 			this->entries.back() = data;
 		}
 

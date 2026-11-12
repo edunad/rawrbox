@@ -55,6 +55,8 @@ namespace rawrbox {
 		uint32_t _draws = 0;
 		bool _gpu = false;
 
+		[[nodiscard]] static rawrbox::GPUProfiler* activeProfiler();
+
 	public:
 		RenderZone(std::string_view name, uint32_t line, std::string_view file, std::string_view function);
 		RenderZone(const RenderZone&) = delete;

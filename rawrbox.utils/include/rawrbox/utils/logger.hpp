@@ -29,42 +29,42 @@ namespace rawrbox {
 		// LOGGING ----
 		template <typename... T>
 		void info(fmt::format_string<T...> fmt, T&&... args) {
-			if (LOGGER == nullptr) return;
+			if (this->LOGGER == nullptr) return;
 
 			auto str = fmt::format(fmt, std::forward<T>(args)...);
-			LOGGER->info(" ▓ {}] {}", this->_title, str);
+			this->LOGGER->info(" ▓ {}] {}", this->_title, str);
 		}
 
 		template <typename... T>
 		void warn(fmt::format_string<T...> fmt, T&&... args) {
-			if (LOGGER == nullptr) return;
+			if (this->LOGGER == nullptr) return;
 
 			auto str = fmt::format(fmt, std::forward<T>(args)...);
-			LOGGER->warn(" ▓ {}] {}", this->_title, fmt::styled(str, fmt::fg(fmt::color::gold)));
+			this->LOGGER->warn(" ▓ {}] {}", this->_title, fmt::styled(str, fmt::fg(fmt::color::gold)));
 		}
 
 		template <typename... T>
 		void trace(fmt::format_string<T...> fmt, T&&... args) {
-			if (LOGGER == nullptr) return;
+			if (this->LOGGER == nullptr) return;
 
 			auto str = fmt::format(fmt, std::forward<T>(args)...);
-			LOGGER->trace(" ▓ {}] {}", this->_title, str);
+			this->LOGGER->trace(" ▓ {}] {}", this->_title, str);
 		}
 
 		template <typename... T>
 		void debug(fmt::format_string<T...> fmt, T&&... args) {
-			if (LOGGER == nullptr) return;
+			if (this->LOGGER == nullptr) return;
 
 			auto str = fmt::format(fmt, std::forward<T>(args)...);
-			LOGGER->debug(" ▓ {}] {}", this->_title, str);
+			this->LOGGER->debug(" ▓ {}] {}", this->_title, str);
 		}
 
 		template <typename... T>
 		void error(fmt::format_string<T...> fmt, T&&... args) {
-			if (LOGGER == nullptr) return;
+			if (this->LOGGER == nullptr) return;
 
 			auto str = fmt::format(fmt, std::forward<T>(args)...);
-			LOGGER->error(" ▓ {}] {}", this->_title, str);
+			this->LOGGER->error(" ▓ {}] {}", this->_title, str);
 		}
 		// ----------
 	};

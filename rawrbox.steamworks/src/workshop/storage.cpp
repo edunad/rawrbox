@@ -8,11 +8,11 @@ namespace rawrbox {
 
 	// PUBLIC ------
 	void SteamSTORAGE::init() {
-		_logger->info("Initializing SteamSTORAGE");
+		SteamSTORAGE::_logger->info("Initializing SteamSTORAGE");
 	}
 
 	void SteamSTORAGE::shutdown() {
-		_logger.reset();
+		SteamSTORAGE::_logger.reset();
 	}
 
 	// DOWNLOAD ---

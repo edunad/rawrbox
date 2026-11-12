@@ -1,12 +1,23 @@
 #pragma once
 
+#include <rawrbox/math/aabb.hpp>
 #include <rawrbox/render/textures/base.hpp>
+
+#include <optional>
+#include <vector>
 
 namespace rawrbox {
 	class TextureStreaming : public rawrbox::TextureBase {
 	protected:
-		bool _pendingUpdate = true;
+		static constexpr size_t MAX_DIRTY = 8;
+
+		bool _pendingUpdate = false;
 		bool _hasData = false;
+
+		std::vector<rawrbox::AABBu> _dirty = {};
+		bool _dirtyAll = true;
+
+		virtual void pending();
 
 	public:
 		TextureStreaming(const rawrbox::Vector2u& size);
@@ -15,6 +26,9 @@ namespace rawrbox {
 		void clear();
 		void setImage(const rawrbox::ImageData& data);
 		[[nodiscard]] bool hasData() const;
+
+		[[nodiscard]] std::vector<uint8_t>& pixels();
+		void markDirty(std::optional<rawrbox::AABBu> rect = std::nullopt);
 		// --------
 
 		void update() override;

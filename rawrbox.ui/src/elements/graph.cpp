@@ -30,7 +30,7 @@ namespace rawrbox {
 
 	// TEXT ----
 	void UIGraph::addText(const std::string& text, float val) {
-		texts.emplace_back(text, val);
+		this->texts.emplace_back(text, val);
 	}
 
 	void UIGraph::setTextLineColor(const rawrbox::Color& col) { this->_textLineColor = col; }
@@ -126,8 +126,8 @@ namespace rawrbox {
 
 	bool UIGraph::clipOverflow() const { return true; };
 
-	void UIGraph::setShowLegend(bool mode) { _showLegend = mode; }
-	bool UIGraph::getShowLegend() const { return _showLegend; }
+	void UIGraph::setShowLegend(bool mode) { this->_showLegend = mode; }
+	bool UIGraph::getShowLegend() const { return this->_showLegend; }
 
 	void UIGraph::draw(rawrbox::Stencil& stencil) {
 		if (this->_categories.empty()) return;
@@ -184,9 +184,9 @@ namespace rawrbox {
 		// ---------
 
 		// Draw legends ---
-		if (_showLegend) {
+		if (this->_showLegend) {
 			float y = 5;
-			for (auto& cat : _categories) {
+			for (const auto& cat : this->_categories) {
 				Vector2f tpos = {size.x - this->_font->getStringSize(cat->getName()).x - 5 - 4 - 5, y};
 
 				stencil.drawText(*this->_font, cat->getName(), tpos + this->_textShadow, this->_textShadowColor);
@@ -197,9 +197,10 @@ namespace rawrbox {
 			}
 		}
 
-		for (auto& pair : texts) {
-			float stepHeight = size.y / this->_highestValue;
+		for (auto& pair : this->texts) {
+			const float stepHeight = size.y / this->_highestValue;
 			float y = size.y - (pair.second * stepHeight);
+
 			stencil.drawText(*this->_font, pair.first, this->_textShadow + Vector2f(0, y), this->_textShadowColor);
 			stencil.drawText(*this->_font, pair.first, {0, y}, this->_textColor);
 			stencil.drawBox({0, y + this->_font->getLineHeight()}, {size.x, 2});

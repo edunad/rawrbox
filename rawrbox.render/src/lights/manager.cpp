@@ -53,7 +53,7 @@ namespace rawrbox {
 	// -------
 
 	void LIGHTS::init() {
-		_lights.reserve(16); // OFFSET
+		LIGHTS::_lights.reserve(16); // OFFSET
 
 		auto* device = rawrbox::RENDERER->device();
 
@@ -65,13 +65,13 @@ namespace rawrbox {
 			BuffDesc.BindFlags = Diligent::BIND_UNIFORM_BUFFER;
 			BuffDesc.Size = sizeof(rawrbox::LightConstants);
 
-			auto settings = getGPUConstants();
+			auto settings = LIGHTS::getGPUConstants();
 
 			Diligent::BufferData data;
 			data.pData = &settings;
 			data.DataSize = BuffDesc.Size;
 
-			device->CreateBuffer(BuffDesc, &data, &uniforms);
+			device->CreateBuffer(BuffDesc, &data, &LIGHTS::uniforms);
 		}
 		// -----------------------------------------
 
@@ -85,8 +85,8 @@ namespace rawrbox {
 			BuffDesc.BindFlags = Diligent::BIND_SHADER_RESOURCE;
 			BuffDesc.Size = BuffDesc.ElementByteStride * RB_RENDER_MAX_LIGHTS;
 
-			device->CreateBuffer(BuffDesc, nullptr, &_buffer);
-			_bufferRead = _buffer->GetDefaultView(Diligent::BUFFER_VIEW_SHADER_RESOURCE);
+			device->CreateBuffer(BuffDesc, nullptr, &LIGHTS::_buffer);
+			LIGHTS::_bufferRead = LIGHTS::_buffer->GetDefaultView(Diligent::BUFFER_VIEW_SHADER_RESOURCE);
 		}
 		// --------------
 
@@ -106,8 +106,8 @@ namespace rawrbox {
 			data.pData = empty.data();
 			data.DataSize = BuffDesc.Size;
 
-			device->CreateBuffer(BuffDesc, &data, &_zbinBuffer);
-			_zbinBufferRead = _zbinBuffer->GetDefaultView(Diligent::BUFFER_VIEW_SHADER_RESOURCE);
+			device->CreateBuffer(BuffDesc, &data, &LIGHTS::_zbinBuffer);
+			LIGHTS::_zbinBufferRead = LIGHTS::_zbinBuffer->GetDefaultView(Diligent::BUFFER_VIEW_SHADER_RESOURCE);
 		}
 		// --------------
 
@@ -121,63 +121,63 @@ namespace rawrbox {
 			BuffDesc.BindFlags = Diligent::BIND_SHADER_RESOURCE;
 			BuffDesc.Size = BuffDesc.ElementByteStride * RB_RENDER_MAX_LIGHTS;
 
-			device->CreateBuffer(BuffDesc, nullptr, &_boundsBuffer);
-			_boundsBufferRead = _boundsBuffer->GetDefaultView(Diligent::BUFFER_VIEW_SHADER_RESOURCE);
+			device->CreateBuffer(BuffDesc, nullptr, &LIGHTS::_boundsBuffer);
+			LIGHTS::_boundsBufferRead = LIGHTS::_boundsBuffer->GetDefaultView(Diligent::BUFFER_VIEW_SHADER_RESOURCE);
 		}
 		// --------------
 
 		// BARRIER -----
-		rawrbox::BarrierUtils::barrier({{uniforms, Diligent::RESOURCE_STATE_UNKNOWN, Diligent::RESOURCE_STATE_CONSTANT_BUFFER, Diligent::STATE_TRANSITION_FLAG_UPDATE_STATE},
-		    {_buffer, Diligent::RESOURCE_STATE_UNKNOWN, Diligent::RESOURCE_STATE_SHADER_RESOURCE, Diligent::STATE_TRANSITION_FLAG_UPDATE_STATE},
-		    {_zbinBuffer, Diligent::RESOURCE_STATE_UNKNOWN, Diligent::RESOURCE_STATE_SHADER_RESOURCE, Diligent::STATE_TRANSITION_FLAG_UPDATE_STATE},
-		    {_boundsBuffer, Diligent::RESOURCE_STATE_UNKNOWN, Diligent::RESOURCE_STATE_SHADER_RESOURCE, Diligent::STATE_TRANSITION_FLAG_UPDATE_STATE}});
+		rawrbox::BarrierUtils::barrier({{LIGHTS::uniforms, Diligent::RESOURCE_STATE_UNKNOWN, Diligent::RESOURCE_STATE_CONSTANT_BUFFER, Diligent::STATE_TRANSITION_FLAG_UPDATE_STATE},
+		    {LIGHTS::_buffer, Diligent::RESOURCE_STATE_UNKNOWN, Diligent::RESOURCE_STATE_SHADER_RESOURCE, Diligent::STATE_TRANSITION_FLAG_UPDATE_STATE},
+		    {LIGHTS::_zbinBuffer, Diligent::RESOURCE_STATE_UNKNOWN, Diligent::RESOURCE_STATE_SHADER_RESOURCE, Diligent::STATE_TRANSITION_FLAG_UPDATE_STATE},
+		    {LIGHTS::_boundsBuffer, Diligent::RESOURCE_STATE_UNKNOWN, Diligent::RESOURCE_STATE_SHADER_RESOURCE, Diligent::STATE_TRANSITION_FLAG_UPDATE_STATE}});
 		// -----------
 	}
 
 	void LIGHTS::shutdown() {
-		RAWRBOX_DESTROY(uniforms);
+		RAWRBOX_DESTROY(LIGHTS::uniforms);
 
-		_bufferRead = nullptr;
-		RAWRBOX_DESTROY(_buffer);
+		LIGHTS::_bufferRead = nullptr;
+		RAWRBOX_DESTROY(LIGHTS::_buffer);
 
-		_zbinBufferRead = nullptr;
-		RAWRBOX_DESTROY(_zbinBuffer);
+		LIGHTS::_zbinBufferRead = nullptr;
+		RAWRBOX_DESTROY(LIGHTS::_zbinBuffer);
 
-		_boundsBufferRead = nullptr;
-		RAWRBOX_DESTROY(_boundsBuffer);
+		LIGHTS::_boundsBufferRead = nullptr;
+		RAWRBOX_DESTROY(LIGHTS::_boundsBuffer);
 
-		_lights.clear();
-		_data.clear();
-		_sorted.clear();
-		_viewBounds.clear();
-		_bounds.clear();
-		_entries.clear();
-		_zbins.clear();
+		LIGHTS::_lights.clear();
+		LIGHTS::_data.clear();
+		LIGHTS::_sorted.clear();
+		LIGHTS::_viewBounds.clear();
+		LIGHTS::_bounds.clear();
+		LIGHTS::_entries.clear();
+		LIGHTS::_zbins.clear();
 
-		_BINNED = true;
-		_BINS_DIRTY = true;
+		LIGHTS::_BINNED = true;
+		LIGHTS::_BINS_DIRTY = true;
 
-		_settings.lightSettings = {};
+		LIGHTS::_settings.lightSettings = {};
 	}
 
 	rawrbox::LightConstants LIGHTS::getGPUConstants() {
-		auto settings = _settings;
-		settings.ambientColor = _settings.ambientColor.toLinear();
+		auto settings = LIGHTS::_settings;
+		settings.ambientColor = LIGHTS::_settings.ambientColor.toLinear();
 
-		if (!_BINNED) settings.lightSettings.y = settings.lightSettings.z; // Directional only, they are first on the buffer
+		if (!LIGHTS::_BINNED) settings.lightSettings.y = settings.lightSettings.z; // Directional only, they are first on the buffer
 		return settings;
 	}
 
 	void LIGHTS::updateConstants() {
-		if (!_CONSTANTS_DIRTY) return;
-		_CONSTANTS_DIRTY = false;
+		if (!LIGHTS::_CONSTANTS_DIRTY) return;
+		LIGHTS::_CONSTANTS_DIRTY = false;
 
-		auto settings = getGPUConstants();
+		auto settings = LIGHTS::getGPUConstants();
 
 		// BARRIER -----
-		rawrbox::BarrierUtils::barrier({{uniforms, Diligent::RESOURCE_STATE_CONSTANT_BUFFER, Diligent::RESOURCE_STATE_COPY_DEST, Diligent::STATE_TRANSITION_FLAG_UPDATE_STATE}});
-		rawrbox::RENDERER->context()->UpdateBuffer(uniforms, 0, sizeof(rawrbox::LightConstants), &settings, Diligent::RESOURCE_STATE_TRANSITION_MODE_VERIFY);
-		rawrbox::BarrierUtils::barrier({{uniforms, Diligent::RESOURCE_STATE_COPY_DEST, Diligent::RESOURCE_STATE_CONSTANT_BUFFER, Diligent::STATE_TRANSITION_FLAG_UPDATE_STATE}});
+		rawrbox::BarrierUtils::barrier({{LIGHTS::uniforms, Diligent::RESOURCE_STATE_CONSTANT_BUFFER, Diligent::RESOURCE_STATE_COPY_DEST, Diligent::STATE_TRANSITION_FLAG_UPDATE_STATE}});
+		rawrbox::RENDERER->context()->UpdateBuffer(LIGHTS::uniforms, 0, sizeof(rawrbox::LightConstants), &settings, Diligent::RESOURCE_STATE_TRANSITION_MODE_VERIFY);
+		rawrbox::BarrierUtils::barrier({{LIGHTS::uniforms, Diligent::RESOURCE_STATE_COPY_DEST, Diligent::RESOURCE_STATE_CONSTANT_BUFFER, Diligent::STATE_TRANSITION_FLAG_UPDATE_STATE}});
 		// --------
 	}
 
@@ -185,26 +185,26 @@ namespace rawrbox {
 		if (!rawrbox::__LIGHT_DIRTY__) return;
 
 		rawrbox::__LIGHT_DIRTY__ = false;
-		_BINS_DIRTY = true;
+		LIGHTS::_BINS_DIRTY = true;
 
 		// Active lights ---
-		_data.clear();
+		LIGHTS::_data.clear();
 
-		for (auto& l : _lights) {
+		for (auto& l : LIGHTS::_lights) {
 			if (!l->isActive()) continue;
-			if (_data.size() >= RB_RENDER_MAX_LIGHTS) {
-				_logger->warn("Too many active lights, only the first {} will be rendered", RB_RENDER_MAX_LIGHTS);
+			if (LIGHTS::_data.size() >= RB_RENDER_MAX_LIGHTS) {
+				LIGHTS::_logger->warn("Too many active lights, only the first {} will be rendered", RB_RENDER_MAX_LIGHTS);
 				break;
 			}
 
-			_data.push_back(getVertexData(*l));
+			LIGHTS::_data.push_back(LIGHTS::getVertexData(*l));
 		}
 		// ----
 
-		const auto total = static_cast<uint32_t>(_data.size());
-		if (_settings.lightSettings.y != total) {
-			_settings.lightSettings.y = total;
-			_CONSTANTS_DIRTY = true;
+		const auto total = static_cast<uint32_t>(LIGHTS::_data.size());
+		if (LIGHTS::_settings.lightSettings.y != total) {
+			LIGHTS::_settings.lightSettings.y = total;
+			LIGHTS::_CONSTANTS_DIRTY = true;
 		}
 	}
 
@@ -212,121 +212,121 @@ namespace rawrbox {
 		const auto& view = camera.getViewMtx();
 		const rawrbox::Vector2f nearFar = {rawrbox::MAIN_CAMERA->getZNear(), rawrbox::MAIN_CAMERA->getZFar()}; // Must match SCamera NearFar (shared, main camera)
 
-		if (!_BINS_DIRTY && _zbinCamera == &camera && _zbinFrame == camera.getMoveRevision() && _zbinNearFar == nearFar) return false;
-		_BINS_DIRTY = false;
+		if (!LIGHTS::_BINS_DIRTY && LIGHTS::_zbinCamera == &camera && LIGHTS::_zbinFrame == camera.getMoveRevision() && LIGHTS::_zbinNearFar == nearFar) return false;
+		LIGHTS::_BINS_DIRTY = false;
 
-		_zbinCamera = &camera;
-		_zbinFrame = camera.getMoveRevision();
-		_zbinNearFar = nearFar;
+		LIGHTS::_zbinCamera = &camera;
+		LIGHTS::_zbinFrame = camera.getMoveRevision();
+		LIGHTS::_zbinNearFar = nearFar;
 
 		// Split by type ---
-		_sorted.clear();
-		_bounds.clear();
-		_entries.clear();
+		LIGHTS::_sorted.clear();
+		LIGHTS::_bounds.clear();
+		LIGHTS::_entries.clear();
 
-		_viewBounds.resize(_data.size());
+		LIGHTS::_viewBounds.resize(LIGHTS::_data.size());
 
-		for (size_t i = 0; i < _data.size(); i++) {
-			const auto& light = _data[i];
+		for (size_t i = 0; i < LIGHTS::_data.size(); i++) {
+			const auto& light = LIGHTS::_data[i];
 
 			if (static_cast<rawrbox::LightType>(light.type & rawrbox::LightDataVertex::TYPE_MASK) == rawrbox::LightType::DIRECTIONAL) {
-				_sorted.push_back(light);
-				_bounds.emplace_back(0.F, 0.F, 0.F, -1.F); // Not binned
+				LIGHTS::_sorted.push_back(light);
+				LIGHTS::_bounds.emplace_back(0.F, 0.F, 0.F, -1.F); // Not binned
 			} else {
-				_viewBounds[i] = rawrbox::ClusteredUtils::toViewSphere(view, getBounds(light));
-				_entries.push_back(rawrbox::ClusteredUtils::getEntry(_viewBounds[i], static_cast<uint32_t>(i)));
+				LIGHTS::_viewBounds[i] = rawrbox::ClusteredUtils::toViewSphere(view, LIGHTS::getBounds(light));
+				LIGHTS::_entries.push_back(rawrbox::ClusteredUtils::getEntry(LIGHTS::_viewBounds[i], static_cast<uint32_t>(i)));
 			}
 		}
 
-		const auto directional = static_cast<uint32_t>(_sorted.size());
-		if (_settings.lightSettings.z != directional) {
-			_settings.lightSettings.z = directional;
-			_CONSTANTS_DIRTY = true;
+		const auto directional = static_cast<uint32_t>(LIGHTS::_sorted.size());
+		if (LIGHTS::_settings.lightSettings.z != directional) {
+			LIGHTS::_settings.lightSettings.z = directional;
+			LIGHTS::_CONSTANTS_DIRTY = true;
 		}
 		// ----
 
 		// Sort by depth ---
-		rawrbox::ClusteredUtils::build(_entries, directional, nearFar.x, nearFar.y, _zbins);
+		rawrbox::ClusteredUtils::build(LIGHTS::_entries, directional, nearFar.x, nearFar.y, LIGHTS::_zbins);
 
-		for (const auto& entry : _entries) {
-			_sorted.push_back(_data[entry.index]);
-			_bounds.push_back(_viewBounds[entry.index]);
+		for (const auto& entry : LIGHTS::_entries) {
+			LIGHTS::_sorted.push_back(LIGHTS::_data[entry.index]);
+			LIGHTS::_bounds.push_back(LIGHTS::_viewBounds[entry.index]);
 		}
 		// ----
 
 		// Upload ---
 		auto* context = rawrbox::RENDERER->context();
 
-		if (!_sorted.empty()) {
-			rawrbox::BarrierUtils::barrier({{_buffer, Diligent::RESOURCE_STATE_SHADER_RESOURCE, Diligent::RESOURCE_STATE_COPY_DEST, Diligent::STATE_TRANSITION_FLAG_UPDATE_STATE}});
-			context->UpdateBuffer(_buffer, 0, sizeof(rawrbox::LightDataVertex) * static_cast<uint64_t>(_sorted.size()), _sorted.data(), Diligent::RESOURCE_STATE_TRANSITION_MODE_VERIFY);
-			rawrbox::BarrierUtils::barrier({{_buffer, Diligent::RESOURCE_STATE_COPY_DEST, Diligent::RESOURCE_STATE_SHADER_RESOURCE, Diligent::STATE_TRANSITION_FLAG_UPDATE_STATE}});
+		if (!LIGHTS::_sorted.empty()) {
+			rawrbox::BarrierUtils::barrier({{LIGHTS::_buffer, Diligent::RESOURCE_STATE_SHADER_RESOURCE, Diligent::RESOURCE_STATE_COPY_DEST, Diligent::STATE_TRANSITION_FLAG_UPDATE_STATE}});
+			context->UpdateBuffer(LIGHTS::_buffer, 0, sizeof(rawrbox::LightDataVertex) * static_cast<uint64_t>(LIGHTS::_sorted.size()), LIGHTS::_sorted.data(), Diligent::RESOURCE_STATE_TRANSITION_MODE_VERIFY);
+			rawrbox::BarrierUtils::barrier({{LIGHTS::_buffer, Diligent::RESOURCE_STATE_COPY_DEST, Diligent::RESOURCE_STATE_SHADER_RESOURCE, Diligent::STATE_TRANSITION_FLAG_UPDATE_STATE}});
 
-			rawrbox::BarrierUtils::barrier({{_boundsBuffer, Diligent::RESOURCE_STATE_SHADER_RESOURCE, Diligent::RESOURCE_STATE_COPY_DEST, Diligent::STATE_TRANSITION_FLAG_UPDATE_STATE}});
-			context->UpdateBuffer(_boundsBuffer, 0, sizeof(rawrbox::Vector4f) * static_cast<uint64_t>(_bounds.size()), _bounds.data(), Diligent::RESOURCE_STATE_TRANSITION_MODE_VERIFY);
-			rawrbox::BarrierUtils::barrier({{_boundsBuffer, Diligent::RESOURCE_STATE_COPY_DEST, Diligent::RESOURCE_STATE_SHADER_RESOURCE, Diligent::STATE_TRANSITION_FLAG_UPDATE_STATE}});
+			rawrbox::BarrierUtils::barrier({{LIGHTS::_boundsBuffer, Diligent::RESOURCE_STATE_SHADER_RESOURCE, Diligent::RESOURCE_STATE_COPY_DEST, Diligent::STATE_TRANSITION_FLAG_UPDATE_STATE}});
+			context->UpdateBuffer(LIGHTS::_boundsBuffer, 0, sizeof(rawrbox::Vector4f) * static_cast<uint64_t>(LIGHTS::_bounds.size()), LIGHTS::_bounds.data(), Diligent::RESOURCE_STATE_TRANSITION_MODE_VERIFY);
+			rawrbox::BarrierUtils::barrier({{LIGHTS::_boundsBuffer, Diligent::RESOURCE_STATE_COPY_DEST, Diligent::RESOURCE_STATE_SHADER_RESOURCE, Diligent::STATE_TRANSITION_FLAG_UPDATE_STATE}});
 		}
 
-		rawrbox::BarrierUtils::barrier({{_zbinBuffer, Diligent::RESOURCE_STATE_SHADER_RESOURCE, Diligent::RESOURCE_STATE_COPY_DEST, Diligent::STATE_TRANSITION_FLAG_UPDATE_STATE}});
-		context->UpdateBuffer(_zbinBuffer, 0, sizeof(uint32_t) * static_cast<uint64_t>(_zbins.size()), _zbins.data(), Diligent::RESOURCE_STATE_TRANSITION_MODE_VERIFY);
-		rawrbox::BarrierUtils::barrier({{_zbinBuffer, Diligent::RESOURCE_STATE_COPY_DEST, Diligent::RESOURCE_STATE_SHADER_RESOURCE, Diligent::STATE_TRANSITION_FLAG_UPDATE_STATE}});
+		rawrbox::BarrierUtils::barrier({{LIGHTS::_zbinBuffer, Diligent::RESOURCE_STATE_SHADER_RESOURCE, Diligent::RESOURCE_STATE_COPY_DEST, Diligent::STATE_TRANSITION_FLAG_UPDATE_STATE}});
+		context->UpdateBuffer(LIGHTS::_zbinBuffer, 0, sizeof(uint32_t) * static_cast<uint64_t>(LIGHTS::_zbins.size()), LIGHTS::_zbins.data(), Diligent::RESOURCE_STATE_TRANSITION_MODE_VERIFY);
+		rawrbox::BarrierUtils::barrier({{LIGHTS::_zbinBuffer, Diligent::RESOURCE_STATE_COPY_DEST, Diligent::RESOURCE_STATE_SHADER_RESOURCE, Diligent::STATE_TRANSITION_FLAG_UPDATE_STATE}});
 		// ---------
 
 		return true;
 	}
 
 	bool LIGHTS::update(const rawrbox::CameraBase& camera, bool binned) {
-		if (uniforms == nullptr) RAWRBOX_CRITICAL("Buffer not initialized! Did you call 'init' ?");
+		if (LIGHTS::uniforms == nullptr) RAWRBOX_CRITICAL("Buffer not initialized! Did you call 'init' ?");
 
-		if (_BINNED != binned) {
-			_BINNED = binned;
-			_CONSTANTS_DIRTY = true;
+		if (LIGHTS::_BINNED != binned) {
+			LIGHTS::_BINNED = binned;
+			LIGHTS::_CONSTANTS_DIRTY = true;
 		}
 
-		updateData(); // Rebuild if dirty
+		LIGHTS::updateData(); // Rebuild if dirty
 
 		bool rebuilt = false;
-		if (binned) rebuilt = updateBins(camera);
-		updateConstants(); // Update buffer if dirty
+		if (binned) rebuilt = LIGHTS::updateBins(camera);
+		LIGHTS::updateConstants(); // Update buffer if dirty
 		return rebuilt;
 	}
 
 	// UTILS ----
 	void LIGHTS::setEnabled(bool enabled) {
 		auto fullbright = static_cast<uint32_t>(enabled);
-		if (_settings.lightSettings.x == fullbright) return;
+		if (LIGHTS::_settings.lightSettings.x == fullbright) return;
 
-		_settings.lightSettings.x = fullbright;
-		_CONSTANTS_DIRTY = true;
+		LIGHTS::_settings.lightSettings.x = fullbright;
+		LIGHTS::_CONSTANTS_DIRTY = true;
 	}
 
-	bool LIGHTS::isEnabled() { return _settings.lightSettings.x == 1U; }
+	bool LIGHTS::isEnabled() { return LIGHTS::_settings.lightSettings.x == 1U; }
 
 #ifdef _DEBUG
 	void LIGHTS::setDebug(bool enabled) {
 		auto debug = static_cast<uint32_t>(enabled);
-		if (_settings.lightSettings.w == debug) return;
+		if (LIGHTS::_settings.lightSettings.w == debug) return;
 
-		_settings.lightSettings.w = debug;
-		_CONSTANTS_DIRTY = true;
+		LIGHTS::_settings.lightSettings.w = debug;
+		LIGHTS::_CONSTANTS_DIRTY = true;
 	}
 
-	bool LIGHTS::isDebug() { return _settings.lightSettings.w == 1U; }
+	bool LIGHTS::isDebug() { return LIGHTS::_settings.lightSettings.w == 1U; }
 #endif
 
 	rawrbox::LightBase* LIGHTS::getLight(size_t indx) {
-		if (indx >= _lights.size()) return nullptr;
-		return _lights[indx].get();
+		if (indx >= LIGHTS::_lights.size()) return nullptr;
+		return LIGHTS::_lights[indx].get();
 	}
 
-	const std::vector<std::shared_ptr<rawrbox::LightBase>>& LIGHTS::getLights() { return _lights; }
+	const std::vector<std::shared_ptr<rawrbox::LightBase>>& LIGHTS::getLights() { return LIGHTS::_lights; }
 
-	size_t LIGHTS::count() { return _lights.size(); }
-	size_t LIGHTS::active() { return _data.size(); }
+	size_t LIGHTS::count() { return LIGHTS::_lights.size(); }
+	size_t LIGHTS::active() { return LIGHTS::_data.size(); }
 
-	Diligent::IBufferView* LIGHTS::getBuffer() { return _bufferRead; }
-	Diligent::IBufferView* LIGHTS::getZBinBuffer() { return _zbinBufferRead; }
-	Diligent::IBufferView* LIGHTS::getBoundsBuffer() { return _boundsBufferRead; }
+	Diligent::IBufferView* LIGHTS::getBuffer() { return LIGHTS::_bufferRead; }
+	Diligent::IBufferView* LIGHTS::getZBinBuffer() { return LIGHTS::_zbinBufferRead; }
+	Diligent::IBufferView* LIGHTS::getBoundsBuffer() { return LIGHTS::_boundsBufferRead; }
 
 	rawrbox::LightDataVertex LIGHTS::getVertexData(const rawrbox::LightBase& light) {
 		rawrbox::LightDataVertex data = {};
@@ -393,34 +393,34 @@ namespace rawrbox {
 
 	// AMBIENT ----
 	void LIGHTS::setAmbient(const rawrbox::Colorf& col) {
-		if (_settings.ambientColor == col) return;
+		if (LIGHTS::_settings.ambientColor == col) return;
 
-		_settings.ambientColor = col;
-		_CONSTANTS_DIRTY = true;
+		LIGHTS::_settings.ambientColor = col;
+		LIGHTS::_CONSTANTS_DIRTY = true;
 	}
 
-	const rawrbox::Colorf& LIGHTS::getAmbient() { return _settings.ambientColor; }
+	const rawrbox::Colorf& LIGHTS::getAmbient() { return LIGHTS::_settings.ambientColor; }
 	// ---------
 
 	// LIGHT ----
 	bool LIGHTS::remove(size_t indx) {
-		if (indx >= _lights.size()) return false;
-		_lights.erase(_lights.begin() + indx);
+		if (indx >= LIGHTS::_lights.size()) return false;
+		LIGHTS::_lights.erase(LIGHTS::_lights.begin() + indx);
 
 		rawrbox::__LIGHT_DIRTY__ = true;
-		_CONSTANTS_DIRTY = true;
+		LIGHTS::_CONSTANTS_DIRTY = true;
 		return true;
 	}
 
 	bool LIGHTS::remove(const rawrbox::LightBase& light) {
-		if (_lights.empty()) return false;
+		if (LIGHTS::_lights.empty()) return false;
 
-		for (size_t i = 0; i < _lights.size(); i++) {
-			if (_lights[i].get() == &light) {
-				_lights.erase(_lights.begin() + i);
+		for (size_t i = 0; i < LIGHTS::_lights.size(); i++) {
+			if (LIGHTS::_lights[i].get() == &light) {
+				LIGHTS::_lights.erase(LIGHTS::_lights.begin() + i);
 
 				rawrbox::__LIGHT_DIRTY__ = true;
-				_CONSTANTS_DIRTY = true;
+				LIGHTS::_CONSTANTS_DIRTY = true;
 				return true;
 			}
 		}
@@ -429,11 +429,11 @@ namespace rawrbox {
 	}
 
 	void LIGHTS::clear() {
-		if (_lights.empty()) return;
-		_lights.clear();
+		if (LIGHTS::_lights.empty()) return;
+		LIGHTS::_lights.clear();
 
 		rawrbox::__LIGHT_DIRTY__ = true;
-		_CONSTANTS_DIRTY = true;
+		LIGHTS::_CONSTANTS_DIRTY = true;
 	}
 	// ---------
 

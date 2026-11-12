@@ -186,6 +186,10 @@ function(mute_dependencies_warnings FILTER)
                             /wd4018
                             /wd4267
                     )
+
+                    if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+                        target_compile_options(${target} PRIVATE /w)
+                    endif ()
                 endif ()
             endif ()
 

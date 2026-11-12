@@ -115,9 +115,9 @@ namespace rawrbox {
 		auto fxVersion = HIWORD(BASS_FX_GetVersion());
 		if (fxVersion != BASSVERSION) RAWRBOX_CRITICAL("BASS Version missmatch! FX [{}] | BASS [{}]", fxVersion, BASSVERSION);
 
-		_initialized = (BASS_Init(-1, 44100, BASS_DEVICE_3D, nullptr, nullptr) != 0);
-		if (_initialized) {
-			_logger->info("Initialized BASS [{}] and BASS_FX [{}]", fxVersion, BASSVERSION);
+		BASS::_initialized = (BASS_Init(-1, 44100, BASS_DEVICE_3D, nullptr, nullptr) != 0);
+		if (BASS::_initialized) {
+			BASS::_logger->info("Initialized BASS [{}] and BASS_FX [{}]", fxVersion, BASSVERSION);
 
 			BASS_Start();
 			BASS_Set3DFactors(1.0F, 10.0F, 1.0F);
@@ -128,23 +128,23 @@ namespace rawrbox {
 	}
 
 	void BASS::shutdown() {
-		if (!_initialized || _shutdown) return;
-		_shutdown = true;
+		if (!BASS::_initialized || BASS::_shutdown) return;
+		BASS::_shutdown = true;
 
-		sounds.clear();
+		BASS::sounds.clear();
 		BASS_Free();
 
-		_initialized = false;
+		BASS::_initialized = false;
 
-		_logger->warn("BASS Shutdown");
-		_logger.reset();
+		BASS::_logger->warn("BASS Shutdown");
+		BASS::_logger.reset();
 	}
 
 	// LOAD ----
 	rawrbox::SoundBase* BASS::loadSound(const std::filesystem::path& path, uint32_t flags) {
 		std::string pth = path.generic_string();
 
-		if (sounds.find(pth) != sounds.end()) return sounds[pth].get();
+		if (BASS::sounds.find(pth) != BASS::sounds.end()) return BASS::sounds[pth].get();
 		ZoneScopedN("BASS::loadSound");
 		ZoneText(pth.c_str(), pth.size());
 
@@ -187,13 +187,13 @@ namespace rawrbox {
 			BASS_FX_BPM_CallbackSet(sample, std::bit_cast<BPMPROC*>(&soundBPM), 1, 0, 0, nullptr);
 		}
 
-		sounds[pth] = std::make_unique<rawrbox::SoundBase>(sample, 0, flags, shouldStream);
-		return sounds[pth].get();
+		BASS::sounds[pth] = std::make_unique<rawrbox::SoundBase>(sample, 0, flags, shouldStream);
+		return BASS::sounds[pth].get();
 	}
 
 	rawrbox::SoundBase* BASS::loadHTTPSound(const std::string& url, uint32_t flags) {
 		if (!url.starts_with("http://") && !url.starts_with("https://")) RAWRBOX_CRITICAL("Invalid sound url '{}'", url);
-		if (sounds.find(url) != sounds.end()) return sounds[url].get();
+		if (BASS::sounds.find(url) != BASS::sounds.end()) return BASS::sounds[url].get();
 		ZoneScopedN("BASS::loadHTTPSound");
 		ZoneText(url.c_str(), url.size());
 
@@ -224,20 +224,20 @@ namespace rawrbox {
 			BASS_FX_BPM_CallbackSet(sampleStreamed, std::bit_cast<BPMPROC*>(&soundBPM), 1, 0, 0, nullptr);
 		}
 
-		sounds[url] = std::make_unique<rawrbox::SoundBase>(sampleStreamed, 0, flags, true);
-		return sounds[url].get();
+		BASS::sounds[url] = std::make_unique<rawrbox::SoundBase>(sampleStreamed, 0, flags, true);
+		return BASS::sounds[url].get();
 	}
 	// ----
 
 	// UTILS -----
 	void BASS::setHasFocus(bool focus) {
-		if (!_initialized) return;
-		setMasterVolume(_muteOnUnfocus ? (focus ? _masterVolume : 0.F) : _masterVolume, false); // Mute on unfocus
+		if (!BASS::_initialized) return;
+		BASS::setMasterVolume(BASS::_muteOnUnfocus ? (focus ? BASS::_masterVolume : 0.F) : BASS::_masterVolume, false); // Mute on unfocus
 	}
 
 	void BASS::setMasterVolume(float volume, bool set) {
 		volume = std::clamp(volume, 0.F, 1.F);
-		if (set) _masterVolume = volume;
+		if (set) BASS::_masterVolume = volume;
 
 		BASS_SetConfig(BASS_CONFIG_GVOL_MUSIC, static_cast<DWORD>(volume * 10000));
 		BASS_SetConfig(BASS_CONFIG_GVOL_SAMPLE, static_cast<DWORD>(volume * 10000));
@@ -245,18 +245,18 @@ namespace rawrbox {
 	}
 
 	void BASS::setMuteOnUnfocus(bool set) {
-		_muteOnUnfocus = set;
+		BASS::_muteOnUnfocus = set;
 	}
 
 	float BASS::getMasterVolume() {
-		return _masterVolume;
+		return BASS::_masterVolume;
 	}
 
 	void BASS::setListenerLocation(const rawrbox::Vector3f& location, const rawrbox::Vector3f& front, const rawrbox::Vector3f& up) {
-		if (!_initialized) return;
+		if (!BASS::_initialized) return;
 
-		auto velo = location - _oldLocation;
-		_oldLocation = location;
+		auto velo = location - BASS::_oldLocation;
+		BASS::_oldLocation = location;
 
 		BASS_3DVECTOR Bass_Player = {location.x, location.y, location.z};
 		BASS_3DVECTOR Bass_Front = {front.x, front.y, front.z};

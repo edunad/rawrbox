@@ -4,6 +4,7 @@
 #include <rawrbox/render/models/instanced.hpp>
 #include <rawrbox/render/models/model.hpp>
 #include <rawrbox/render/models/text3D.hpp>
+#include <rawrbox/render/renderer.hpp>
 
 #include <memory>
 
@@ -17,6 +18,8 @@ namespace gpu {
 		bool _ready = false;
 		rawrbox::Mesh<>* _lastPickedMesh = nullptr;
 		rawrbox::Instance* _lastPickedInstance = nullptr;
+
+		rawrbox::PickRequest _pick = {};
 
 		void setupGLFW() override;
 		void init() override;

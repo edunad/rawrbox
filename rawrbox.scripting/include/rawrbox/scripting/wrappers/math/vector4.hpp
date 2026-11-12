@@ -107,6 +107,7 @@ namespace rawrbox {
 			}
 
 			classDef.endClass();
+			rawrbox::LuaUtils::registerJSONType<VEC>(name);
 		}
 
 	public:

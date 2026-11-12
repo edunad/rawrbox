@@ -7,8 +7,11 @@
 #include <rawrbox/utils/dirty_ranges.hpp>
 #include <rawrbox/utils/string.hpp>
 
-#include <Buffer.h>
 #include <tracy/Tracy.hpp>
+
+#include <Buffer.h>
+
+#include <optional>
 
 namespace rawrbox {
 
@@ -23,7 +26,7 @@ namespace rawrbox {
 		std::vector<rawrbox::Vector3f> pos = {};
 		std::vector<rawrbox::Vector4f> normals = {};
 
-		[[nodiscard]] bool isActive() const { return weight > 0.F; }
+		[[nodiscard]] bool isActive() const { return this->weight > 0.F; }
 		BlendShapes() = default;
 	};
 
@@ -72,6 +75,8 @@ namespace rawrbox {
 		// SHADOWS ---
 		rawrbox::BBOX _vertexBounds = {};
 		bool _vertexBoundsDirty = true;
+
+		std::optional<rawrbox::BBOX> _cullBounds = std::nullopt;
 		// ----
 
 		// GPU CULLING ---
@@ -169,6 +174,13 @@ namespace rawrbox {
 			const auto indcSize = static_cast<uint64_t>(this->_mesh->indices.size());
 
 			const bool empty = vertSize == 0 || indcSize == 0;
+			if (empty) {
+				this->_dirtyVB.clear();
+				this->_dirtyIB.clear();
+
+				this->_requiresUpdate = false;
+				return;
+			}
 
 			uint64_t sizeVB = sizeof(typename M::vertexBufferType) * vertSize;
 			uint64_t sizeIB = sizeof(uint32_t) * indcSize;
@@ -323,7 +335,7 @@ namespace rawrbox {
 			argsDesc.Mode = Diligent::BUFFER_MODE_RAW;
 			argsDesc.BindFlags = Diligent::BIND_UNORDERED_ACCESS | Diligent::BIND_INDIRECT_DRAW_ARGS;
 			argsDesc.ElementByteStride = sizeof(uint32_t);
-			argsDesc.Size = static_cast<uint64_t>(std::max(draws, 1U)) * DRAW_ARGS * sizeof(uint32_t);
+			argsDesc.Size = static_cast<uint64_t>(std::max(draws, 1U)) * this->DRAW_ARGS * sizeof(uint32_t);
 
 			device->CreateBuffer(visibleDesc, nullptr, &this->_visibleBuffer);
 			device->CreateBuffer(visibilityDesc, nullptr, &this->_visibility);
@@ -331,7 +343,7 @@ namespace rawrbox {
 			if (this->_visibleBuffer == nullptr || this->_visibility == nullptr || this->_argsBuffer == nullptr)
 				RAWRBOX_CRITICAL("Failed to create culling buffers");
 
-			this->_cullArgs.assign(static_cast<size_t>(std::max(draws, 1U)) * DRAW_ARGS, 0U);
+			this->_cullArgs.assign(static_cast<size_t>(std::max(draws, 1U)) * this->DRAW_ARGS, 0U);
 			this->_resetVIS = true;
 		}
 
@@ -451,7 +463,7 @@ namespace rawrbox {
 		}
 
 		virtual bool removeBlendShape(const std::string& id) {
-			auto fnd = this->_blend_shapes.find(id);
+			const auto& fnd = this->_blend_shapes.find(id);
 			if (fnd == this->_blend_shapes.end()) return false;
 
 			this->_blend_shapes.erase(id);
@@ -460,7 +472,7 @@ namespace rawrbox {
 		}
 
 		virtual bool setBlendShape(const std::string& id, float weight) {
-			auto fnd = this->_blend_shapes.find(id);
+			const auto& fnd = this->_blend_shapes.find(id);
 			if (fnd == this->_blend_shapes.end()) return false;
 
 			fnd->second->weight = weight;
@@ -588,9 +600,13 @@ namespace rawrbox {
 			return this->isUploaded() && this->_material != nullptr && this->_material->shadow != nullptr;
 		}
 
+		virtual void setCullBounds(std::optional<rawrbox::BBOX> bounds) { this->_cullBounds = bounds; }
+		[[nodiscard]] virtual const std::optional<rawrbox::BBOX>& getCullBounds() const { return this->_cullBounds; }
+
 		[[nodiscard]] const rawrbox::BBOX& getCachedVertexBounds() {
+			if (this->_cullBounds.has_value()) return this->_cullBounds.value();
 			if (this->_vertexBoundsDirty) {
-				this->_vertexBounds = getVertexBounds(*this->_mesh);
+				this->_vertexBounds = this->getVertexBounds(*this->_mesh);
 				this->_vertexBoundsDirty = false;
 			}
 
