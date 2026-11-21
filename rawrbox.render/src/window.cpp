@@ -25,7 +25,9 @@
 
 #if _WIN32
 	#include <dwmapi.h>
+	#include <uxtheme.h>
 	#pragma comment(lib, "dwmapi.lib")
+	#pragma comment(lib, "uxtheme.lib")
 #endif
 
 #include <rawrbox/engine/engine.hpp>
@@ -235,10 +237,7 @@ namespace rawrbox {
 		if (this->_settings.monitor >= 0) {
 			int monitorscount = 0;
 			auto* monitors = glfwGetMonitors(&monitorscount);
-			if (this->_settings.monitor < monitorscount) {
-				mon = monitors[this->_settings.monitor];
-				properties[GLFW_VISIBLE] = 0;
-			}
+			if (this->_settings.monitor < monitorscount) mon = monitors[this->_settings.monitor];
 		}
 
 		if (mon == nullptr) RAWRBOX_CRITICAL("Failed to get primary window");
@@ -268,6 +267,8 @@ namespace rawrbox {
 		// ----
 
 		// Window properties
+		properties[GLFW_VISIBLE] = 0;
+		properties[GLFW_FOCUS_ON_SHOW] = 0; // Focused after the black paint
 		properties[GLFW_RESIZABLE] = (flags & WindowFlags::Features::RESIZABLE) > 0 ? 1 : 0;
 		properties[GLFW_DECORATED] = borderless || fullscreen || transparent ? 0 : 1;
 		for (const auto& pair : properties) {
@@ -284,8 +285,6 @@ namespace rawrbox {
 		if (glfwHandle == nullptr) RAWRBOX_CRITICAL("Failed to initialize window [{} - {}x{}]", this->_settings.title, width, height);
 
 		this->_handle = glfwHandle;
-		this->_hasFocus = glfwGetWindowAttrib(glfwHandle, GLFW_FOCUSED) == GLFW_TRUE;
-
 		glfwSetWindowUserPointer(glfwHandle, this);
 
 		// Create cursor
@@ -306,7 +305,6 @@ namespace rawrbox {
 		}
 
 		glfwSetWindowPos(glfwHandle, this->_settings.pos.x, this->_settings.pos.y);
-		glfwShowWindow(glfwHandle);
 		// ------
 
 #ifdef WIN32
@@ -341,8 +339,32 @@ namespace rawrbox {
 		DWM_SYSTEMBACKDROP_TYPE backdrop_type = transparent ? DWMSBT_NONE : DWMSBT_MAINWINDOW;
 		DwmSetWindowAttribute(hwnd, DWMWA_SYSTEMBACKDROP_TYPE, &backdrop_type, sizeof(backdrop_type));
 		// ---------------
+
+		// Black until the first frame ----
+		RECT rect = {};
+		GetClientRect(hwnd, &rect);
+
+		HDC dc = GetDC(hwnd);
+		HDC paint = nullptr;
+
+		HPAINTBUFFER buffer = BeginBufferedPaint(dc, &rect, BPBF_TOPDOWNDIB, nullptr, &paint);
+
+		FillRect(paint, &rect, static_cast<HBRUSH>(GetStockObject(BLACK_BRUSH)));
+		BufferedPaintSetAlpha(buffer, nullptr, 255);
+
+		// ---------------
 #endif
 		// ---------------
+
+		glfwShowWindow(glfwHandle);
+
+#ifdef WIN32
+		EndBufferedPaint(buffer, TRUE);
+		ReleaseDC(hwnd, dc);
+#endif
+
+		glfwFocusWindow(glfwHandle);
+		this->_hasFocus = glfwGetWindowAttrib(glfwHandle, GLFW_FOCUSED) == GLFW_TRUE;
 
 		glfwSetKeyCallback(this->_handle, this->callbacks_key);
 		glfwSetCharCallback(this->_handle, this->callbacks_char);
