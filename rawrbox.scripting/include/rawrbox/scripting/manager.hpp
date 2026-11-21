@@ -3,6 +3,7 @@
 #include <rawrbox/scripting/mod.hpp>
 #include <rawrbox/scripting/plugin.hpp>
 #include <rawrbox/scripting/utils/checker.hpp>
+#include <rawrbox/scripting/utils/lua.hpp>
 #include <rawrbox/utils/console.hpp>
 #include <rawrbox/utils/event.hpp>
 #include <rawrbox/utils/file_watcher.hpp>
@@ -50,6 +51,8 @@ namespace rawrbox {
 		uint32_t libraries = rawrbox::ScriptingLibraries::ALL;
 
 		std::vector<std::filesystem::path> definitions = {}; // Luau definition files, aka .d.lua
+
+		rawrbox::LuaDebugLevel debugLevel = rawrbox::LuaDebugLevel::LINES;
 	};
 
 	class SCRIPTING {

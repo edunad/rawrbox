@@ -28,6 +28,8 @@ namespace rawrbox {
 		float _shadowLodBias = 0.F;
 		// -----------
 
+		void markDirty() const;
+
 	public:
 		LightBase(const rawrbox::Vector3f& pos, const rawrbox::Colorf& color, float radius);
 		LightBase(const LightBase&) = delete;

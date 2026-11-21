@@ -35,6 +35,7 @@ namespace rawrbox {
 
 	// OTHER INTERNAL  -----
 	bool __LIGHT_DIRTY__ = true;
+	bool __LIGHT_DIRECTIONAL_DIRTY__ = false;
 	bool __DECALS_DIRTY__ = true;
 	// --------------
 } // namespace rawrbox

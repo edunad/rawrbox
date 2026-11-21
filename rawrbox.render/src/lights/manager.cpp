@@ -27,7 +27,9 @@ namespace rawrbox {
 	const rawrbox::CameraBase* LIGHTS::_zbinCamera = nullptr;
 	uint64_t LIGHTS::_zbinFrame = 0;
 	rawrbox::Vector2f LIGHTS::_zbinNearFar = {};
+
 	bool LIGHTS::_BINS_DIRTY = true;
+	bool LIGHTS::_DIRECTIONAL_DIRTY = false;
 	// -----------
 
 	// BUFFERS ---
@@ -156,6 +158,7 @@ namespace rawrbox {
 
 		LIGHTS::_BINNED = true;
 		LIGHTS::_BINS_DIRTY = true;
+		LIGHTS::_DIRECTIONAL_DIRTY = false;
 
 		LIGHTS::_settings.lightSettings = {};
 	}
@@ -185,6 +188,8 @@ namespace rawrbox {
 		if (!rawrbox::__LIGHT_DIRTY__) return;
 
 		rawrbox::__LIGHT_DIRTY__ = false;
+		rawrbox::__LIGHT_DIRECTIONAL_DIRTY__ = false;
+
 		LIGHTS::_BINS_DIRTY = true;
 
 		// Active lights ---
@@ -208,12 +213,51 @@ namespace rawrbox {
 		}
 	}
 
+	void LIGHTS::updateDirectionalData() {
+		if (!rawrbox::__LIGHT_DIRECTIONAL_DIRTY__) return;
+		rawrbox::__LIGHT_DIRECTIONAL_DIRTY__ = false;
+
+		LIGHTS::_DIRECTIONAL_DIRTY = true;
+
+		size_t index = 0;
+		for (auto& l : LIGHTS::_lights) {
+			if (!l->isActive()) continue;
+			if (index >= LIGHTS::_data.size()) break;
+
+			if (l->getType() == rawrbox::LightType::DIRECTIONAL) LIGHTS::_data[index] = LIGHTS::getVertexData(*l);
+			index++;
+		}
+	}
+
+	void LIGHTS::uploadDirectional() {
+		if (!LIGHTS::_DIRECTIONAL_DIRTY || LIGHTS::_BINS_DIRTY) return;
+		LIGHTS::_DIRECTIONAL_DIRTY = false;
+
+		size_t directional = 0;
+		for (const auto& light : LIGHTS::_data) {
+			if (static_cast<rawrbox::LightType>(light.type & rawrbox::LightDataVertex::TYPE_MASK) != rawrbox::LightType::DIRECTIONAL) continue;
+			if (directional >= LIGHTS::_sorted.size()) break;
+
+			LIGHTS::_sorted[directional++] = light;
+		}
+
+		if (directional == 0) return;
+		auto* context = rawrbox::RENDERER->context();
+		if (context == nullptr) RAWRBOX_CRITICAL("Invalid renderer context");
+
+		rawrbox::BarrierUtils::barrier({{LIGHTS::_buffer, Diligent::RESOURCE_STATE_SHADER_RESOURCE, Diligent::RESOURCE_STATE_COPY_DEST, Diligent::STATE_TRANSITION_FLAG_UPDATE_STATE}});
+		context->UpdateBuffer(LIGHTS::_buffer, 0, sizeof(rawrbox::LightDataVertex) * static_cast<uint64_t>(directional), LIGHTS::_sorted.data(), Diligent::RESOURCE_STATE_TRANSITION_MODE_VERIFY);
+		rawrbox::BarrierUtils::barrier({{LIGHTS::_buffer, Diligent::RESOURCE_STATE_COPY_DEST, Diligent::RESOURCE_STATE_SHADER_RESOURCE, Diligent::STATE_TRANSITION_FLAG_UPDATE_STATE}});
+	}
+
 	bool LIGHTS::updateBins(const rawrbox::CameraBase& camera) {
 		const auto& view = camera.getViewMtx();
 		const rawrbox::Vector2f nearFar = {rawrbox::MAIN_CAMERA->getZNear(), rawrbox::MAIN_CAMERA->getZFar()}; // Must match SCamera NearFar (shared, main camera)
 
 		if (!LIGHTS::_BINS_DIRTY && LIGHTS::_zbinCamera == &camera && LIGHTS::_zbinFrame == camera.getMoveRevision() && LIGHTS::_zbinNearFar == nearFar) return false;
+
 		LIGHTS::_BINS_DIRTY = false;
+		LIGHTS::_DIRECTIONAL_DIRTY = false;
 
 		LIGHTS::_zbinCamera = &camera;
 		LIGHTS::_zbinFrame = camera.getMoveRevision();
@@ -283,11 +327,15 @@ namespace rawrbox {
 			LIGHTS::_CONSTANTS_DIRTY = true;
 		}
 
-		LIGHTS::updateData(); // Rebuild if dirty
+		LIGHTS::updateData();            // Rebuild if dirty
+		LIGHTS::updateDirectionalData(); // Only directional lights
 
 		bool rebuilt = false;
 		if (binned) rebuilt = LIGHTS::updateBins(camera);
-		LIGHTS::updateConstants(); // Update buffer if dirty
+		
+		LIGHTS::uploadDirectional();
+		LIGHTS::updateConstants();   // Update buffer if dirty
+
 		return rebuilt;
 	}
 
@@ -356,7 +404,7 @@ namespace rawrbox {
 			data.cosUmbra = std::cos(rawrbox::MathUtils::toRad(spot.y) / 2.F);
 		} else if (light.getType() == rawrbox::LightType::RECT) {
 			const auto rect = light.getData();
-			
+
 			// RE-USE UMBRA AND PENUMBRA
 			data.cosUmbra = std::bit_cast<float>(static_cast<uint32_t>(rawrbox::PackUtils::toFP16(rect.x)) | (static_cast<uint32_t>(rawrbox::PackUtils::toFP16(rect.y)) << 16U));
 			data.cosPenumbra = std::bit_cast<float>(static_cast<uint32_t>(rawrbox::PackUtils::toFP16(rect.z)) | (static_cast<uint32_t>(rawrbox::PackUtils::toFP16(rect.w)) << 16U));

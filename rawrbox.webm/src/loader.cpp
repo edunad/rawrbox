@@ -148,7 +148,7 @@ namespace rawrbox {
 						scanned = true;
 					}
 
-					const auto addition = additions.find(block->m_start);
+					const auto& addition = additions.find(block->m_start);
 					const long long blockTime = block->GetTime(cluster);
 
 					for (int i = 0; i < block->GetFrameCount(); i++) {
@@ -418,14 +418,14 @@ namespace rawrbox {
 	}
 
 	size_t WEBM::findFrame(const uint64_t time) const {
-		const auto it = std::upper_bound(this->_entries.begin(), this->_entries.end(), time, [](uint64_t value, const rawrbox::WEBMFrameEntry& entry) { return value < entry.time; });
+		const auto& it = std::upper_bound(this->_entries.begin(), this->_entries.end(), time, [](uint64_t value, const rawrbox::WEBMFrameEntry& entry) { return value < entry.time; });
 		if (it == this->_entries.begin()) return 0;
 
 		return static_cast<size_t>(std::distance(this->_entries.begin(), it)) - 1;
 	}
 
 	size_t WEBM::findKeyFrame(size_t index) const {
-		const auto it = std::upper_bound(this->_keyFrames.begin(), this->_keyFrames.end(), index);
+		const auto& it = std::ranges::upper_bound(this->_keyFrames, index);
 		if (it == this->_keyFrames.begin()) return 0;
 
 		return *std::prev(it);

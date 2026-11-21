@@ -110,7 +110,7 @@ namespace rawrbox {
 					const bool inlined = vpkFile.preload && data.size() <= std::numeric_limits<uint16_t>::max();
 					const auto key = fmt::format("{}|{}", vpkFile.preload, rawrbox::MD5::toString(rawrbox::MD5::calculate(data.data(), data.size())));
 
-					auto found = written.find(key);
+					const auto& found = written.find(key);
 					if (!inlined && found != written.end()) {
 						entry.archiveIndex = found->second.archiveIndex;
 						entry.entryOffset = found->second.entryOffset;

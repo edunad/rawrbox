@@ -1,10 +1,11 @@
 #include <rawrbox/scripting/wrappers/hooks.hpp>
 
 #include <algorithm>
+#include <iterator>
 
 namespace rawrbox {
 	// PRIVATE -----
-	std::unordered_map<std::string, std::vector<rawrbox::Hook>> Hooks::_hooks = {};
+	std::unordered_map<std::string, rawrbox::Hooks::HookList, rawrbox::Hooks::StringHash, std::equal_to<>> Hooks::_hooks = {};
 	// -------------
 
 	// LOGGER ------
@@ -12,16 +13,19 @@ namespace rawrbox {
 	// -------------
 
 	int Hooks::callLua(lua_State* L) {
-		const std::string id = luaL_checkstring(L, 1);
+		size_t length = 0;
+
+		const char* name = luaL_checklstring(L, 1, &length);
+		const std::string_view id(name, length);
 
 		const auto& fnd = Hooks::_hooks.find(id);
 		if (fnd == Hooks::_hooks.end()) return 0;
-		ZoneTransientN(zone, id.c_str(), true);
+		ZoneTransientN(zone, fnd->first.c_str(), true);
 
 		const int args = lua_gettop(L) - 1;
-		const auto hooks = fnd->second;
+		const HookList hooks = fnd->second;
 
-		for (const auto& hook : hooks) {
+		for (const auto& hook : *hooks) {
 			ZoneTransientN(hookZone, hook.name.c_str(), true);
 
 			lua_State* target = hook.func.state();
@@ -51,28 +55,41 @@ namespace rawrbox {
 
 		const luabridge::LuaRef handler(lua_mainthread(func.state()), func);
 
-		auto& arr = Hooks::_hooks[id];
-		const auto hook = std::ranges::lower_bound(arr, name, {}, &rawrbox::Hook::name);
+		HookList& list = Hooks::_hooks[id];
+		std::vector<rawrbox::Hook> arr = list == nullptr ? std::vector<rawrbox::Hook>{} : *list; // Copy
+
+		const auto& hook = std::ranges::lower_bound(arr, name, {}, &rawrbox::Hook::name);
 		if (hook != arr.end() && hook->name == name) {
 			hook->func = handler;
-			return;
+		} else {
+			arr.emplace(hook, name, handler);
 		}
 
-		arr.emplace(hook, name, handler);
+		list = std::make_shared<const std::vector<rawrbox::Hook>>(std::move(arr));
 	}
 
 	void Hooks::destroy(const std::string& id, const std::string& name) {
 		const auto& nameMap = Hooks::_hooks.find(id);
 		if (nameMap == Hooks::_hooks.end()) return;
 
-		auto& arr = nameMap->second;
-		std::erase_if(arr, [&name](const auto& elem) { return elem.name == name; });
-		if (arr.empty()) Hooks::_hooks.erase(nameMap);
+		const auto& list = *nameMap->second;
+		const auto& hook = std::ranges::find(list, name, &rawrbox::Hook::name);
+		if (hook == list.end()) return;
+
+		std::vector<rawrbox::Hook> arr(list.begin(), hook); // Copy
+		arr.insert(arr.end(), std::next(hook), list.end());
+
+		if (arr.empty()) {
+			Hooks::_hooks.erase(nameMap);
+			return;
+		}
+
+		nameMap->second = std::make_shared<const std::vector<rawrbox::Hook>>(std::move(arr));
 	}
 
 	bool Hooks::exists(const std::string& id, const std::string& name) {
 		const auto& nameMap = Hooks::_hooks.find(id);
-		return nameMap != Hooks::_hooks.end() && std::ranges::any_of(nameMap->second, [&name](const auto& elem) {
+		return nameMap != Hooks::_hooks.end() && std::ranges::any_of(*nameMap->second, [&name](const auto& elem) {
 			return elem.name == name;
 		});
 	}
@@ -83,9 +100,25 @@ namespace rawrbox {
 			return;
 		}
 
+		const auto owned = [L](const rawrbox::Hook& elem) { return lua_mainthread(elem.func.state()) == lua_mainthread(L); };
 		for (auto it = Hooks::_hooks.begin(); it != Hooks::_hooks.end();) {
-			std::erase_if(it->second, [L](const auto& elem) { return lua_mainthread(elem.func.state()) == lua_mainthread(L); });
-			it = it->second.empty() ? Hooks::_hooks.erase(it) : std::next(it);
+			const auto& list = *it->second;
+			const auto& first = std::ranges::find_if(list, owned);
+			if (first == list.end()) {
+				it = std::next(it);
+				continue;
+			}
+
+			std::vector<rawrbox::Hook> arr(list.begin(), first); // Copy
+			std::ranges::copy_if(std::next(first), list.end(), std::back_inserter(arr), std::not_fn(owned));
+
+			if (arr.empty()) {
+				it = Hooks::_hooks.erase(it);
+				continue;
+			}
+
+			it->second = std::make_shared<const std::vector<rawrbox::Hook>>(std::move(arr));
+			it = std::next(it);
 		}
 	}
 

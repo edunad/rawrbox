@@ -7,6 +7,7 @@
 
 	#include <algorithm>
 	#include <limits>
+	#include <memory>
 
 namespace rawrbox {
 	// FUNCTIONS ---
@@ -151,7 +152,7 @@ namespace rawrbox {
 
 		auto find = [&formats](VkFormat format) -> const VkSurfaceFormatKHR* {
 			const auto& fnd = std::ranges::find_if(formats, [format](const VkSurfaceFormatKHR& f) { return f.format == format; });
-			return fnd == formats.end() ? nullptr : &(*fnd);
+			return fnd == formats.end() ? nullptr : std::to_address(fnd);
 		};
 
 		if (const auto* fnd = find(this->getBufferFormat(this->_desc.ColorBufferFormat)); fnd != nullptr) return *fnd;

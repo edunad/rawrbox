@@ -4,8 +4,10 @@
 
 #include <tracy/Tracy.hpp>
 
+#include <functional>
 #include <memory>
 #include <string>
+#include <string_view>
 #include <unordered_map>
 #include <utility>
 #include <vector>
@@ -20,7 +22,13 @@ namespace rawrbox {
 
 	class Hooks {
 	private:
-		static std::unordered_map<std::string, std::vector<rawrbox::Hook>> _hooks;
+		struct StringHash {
+			using is_transparent = void;
+			[[nodiscard]] size_t operator()(std::string_view id) const { return std::hash<std::string_view>{}(id); }
+		};
+
+		using HookList = std::shared_ptr<const std::vector<rawrbox::Hook>>;
+		static std::unordered_map<std::string, HookList, StringHash, std::equal_to<>> _hooks;
 
 		// LOGGER ------
 		static std::unique_ptr<rawrbox::Logger> _logger;
@@ -30,14 +38,15 @@ namespace rawrbox {
 
 	public:
 		template <typename... Args>
-		static void call(const std::string& id, const Args&... args) {
+		static void call(std::string_view id, const Args&... args) {
 			const auto& fnd = Hooks::_hooks.find(id);
 			if (fnd == Hooks::_hooks.end()) return;
-			ZoneTransientN(zone, id.c_str(), true);
+			ZoneTransientN(zone, fnd->first.c_str(), true);
 
-			const auto hooks = fnd->second;
-			for (const auto& hook : hooks) {
+			const HookList hooks = fnd->second;
+			for (const auto& hook : *hooks) {
 				ZoneTransientN(hookZone, hook.name.c_str(), true);
+				
 				auto result = rawrbox::LuaUtils::call(hook.func, args...);
 				if (result.hasFailed()) Hooks::_logger->error("Hook '{}' handler '{}' failed\n  └── {}", id, hook.name, result.errorMessage());
 			}

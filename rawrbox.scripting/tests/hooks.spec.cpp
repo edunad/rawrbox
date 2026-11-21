@@ -102,6 +102,38 @@ TEST_CASE("Hooks should behave as expected", "[rawrbox::Hooks]") {
 		REQUIRE(rawrbox::readHooksGlobal(b, "SEEN") == 0.0);
 	}
 
+	SECTION("rawrbox::Hooks::call") {
+		rawrbox::runHooksLua(a, R"(
+			ORDER = ''
+			hooks.add('change', 'b', function()
+				ORDER = ORDER .. 'b'
+				hooks.destroy('change', 'c')
+				hooks.add('change', 'a', function() ORDER = ORDER .. 'a' end)
+			end)
+			hooks.add('change', 'c', function() ORDER = ORDER .. 'c' end)
+		)");
+
+		rawrbox::Hooks::call("change");
+		rawrbox::runHooksLua(a, "hooks.call('change')");
+
+		lua_getglobal(a, "ORDER");
+		REQUIRE(std::string(lua_tostring(a, -1)) == "bcab");
+		lua_pop(a, 1);
+
+		REQUIRE(rawrbox::Hooks::exists("change", "a"));
+		REQUIRE_FALSE(rawrbox::Hooks::exists("change", "c"));
+	}
+
+	SECTION("rawrbox::Hooks::call") {
+		rawrbox::runHooksLua(a, "ONCE = 0; hooks.add('once', 'only', function() ONCE = ONCE + 1; hooks.destroy('once', 'only') end)");
+
+		rawrbox::Hooks::call("once");
+		rawrbox::Hooks::call("once");
+
+		REQUIRE(rawrbox::readHooksGlobal(a, "ONCE") == 1.0);
+		REQUIRE_FALSE(rawrbox::Hooks::exists("once", "only"));
+	}
+
 	SECTION("rawrbox::Hooks::clear") {
 		rawrbox::Hooks::clear(a);
 		REQUIRE_FALSE(rawrbox::Hooks::exists("ping", "a"));

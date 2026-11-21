@@ -35,6 +35,7 @@ namespace rawrbox {
 
 		uint32_t _capacity = 0;
 		uint32_t _gpuCullMin = RB_RENDER_GPU_CULL_MIN_INSTANCES;
+		uint64_t _maxInstances = MAX_INSTANCES;
 
 		void updateBuffers() override {
 			rawrbox::ModelBase<M>::updateBuffers();
@@ -44,8 +45,8 @@ namespace rawrbox {
 		}
 
 		[[nodiscard]] uint32_t bufferCapacity(size_t requested) const {
-			if (this->_instances.size() > MAX_INSTANCES) RAWRBOX_CRITICAL("Too many instances {}!. Max is {}! Increase 'RB_RENDER_MAX_INSTANCE_BUFFER_SIZE'", this->_instances.size(), MAX_INSTANCES);
-			return static_cast<uint32_t>(std::clamp<uint64_t>(requested, 1U, MAX_INSTANCES));
+			if (this->_instances.size() > this->_maxInstances) RAWRBOX_CRITICAL("Too many instances {}!. Max is {}! Increase max instances / RB_RENDER_MAX_INSTANCE_BUFFER_SIZE", this->_instances.size(), this->_maxInstances);
+			return static_cast<uint32_t>(std::clamp<uint64_t>(requested, 1U, this->_maxInstances));
 		}
 
 		virtual void resizeBuffer(size_t count) {
@@ -187,9 +188,9 @@ namespace rawrbox {
 		// -----------
 
 	public:
-		explicit InstancedModel(size_t instanceSize = 0) {
+		explicit InstancedModel(size_t instanceSize = 0, uint64_t maxInstances = MAX_INSTANCES) : _maxInstances(std::clamp<uint64_t>(maxInstances, 1U, MAX_INSTANCES)) {
 			this->_cullCompact = true;
-			if (instanceSize != 0) this->_instances.reserve(instanceSize);
+			if (instanceSize != 0) this->_instances.reserve(std::min<uint64_t>(instanceSize, this->_maxInstances));
 		}
 
 		InstancedModel(const InstancedModel&) = delete;
@@ -258,7 +259,7 @@ namespace rawrbox {
 		}
 
 		virtual void reserve(size_t instances) {
-			if (instances > MAX_INSTANCES) RAWRBOX_CRITICAL("Cannot reserve {} instances, max is {}! Increase 'RB_RENDER_MAX_INSTANCE_BUFFER_SIZE'", instances, MAX_INSTANCES);
+			if (instances > this->_maxInstances) RAWRBOX_CRITICAL("Cannot reserve {} instances! Max is {}! Increase max instances / RB_RENDER_MAX_INSTANCE_BUFFER_SIZE", instances, this->_maxInstances);
 			this->_instances.reserve(instances);
 			if (this->_dataBuffer == nullptr || instances <= this->_capacity) return;
 
@@ -314,7 +315,7 @@ namespace rawrbox {
 
 			Diligent::DynamicBufferCreateInfo dynamicBuff;
 			dynamicBuff.Desc = InstBuffDesc;
-			dynamicBuff.VirtualSize = RB_RENDER_MAX_INSTANCE_BUFFER_SIZE;
+			dynamicBuff.VirtualSize = sizeof(rawrbox::Instance) * this->_maxInstances;
 
 			const uint32_t capacity = this->bufferCapacity(this->_instances.capacity());
 

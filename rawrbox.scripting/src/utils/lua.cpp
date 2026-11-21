@@ -8,34 +8,31 @@
 
 #include <algorithm>
 #include <cmath>
-#include <mutex>
-#include <shared_mutex>
+#include <memory>
 
 namespace rawrbox {
 	// PROTECTED ---
-	std::shared_mutex LuaUtils::_jsonTypesLock;
 	std::vector<rawrbox::LuaJSONType> LuaUtils::_jsonTypes = {};
 	char LuaUtils::_cacheKey = 0;
+#ifdef _DEBUG
+	rawrbox::LuaDebugLevel LuaUtils::_debugLevel = rawrbox::LuaDebugLevel::LINES;
+#else
+	rawrbox::LuaDebugLevel LuaUtils::_debugLevel = rawrbox::LuaDebugLevel::NONE;
+#endif
 	// -------------
 
 	// JSON TYPES ---
-	std::optional<rawrbox::LuaJSONType> LuaUtils::findJSONType(lua_State* L, int index) {
-		const std::shared_lock lock(LuaUtils::_jsonTypesLock);
-
+	const rawrbox::LuaJSONType* LuaUtils::findJSONType(lua_State* L, int index) {
 		for (const auto& type : LuaUtils::_jsonTypes) {
-			if (type.is(L, index)) return type;
+			if (type.is(L, index)) return &type;
 		}
 
-		return std::nullopt;
+		return nullptr;
 	}
 
-	std::optional<rawrbox::LuaJSONType> LuaUtils::findJSONType(std::string_view tag) {
-		const std::shared_lock lock(LuaUtils::_jsonTypesLock);
-
+	const rawrbox::LuaJSONType* LuaUtils::findJSONType(std::string_view tag) {
 		const auto& fnd = std::ranges::find(LuaUtils::_jsonTypes, tag, &rawrbox::LuaJSONType::tag);
-		if (fnd == LuaUtils::_jsonTypes.end()) return std::nullopt;
-
-		return *fnd;
+		return fnd == LuaUtils::_jsonTypes.end() ? nullptr : std::to_address(fnd);
 	}
 	// ---------
 
@@ -132,8 +129,8 @@ namespace rawrbox {
 				}
 			case LUA_TUSERDATA:
 				{
-					const auto type = LuaUtils::findJSONType(L, index);
-					if (type.has_value()) {
+					const auto* type = LuaUtils::findJSONType(L, index);
+					if (type != nullptr) {
 						auto json = type->encode(L, index);
 						if (!json.has_value()) return LuaUtils::valueError(fmt::format("failed to encode '{}'", type->tag));
 
@@ -207,7 +204,7 @@ namespace rawrbox {
 						object.insert_or_assign(std::move(name), std::move(field));
 					}
 
-					if (options.strict && object.size() == 1U && LuaUtils::findJSONType(object.begin()->first).has_value()) {
+					if (options.strict && object.size() == 1U && LuaUtils::findJSONType(object.begin()->first) != nullptr) {
 						return LuaUtils::valueError(fmt::format("has '{}' as its only field, which is how a {} is stored; rename the field", object.begin()->first, object.begin()->first));
 					}
 
@@ -262,8 +259,8 @@ namespace rawrbox {
 
 		if (const auto* fields = json.get_if<glz::generic::object_t>(); fields != nullptr) {
 			if (fields->size() == 1U) {
-				const auto type = LuaUtils::findJSONType(fields->begin()->first);
-				if (type.has_value()) {
+				const auto* type = LuaUtils::findJSONType(fields->begin()->first);
+				if (type != nullptr) {
 					if (!type->decode(L, fields->begin()->second)) return LuaUtils::valueError(fmt::format("is not a valid {}", type->tag));
 					return {};
 				}
@@ -324,8 +321,8 @@ namespace rawrbox {
 				}
 			case LUA_TUSERDATA:
 				{
-					const auto type = LuaUtils::findJSONType(from, index);
-					if (type.has_value()) {
+					const auto* type = LuaUtils::findJSONType(from, index);
+					if (type != nullptr) {
 						if (!type->copy(from, index, to)) return LuaUtils::valueError("failed to copy different types");
 						return {};
 					}
@@ -450,12 +447,15 @@ namespace rawrbox {
 		LuaUtils::loadBytecode(L, chunkID, LuaUtils::compile(script));
 	}
 
+	void LuaUtils::setDebugLevel(rawrbox::LuaDebugLevel level) { LuaUtils::_debugLevel = level; }
+	rawrbox::LuaDebugLevel LuaUtils::getDebugLevel() { return LuaUtils::_debugLevel; }
+
 	std::string LuaUtils::compile(const std::string& script) {
 		Luau::CompileOptions options = {};
 #ifndef _DEBUG
-		options.optimizationLevel = 2; // Remove debug info & inline lua
-		options.debugLevel = 0;
+		options.optimizationLevel = 2; // Inline lua
 #endif
+		options.debugLevel = static_cast<int>(LuaUtils::_debugLevel);
 
 		Luau::ParseOptions parser = {};
 		parser.allowDeclarationSyntax = false;
@@ -614,8 +614,6 @@ namespace rawrbox {
 		if (type.tag.empty()) RAWRBOX_CRITICAL("JSON type tag cannot be empty");
 		if (type.is == nullptr || type.encode == nullptr || type.decode == nullptr || type.copy == nullptr) RAWRBOX_CRITICAL("Invalid JSON type '{}'", type.tag);
 
-		const std::unique_lock lock(LuaUtils::_jsonTypesLock);
-
 		const auto& fnd = std::ranges::find(LuaUtils::_jsonTypes, type.tag, &rawrbox::LuaJSONType::tag);
 		if (fnd != LuaUtils::_jsonTypes.end()) {
 			*fnd = std::move(type);
@@ -626,8 +624,6 @@ namespace rawrbox {
 	}
 
 	std::vector<std::string> LuaUtils::getJSONTypes() {
-		const std::shared_lock lock(LuaUtils::_jsonTypesLock);
-
 		std::vector<std::string> tags = {};
 		tags.reserve(LuaUtils::_jsonTypes.size());
 

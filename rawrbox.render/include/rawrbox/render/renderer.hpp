@@ -197,7 +197,7 @@ namespace rawrbox {
 			if (this->hasPlugin(id)) RAWRBOX_CRITICAL("Plugin '{}' already registered!", id);
 
 			auto* pass = renderPass.get();
-			const auto order = std::ranges::upper_bound(this->_renderPlugins, pass->getPriority(), {}, [](const auto& plugin) { return plugin.second->getPriority(); });
+			const auto& order = std::ranges::upper_bound(this->_renderPlugins, pass->getPriority(), {}, [](const auto& plugin) { return plugin.second->getPriority(); });
 			this->_renderPlugins.emplace(order, id, std::move(renderPass));
 			this->_logger->info("Registered renderer plugin '{}'", id);
 

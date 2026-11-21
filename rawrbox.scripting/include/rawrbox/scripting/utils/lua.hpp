@@ -22,7 +22,6 @@
 #include <functional>
 #include <limits>
 #include <optional>
-#include <shared_mutex>
 #include <stdexcept>
 #include <string>
 #include <string_view>
@@ -72,6 +71,12 @@ namespace rawrbox {
 		[[nodiscard]] const luabridge::LuaRef& operator[](size_t index) const;
 	};
 
+	enum class LuaDebugLevel : uint8_t {
+		NONE = 0,
+		LINES = 1,
+		FULL = 2
+	};
+
 	class LuaUtils {
 	protected:
 		struct JSONError {
@@ -86,14 +91,15 @@ namespace rawrbox {
 			double highest = 0;
 		};
 
-		static std::shared_mutex _jsonTypesLock;
 		static std::vector<rawrbox::LuaJSONType> _jsonTypes;
 		static char _cacheKey;
 
+		static rawrbox::LuaDebugLevel _debugLevel;
+
 		// JSON ---
 		static void registerJSONType(rawrbox::LuaJSONType type);
-		static std::optional<rawrbox::LuaJSONType> findJSONType(lua_State* L, int index);
-		static std::optional<rawrbox::LuaJSONType> findJSONType(std::string_view tag);
+		static const rawrbox::LuaJSONType* findJSONType(lua_State* L, int index);
+		static const rawrbox::LuaJSONType* findJSONType(std::string_view tag);
 
 		static std::unexpected<JSONError> valueError(std::string reason);
 
@@ -156,6 +162,9 @@ namespace rawrbox {
 
 		static void compileAndLoadFile(lua_State* L, const std::string& chunkID, const std::filesystem::path& path);
 		static void compileAndLoadScript(lua_State* L, const std::string& chunkID, const std::string& script);
+
+		static void setDebugLevel(rawrbox::LuaDebugLevel level);
+		[[nodiscard]] static rawrbox::LuaDebugLevel getDebugLevel();
 
 		static std::string compile(const std::string& script);
 		static std::string precompile(const std::string& script); // Bytecode with the '\x1bLuau' header

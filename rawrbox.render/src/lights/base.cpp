@@ -3,12 +3,21 @@
 namespace rawrbox {
 	LightBase::LightBase(const rawrbox::Vector3f& pos, const rawrbox::Colorf& color, float radius) : _pos(pos), _color(color), _radius(radius) {};
 
+	void LightBase::markDirty() const {
+		if (this->getType() == rawrbox::LightType::DIRECTIONAL) {
+			rawrbox::__LIGHT_DIRECTIONAL_DIRTY__ = true;
+			return;
+		}
+
+		rawrbox::__LIGHT_DIRTY__ = true;
+	}
+
 	rawrbox::Colorf LightBase::getColor() const { return this->_color; }
 	void LightBase::setColor(const rawrbox::Colorf& col) {
 		if (this->_color == col) return;
 
 		this->_color = col;
-		rawrbox::__LIGHT_DIRTY__ = true;
+		this->markDirty();
 	}
 
 	float LightBase::getRadius() const { return this->_radius; }
@@ -16,7 +25,7 @@ namespace rawrbox {
 		if (this->_radius == radius) return;
 
 		this->_radius = radius;
-		rawrbox::__LIGHT_DIRTY__ = true;
+		this->markDirty();
 	}
 
 	[[nodiscard]] float LightBase::getIntensity() const { return this->_intensity; }
@@ -24,7 +33,7 @@ namespace rawrbox {
 		if (this->_intensity == intensity) return;
 
 		this->_intensity = intensity;
-		rawrbox::__LIGHT_DIRTY__ = true;
+		this->markDirty();
 	}
 
 	rawrbox::Vector4f LightBase::getData() const { return {}; }
@@ -45,7 +54,7 @@ namespace rawrbox {
 		if (this->_pos == pos) return;
 
 		this->_pos = pos;
-		rawrbox::__LIGHT_DIRTY__ = true;
+		this->markDirty();
 	}
 
 	const rawrbox::Vector3f& LightBase::getOffsetPos() const { return this->_offset; }
@@ -53,7 +62,7 @@ namespace rawrbox {
 		if (this->_offset == pos) return;
 
 		this->_offset = pos;
-		rawrbox::__LIGHT_DIRTY__ = true;
+		this->markDirty();
 	}
 
 	rawrbox::Vector3f LightBase::getWorldPos() const { return this->getPos() + this->getOffsetPos(); }
@@ -67,7 +76,7 @@ namespace rawrbox {
 		if (this->_direction == direction) return;
 
 		this->_direction = direction;
-		rawrbox::__LIGHT_DIRTY__ = true;
+		this->markDirty();
 	}
 
 	// SHADOWS ---

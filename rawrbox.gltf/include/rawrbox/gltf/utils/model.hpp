@@ -63,17 +63,17 @@ namespace rawrbox {
 
 				for (const auto& v : primitive.vertices) {
 					if constexpr (supportsNormals<typename M::vertexBufferType>) {
-						mesh.vertices.push_back(rawrbox::VertexNormData(v.position, v.uv, v.normal, v.tangent));
+						mesh.vertices.emplace_back(rawrbox::VertexNormData(v.position, v.uv, v.normal, v.tangent));
 					} else if constexpr (supportsBones<typename M::vertexBufferType>) {
 						auto data = rawrbox::VertexBoneData(v.position, v.uv);
 						data.bone_indices = v.bone_indices;
 						data.bone_weights = v.bone_weights;
 
-						mesh.vertices.push_back(data);
+						mesh.vertices.emplace_back(data);
 					} else if constexpr (supportsUVs<typename M::vertexBufferType>) {
-						mesh.vertices.push_back(rawrbox::VertexUVData(v.position, v.uv));
+						mesh.vertices.emplace_back(rawrbox::VertexUVData(v.position, v.uv));
 					} else {
-						mesh.vertices.push_back(rawrbox::VertexData(v.position));
+						mesh.vertices.emplace_back(rawrbox::VertexData(v.position));
 					}
 				}
 			}

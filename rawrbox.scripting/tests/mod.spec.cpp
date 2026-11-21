@@ -125,4 +125,17 @@ TEST_CASE("Mod should behave as expected", "[rawrbox::Mod]") {
 
 		std::filesystem::remove_all(folder);
 	}
+
+	SECTION("rawrbox::SCRIPTING::init") {
+		const rawrbox::LuaDebugLevel previous = rawrbox::LuaUtils::getDebugLevel();
+
+		rawrbox::SCRIPTING::init({.debugLevel = rawrbox::LuaDebugLevel::FULL});
+		REQUIRE(rawrbox::LuaUtils::getDebugLevel() == rawrbox::LuaDebugLevel::FULL);
+
+		rawrbox::SCRIPTING::init({});
+		REQUIRE(rawrbox::LuaUtils::getDebugLevel() == rawrbox::LuaDebugLevel::LINES);
+
+		rawrbox::SCRIPTING::init({.debugLevel = previous});
+		REQUIRE(rawrbox::LuaUtils::getDebugLevel() == previous);
+	}
 }

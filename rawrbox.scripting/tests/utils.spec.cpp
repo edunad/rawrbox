@@ -443,6 +443,37 @@ TEST_CASE("Lua Utils should behave as expected", "[rawrbox::LuaUtils]") {
 		lua_close(L);
 	}
 
+	SECTION("rawrbox::LuaUtils::setDebugLevel") {
+		const rawrbox::LuaDebugLevel previous = rawrbox::LuaUtils::getDebugLevel();
+		const std::string code = "local a = 1\nlocal b = 2\nerror('boom')";
+
+		lua_State* L = luaL_newstate();
+		luaL_openlibs(L);
+
+		rawrbox::LuaUtils::setDebugLevel(rawrbox::LuaDebugLevel::LINES);
+		REQUIRE(rawrbox::LuaUtils::getDebugLevel() == rawrbox::LuaDebugLevel::LINES);
+
+		try {
+			rawrbox::LuaUtils::compileAndLoadScript(L, "=lines", code);
+			FAIL("The script should fail");
+		} catch (const std::runtime_error& err) {
+			REQUIRE(std::string(err.what()).find(":3:") != std::string::npos);
+		}
+
+		rawrbox::LuaUtils::setDebugLevel(rawrbox::LuaDebugLevel::NONE);
+
+		try {
+			rawrbox::LuaUtils::compileAndLoadScript(L, "=nolines", code);
+			FAIL("The script should fail");
+		} catch (const std::runtime_error& err) {
+			REQUIRE(std::string(err.what()).find("boom") != std::string::npos);
+			REQUIRE(std::string(err.what()).find(":3:") == std::string::npos);
+		}
+
+		rawrbox::LuaUtils::setDebugLevel(previous);
+		lua_close(L);
+	}
+
 	SECTION("rawrbox::LuaUtils::precompile") {
 		const std::string folder = "./rawrbox-tests-lua";
 		std::filesystem::create_directories(folder);

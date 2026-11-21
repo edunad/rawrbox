@@ -360,6 +360,8 @@ namespace rawrbox {
 	// ----------
 
 	void SCRIPTING::init(const rawrbox::ScriptingSettings& settings) {
+		rawrbox::LuaUtils::setDebugLevel(settings.debugLevel);
+
 		SCRIPTING::_safeEnv = settings.safeEnv;
 		SCRIPTING::_libraries = settings.libraries;
 		SCRIPTING::_hotReloadEnabled = settings.hotReloadMs > 0;
@@ -464,7 +466,7 @@ namespace rawrbox {
 		}
 
 		auto* modPtr = mod.get();
-		const auto rank = std::ranges::upper_bound(SCRIPTING::_mods, *modPtr, SCRIPTING::rankBefore, [](const auto& loaded) -> const rawrbox::Mod& { return *loaded; });
+		const auto& rank = std::ranges::upper_bound(SCRIPTING::_mods, *modPtr, SCRIPTING::rankBefore, [](const auto& loaded) -> const rawrbox::Mod& { return *loaded; });
 		SCRIPTING::_mods.insert(rank, std::move(mod));
 
 		return modPtr;

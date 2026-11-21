@@ -73,6 +73,7 @@ namespace rawrbox {
 		// -----------
 
 		static bool _BINS_DIRTY;
+		static bool _DIRECTIONAL_DIRTY;
 		static bool _CONSTANTS_DIRTY;
 		static bool _BINNED;
 
@@ -81,6 +82,12 @@ namespace rawrbox {
 		// -------------
 
 		static void updateData();
+
+		// DIRECTIONAL LIGHT ----
+		static void updateDirectionalData();
+		static void uploadDirectional();
+		// -------------
+
 		static bool updateBins(const rawrbox::CameraBase& camera);
 
 		static void updateConstants();
