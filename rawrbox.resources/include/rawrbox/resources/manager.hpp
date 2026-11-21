@@ -226,7 +226,7 @@ namespace rawrbox {
 			auto remaining = std::make_shared<std::atomic<size_t>>(files.size());
 			for (const auto& file : files) {
 				rawrbox::ASYNC::run([file, onComplete, remaining]() {
-					loadFileImpl<T>(file.first, file.second);
+					RESOURCES::loadFileImpl<T>(file.first, file.second);
 					RESOURCES::_logger->debug("Loaded '{}'", fmt::styled(file.first, fmt::fg(fmt::color::coral)));
 
 					if (remaining->fetch_sub(1) == 1 && onComplete != nullptr) onComplete();

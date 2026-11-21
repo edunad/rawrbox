@@ -67,10 +67,10 @@ namespace rawrbox {
 				mesh.setColor(cl);
 
 				std::array<rawrbox::VertexUVData, 4> buff = {
-				    rawrbox::VertexUVData(pos + Vector3f(left, bottom, 0), rawrbox::Vector2f(glyph->textureTopLeft.x, glyph->textureBottomRight.y)),
-				    rawrbox::VertexUVData(pos + Vector3f(right, top, 0), rawrbox::Vector2f(glyph->textureBottomRight.x, glyph->textureTopLeft.y)),
-				    rawrbox::VertexUVData(pos + Vector3f(left, top, 0), rawrbox::Vector2f(glyph->textureTopLeft.x, glyph->textureTopLeft.y)),
-				    rawrbox::VertexUVData(pos + Vector3f(right, bottom, 0), rawrbox::Vector2f(glyph->textureBottomRight.x, glyph->textureBottomRight.y)),
+				    rawrbox::VertexUVData(pos + rawrbox::Vector3f(left, bottom, 0), rawrbox::Vector2f(glyph->textureTopLeft.x, glyph->textureBottomRight.y)),
+				    rawrbox::VertexUVData(pos + rawrbox::Vector3f(right, top, 0), rawrbox::Vector2f(glyph->textureBottomRight.x, glyph->textureTopLeft.y)),
+				    rawrbox::VertexUVData(pos + rawrbox::Vector3f(left, top, 0), rawrbox::Vector2f(glyph->textureTopLeft.x, glyph->textureTopLeft.y)),
+				    rawrbox::VertexUVData(pos + rawrbox::Vector3f(right, bottom, 0), rawrbox::Vector2f(glyph->textureBottomRight.x, glyph->textureBottomRight.y)),
 				};
 
 				std::array<uint32_t, 6> inds{

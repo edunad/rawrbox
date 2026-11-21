@@ -23,8 +23,8 @@ namespace rawrbox {
 	};
 
 	struct MarkdownElement {
-		MarkdownType type = MarkdownType::none;
-		MarkdownOffset offset = MarkdownOffset::left;
+		rawrbox::MarkdownType type = MarkdownType::none;
+		rawrbox::MarkdownOffset offset = MarkdownOffset::left;
 
 		std::string text;
 

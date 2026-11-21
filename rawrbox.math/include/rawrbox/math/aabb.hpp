@@ -10,13 +10,13 @@ namespace rawrbox {
 		using AABBType = AABB_t<NumberType>;
 
 	public:
-		Vector2_t<NumberType> pos = {};
-		Vector2_t<NumberType> size = {};
+		rawrbox::Vector2_t<NumberType> pos = {};
+		rawrbox::Vector2_t<NumberType> size = {};
 
 		AABB_t() = default;
 
 		constexpr AABB_t(NumberType x_, NumberType y_, NumberType w_, NumberType h_) : pos(x_, y_), size(w_, h_) {}
-		constexpr AABB_t(const Vector2_t<NumberType>& pos_, const Vector2_t<NumberType>& size_) : pos(pos_), size(size_) {}
+		constexpr AABB_t(const rawrbox::Vector2_t<NumberType>& pos_, const rawrbox::Vector2_t<NumberType>& size_) : pos(pos_), size(size_) {}
 
 		[[nodiscard]] NumberType surfaceArea() const {
 			return this->size.x * this->size.y;
@@ -40,7 +40,7 @@ namespace rawrbox {
 
 		[[nodiscard]] bool valid() const { return this->size.x > this->pos.x && this->size.y > this->pos.y; }
 		[[nodiscard]] bool empty() const { return this->pos == 0 && this->size == 0; }
-		[[nodiscard]] bool contains(const Vector2_t<NumberType>& pos_) const {
+		[[nodiscard]] bool contains(const rawrbox::Vector2_t<NumberType>& pos_) const {
 			return pos_.x >= this->pos.x &&                // left
 			       pos_.y >= this->pos.y &&                // top
 			       pos_.x <= this->pos.x + this->size.x && // right
@@ -108,9 +108,9 @@ namespace rawrbox {
 		bool operator!=(const AABBType& other) const { return !this->operator==(other); }
 	};
 
-	using AABBd = AABB_t<double>;
-	using AABBf = AABB_t<float>;
-	using AABBi = AABB_t<int>;
-	using AABBu = AABB_t<uint32_t>;
-	using AABB = AABBf;
+	using AABBd = rawrbox::AABB_t<double>;
+	using AABBf = rawrbox::AABB_t<float>;
+	using AABBi = rawrbox::AABB_t<int>;
+	using AABBu = rawrbox::AABB_t<uint32_t>;
+	using AABB = rawrbox::AABBf;
 } // namespace rawrbox

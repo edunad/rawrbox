@@ -19,7 +19,7 @@ namespace rawrbox {
 	struct VectorDelta : private std::vector<T> {
 
 	public:
-		DeltaChangelog<size_t> changelog; // added?, changed index
+		rawrbox::DeltaChangelog<size_t> changelog; // added?, changed index
 
 		using std::vector<T>::vector;
 		using std::vector<T>::at;
@@ -53,8 +53,8 @@ namespace rawrbox {
 			std::vector<T>::insert(index, a);
 		}
 
-		DeltaData<size_t, T> calculate() {
-			DeltaData<size_t, T> diff = {};
+		rawrbox::DeltaData<size_t, T> calculate() {
+			rawrbox::DeltaData<size_t, T> diff = {};
 			for (auto& indx : this->changelog) {
 				if (indx.first)
 					diff.push_back({indx.second, this->at(indx.second)});
@@ -77,7 +77,7 @@ namespace rawrbox {
 		}
 
 		void read(rawrbox::Packet& packet) {
-			for (auto& change : packet.read<DeltaData<size_t, T>>()) {
+			for (auto& change : packet.read<rawrbox::DeltaData<size_t, T>>()) {
 				if (change.second.has_value())
 					std::vector<T>::insert(cbegin() + change.first, change.second.value(), false);
 				else
@@ -97,7 +97,7 @@ namespace rawrbox {
 	template <typename KEY, typename VAL>
 	struct MapDelta : private std::map<KEY, VAL> {
 	public:
-		DeltaChangelog<KEY> changelog; // added?, changed index
+		rawrbox::DeltaChangelog<KEY> changelog; // added?, changed index
 
 		using std::map<KEY, VAL>::map;
 		using std::map<KEY, VAL>::at;
@@ -127,8 +127,8 @@ namespace rawrbox {
 			std::map<KEY, VAL>::erase(key);
 		}
 
-		DeltaData<KEY, VAL> calculate() {
-			DeltaData<KEY, VAL> diff = {};
+		rawrbox::DeltaData<KEY, VAL> calculate() {
+			rawrbox::DeltaData<KEY, VAL> diff = {};
 			for (auto& indx : this->changelog) {
 				if (indx.first)
 					diff.push_back({indx.second, this->at(indx.second)});
@@ -141,7 +141,7 @@ namespace rawrbox {
 		}
 
 		void read(rawrbox::Packet& packet) {
-			for (auto& change : packet.read<DeltaData<KEY, VAL>>()) {
+			for (auto& change : packet.read<rawrbox::DeltaData<KEY, VAL>>()) {
 				if (change.second.has_value())
 					insert_or_assign(change.first, change.second.value());
 				else
@@ -161,7 +161,7 @@ namespace rawrbox {
 	template <typename KEY, typename VAL>
 	struct UMapDelta : private std::unordered_map<KEY, VAL> {
 	public:
-		DeltaChangelog<KEY> changelog = {}; // added?, changed index
+		rawrbox::DeltaChangelog<KEY> changelog = {}; // added?, changed index
 
 		using std::unordered_map<KEY, VAL>::unordered_map;
 		using std::unordered_map<KEY, VAL>::at;
@@ -190,8 +190,8 @@ namespace rawrbox {
 			std::unordered_map<KEY, VAL>::erase(key);
 		}
 
-		DeltaData<KEY, VAL> calculate() {
-			DeltaData<KEY, VAL> diff = {};
+		rawrbox::DeltaData<KEY, VAL> calculate() {
+			rawrbox::DeltaData<KEY, VAL> diff = {};
 			for (auto& indx : this->changelog) {
 				if (indx.first)
 					diff.push_back({indx.second, this->at(indx.second)});
@@ -204,7 +204,7 @@ namespace rawrbox {
 		}
 
 		void read(rawrbox::Packet& packet) {
-			for (auto& change : packet.read<DeltaData<KEY, VAL>>()) {
+			for (auto& change : packet.read<rawrbox::DeltaData<KEY, VAL>>()) {
 				if (change.second.has_value())
 					insert_or_assign(change.first, change.second.value());
 				else

@@ -23,8 +23,8 @@ namespace rawrbox {
 
 		// NOLINTBEGIN(hicpp-explicit-conversions)
 		constexpr Vector4_t(const std::array<NumberType, 4>& val) : x(val[0]), y(val[1]), z(val[2]), w(val[3]) {}
-		constexpr Vector4_t(Vector3_t<NumberType> val, NumberType _w = 0) : x(val.x), y(val.y), z(val.z), w(_w) {}
-		constexpr Vector4_t(Vector2_t<NumberType> val, NumberType _z = 0, NumberType _w = 0) : x(val.x), y(val.y), z(_z), w(_w) {}
+		constexpr Vector4_t(rawrbox::Vector3_t<NumberType> val, NumberType _w = 0) : x(val.x), y(val.y), z(val.z), w(_w) {}
+		constexpr Vector4_t(rawrbox::Vector2_t<NumberType> val, NumberType _z = 0, NumberType _w = 0) : x(val.x), y(val.y), z(_z), w(_w) {}
 		// NOLINTEND(hicpp-explicit-conversions)
 
 		static VecType nan()
@@ -42,21 +42,21 @@ namespace rawrbox {
 
 		// TODO: ADD VEC4 VARIANTS
 
-		[[nodiscard]] Vector3_t<NumberType> xyz() const { return Vector3_t<NumberType>(this->x, this->y, this->z); }
-		[[nodiscard]] Vector3_t<NumberType> yxz() const { return Vector3_t<NumberType>(this->y, this->x, this->z); }
-		[[nodiscard]] Vector3_t<NumberType> yzx() const { return Vector3_t<NumberType>(this->y, this->z, this->x); }
-		[[nodiscard]] Vector3_t<NumberType> xzy() const { return Vector3_t<NumberType>(this->x, this->z, this->y); }
-		[[nodiscard]] Vector3_t<NumberType> zxy() const { return Vector3_t<NumberType>(this->z, this->x, this->y); }
-		[[nodiscard]] Vector3_t<NumberType> zyx() const { return Vector3_t<NumberType>(this->z, this->y, this->x); }
+		[[nodiscard]] rawrbox::Vector3_t<NumberType> xyz() const { return rawrbox::Vector3_t<NumberType>(this->x, this->y, this->z); }
+		[[nodiscard]] rawrbox::Vector3_t<NumberType> yxz() const { return rawrbox::Vector3_t<NumberType>(this->y, this->x, this->z); }
+		[[nodiscard]] rawrbox::Vector3_t<NumberType> yzx() const { return rawrbox::Vector3_t<NumberType>(this->y, this->z, this->x); }
+		[[nodiscard]] rawrbox::Vector3_t<NumberType> xzy() const { return rawrbox::Vector3_t<NumberType>(this->x, this->z, this->y); }
+		[[nodiscard]] rawrbox::Vector3_t<NumberType> zxy() const { return rawrbox::Vector3_t<NumberType>(this->z, this->x, this->y); }
+		[[nodiscard]] rawrbox::Vector3_t<NumberType> zyx() const { return rawrbox::Vector3_t<NumberType>(this->z, this->y, this->x); }
 
-		[[nodiscard]] Vector2_t<NumberType> xy() const { return Vector2_t<NumberType>(this->x, this->y); }
-		[[nodiscard]] Vector2_t<NumberType> yx() const { return Vector2_t<NumberType>(this->y, this->x); }
-		[[nodiscard]] Vector2_t<NumberType> xz() const { return Vector2_t<NumberType>(this->x, this->z); }
-		[[nodiscard]] Vector2_t<NumberType> yz() const { return Vector2_t<NumberType>(this->y, this->z); }
+		[[nodiscard]] rawrbox::Vector2_t<NumberType> xy() const { return rawrbox::Vector2_t<NumberType>(this->x, this->y); }
+		[[nodiscard]] rawrbox::Vector2_t<NumberType> yx() const { return rawrbox::Vector2_t<NumberType>(this->y, this->x); }
+		[[nodiscard]] rawrbox::Vector2_t<NumberType> xz() const { return rawrbox::Vector2_t<NumberType>(this->x, this->z); }
+		[[nodiscard]] rawrbox::Vector2_t<NumberType> yz() const { return rawrbox::Vector2_t<NumberType>(this->y, this->z); }
 
-		[[nodiscard]] Vector2_t<NumberType> zx() const { return Vector2_t<NumberType>(this->z, this->x); }
-		[[nodiscard]] Vector2_t<NumberType> zy() const { return Vector2_t<NumberType>(this->z, this->y); }
-		[[nodiscard]] Vector2_t<NumberType> zw() const { return Vector2_t<NumberType>(this->z, this->w); }
+		[[nodiscard]] rawrbox::Vector2_t<NumberType> zx() const { return rawrbox::Vector2_t<NumberType>(this->z, this->x); }
+		[[nodiscard]] rawrbox::Vector2_t<NumberType> zy() const { return rawrbox::Vector2_t<NumberType>(this->z, this->y); }
+		[[nodiscard]] rawrbox::Vector2_t<NumberType> zw() const { return rawrbox::Vector2_t<NumberType>(this->z, this->w); }
 
 		[[nodiscard]] std::array<NumberType, 4> data() const { return {this->x, this->y, this->z, this->w}; }
 
@@ -112,7 +112,7 @@ namespace rawrbox {
 			VecType ret;
 
 			auto lerpSingleAngle = [](NumberType a, NumberType b, NumberType t) {
-				NumberType difference = std::fmod(b - a, TWO<NumberType> * rawrbox::pi<NumberType>);
+				NumberType difference = std::fmod(b - a, rawrbox::TWO<NumberType> * rawrbox::pi<NumberType>);
 				if (difference > static_cast<NumberType>(rawrbox::pi<NumberType>))
 					difference -= 2.0F * static_cast<NumberType>(rawrbox::pi<NumberType>);
 				else if (difference < -static_cast<NumberType>(rawrbox::pi<NumberType>))
@@ -153,29 +153,29 @@ namespace rawrbox {
 		}
 		// ----------
 
-		Vector3_t<NumberType> toEuler() const
+		rawrbox::Vector3_t<NumberType> toEuler() const
 			requires(std::is_same_v<NumberType, float> || std::is_same_v<NumberType, double>)
 		{
 			// roll
-			NumberType sinr_cosp = TWO<NumberType> * (this->w * this->x + this->y * this->z);
-			NumberType cosr_cosp = ONE<NumberType> - TWO<NumberType> * (this->x * this->x + this->y * this->y);
+			NumberType sinr_cosp = rawrbox::TWO<NumberType> * (this->w * this->x + this->y * this->z);
+			NumberType cosr_cosp = rawrbox::ONE<NumberType> - rawrbox::TWO<NumberType> * (this->x * this->x + this->y * this->y);
 
 			// pitch
-			NumberType sinp = TWO<NumberType> * (this->w * this->y - this->z * this->x);
-			sinp = sinp > ONE<NumberType> ? ONE<NumberType> : sinp;
-			sinp = sinp < -ONE<NumberType> ? -ONE<NumberType> : sinp;
+			NumberType sinp = rawrbox::TWO<NumberType> * (this->w * this->y - this->z * this->x);
+			sinp = sinp > rawrbox::ONE<NumberType> ? rawrbox::ONE<NumberType> : sinp;
+			sinp = sinp < -rawrbox::ONE<NumberType> ? -rawrbox::ONE<NumberType> : sinp;
 
 			// yaw
-			NumberType siny_cosp = TWO<NumberType> * (this->w * this->z + this->x * this->y);
-			NumberType cosy_cosp = ONE<NumberType> - TWO<NumberType> * (this->y * this->y + this->z * this->z);
+			NumberType siny_cosp = rawrbox::TWO<NumberType> * (this->w * this->z + this->x * this->y);
+			NumberType cosy_cosp = rawrbox::ONE<NumberType> - rawrbox::TWO<NumberType> * (this->y * this->y + this->z * this->z);
 
 			return {std::atan2(sinr_cosp, cosr_cosp), std::asin(sinp), std::atan2(siny_cosp, cosy_cosp)};
 		}
 
-		Vector3_t<NumberType> toAxis()
+		rawrbox::Vector3_t<NumberType> toAxis()
 			requires(std::is_same_v<NumberType, float> || std::is_same_v<NumberType, double>)
 		{
-			if (std::abs(this->w) > ONE<NumberType>) {
+			if (std::abs(this->w) > rawrbox::ONE<NumberType>) {
 				auto nrm = this->normalized();
 
 				this->x = nrm.x;
@@ -184,19 +184,19 @@ namespace rawrbox {
 				this->w = nrm.w;
 			}
 
-			NumberType den = std::sqrt(ONE<NumberType> - this->w * this->w);
+			NumberType den = std::sqrt(rawrbox::ONE<NumberType> - this->w * this->w);
 			if (den > static_cast<NumberType>(0.0001F)) return {this->x / den, this->y / den, this->z / den};
 			return {1, 0, 0};
 		}
 
-		static Vector4_t<NumberType> toQuat(const Vector3_t<NumberType>& in)
+		static Vector4_t<NumberType> toQuat(const rawrbox::Vector3_t<NumberType>& in)
 			requires(std::is_same_v<NumberType, float> || std::is_same_v<NumberType, double>)
 		{
 			rawrbox::Vector4_t<NumberType> ret = {};
 
-			NumberType x = in.x * HALFONE<NumberType>;
-			NumberType y = in.y * -HALFONE<NumberType>;
-			NumberType z = in.z * HALFONE<NumberType>;
+			NumberType x = in.x * rawrbox::HALFONE<NumberType>;
+			NumberType y = in.y * -rawrbox::HALFONE<NumberType>;
+			NumberType z = in.z * rawrbox::HALFONE<NumberType>;
 
 			auto sinX = static_cast<NumberType>(std::sin(static_cast<float>(x)));
 			auto cosX = static_cast<NumberType>(std::cos(static_cast<float>(x)));
@@ -213,7 +213,7 @@ namespace rawrbox {
 			return ret;
 		}
 
-		static Vector4_t<NumberType> lookRotation(const Vector3_t<NumberType>& lookAt, const Vector3_t<NumberType>& upDirection)
+		static Vector4_t<NumberType> lookRotation(const rawrbox::Vector3_t<NumberType>& lookAt, const rawrbox::Vector3_t<NumberType>& upDirection)
 			requires(std::is_same_v<NumberType, float> || std::is_same_v<NumberType, double>)
 		{
 			auto forward = lookAt.normalized();
@@ -233,11 +233,11 @@ namespace rawrbox {
 			auto num8 = (m00 + m11) + m22;
 			rawrbox::Vector4_t<NumberType> ret = {};
 
-			if (num8 > ZERO<NumberType>) {
-				auto num = std::sqrt(num8 + ONE<NumberType>);
+			if (num8 > rawrbox::ZERO<NumberType>) {
+				auto num = std::sqrt(num8 + rawrbox::ONE<NumberType>);
 
-				ret.w = num * HALFONE<NumberType>;
-				num = HALFONE<NumberType> / num;
+				ret.w = num * rawrbox::HALFONE<NumberType>;
+				num = rawrbox::HALFONE<NumberType> / num;
 
 				ret.x = (m12 - m21) * num;
 				ret.y = (m20 - m02) * num;
@@ -246,10 +246,10 @@ namespace rawrbox {
 			}
 
 			if ((m00 >= m11) && (m00 >= m22)) {
-				auto num7 = std::sqrt(((ONE<NumberType> + m00) - m11) - m22);
-				auto num4 = HALFONE<NumberType> / num7;
+				auto num7 = std::sqrt(((rawrbox::ONE<NumberType> + m00) - m11) - m22);
+				auto num4 = rawrbox::HALFONE<NumberType> / num7;
 
-				ret.x = HALFONE<NumberType> * num7;
+				ret.x = rawrbox::HALFONE<NumberType> * num7;
 				ret.y = (m01 + m10) * num4;
 				ret.z = (m02 + m20) * num4;
 				ret.w = (m12 - m21) * num4;
@@ -257,22 +257,22 @@ namespace rawrbox {
 			}
 
 			if (m11 > m22) {
-				auto num6 = std::sqrt(((ONE<NumberType> + m11) - m00) - m22);
-				auto num3 = HALFONE<NumberType> / num6;
+				auto num6 = std::sqrt(((rawrbox::ONE<NumberType> + m11) - m00) - m22);
+				auto num3 = rawrbox::HALFONE<NumberType> / num6;
 
 				ret.x = (m10 + m01) * num3;
-				ret.y = HALFONE<NumberType> * num6;
+				ret.y = rawrbox::HALFONE<NumberType> * num6;
 				ret.z = (m21 + m12) * num3;
 				ret.w = (m20 - m02) * num3;
 				return ret;
 			}
 
-			auto num5 = std::sqrt(((ONE<NumberType> + m22) - m00) - m11);
-			auto num2 = HALFONE<NumberType> / num5;
+			auto num5 = std::sqrt(((rawrbox::ONE<NumberType> + m22) - m00) - m11);
+			auto num2 = rawrbox::HALFONE<NumberType> / num5;
 
 			ret.x = (m20 + m02) * num2;
 			ret.y = (m21 + m12) * num2;
-			ret.z = HALFONE<NumberType> * num5;
+			ret.z = rawrbox::HALFONE<NumberType> * num5;
 			ret.w = (m01 - m10) * num2;
 
 			return ret;
@@ -281,9 +281,9 @@ namespace rawrbox {
 
 		VecType inverse() {
 			auto lengthSq = this->sqrMagnitude();
-			if (lengthSq == ZERO<NumberType>) return *this;
+			if (lengthSq == rawrbox::ZERO<NumberType>) return *this;
 
-			auto i = ONE<NumberType> / lengthSq;
+			auto i = rawrbox::ONE<NumberType> / lengthSq;
 			return VecType(this->xyz() * -i, this->w * i);
 		}
 
@@ -293,7 +293,7 @@ namespace rawrbox {
 
 			// adjust signs (if necessary)
 			VecType end = pEnd;
-			if (cosom < ZERO<NumberType>) {
+			if (cosom < rawrbox::ZERO<NumberType>) {
 				cosom = -cosom;
 				end.x = -end.x; // Reverse all signs
 				end.y = -end.y;
@@ -306,7 +306,7 @@ namespace rawrbox {
 			NumberType sclp = std::numeric_limits<NumberType>::quiet_NaN();
 			NumberType sclq = std::numeric_limits<NumberType>::quiet_NaN();
 
-			if ((ONE<NumberType> - cosom) > static_cast<NumberType>(0.0001)) // 0.0001 -> some epsillon
+			if ((rawrbox::ONE<NumberType> - cosom) > static_cast<NumberType>(0.0001)) // 0.0001 -> some epsillon
 			{
 				// Standard case (slerp)
 				NumberType omega = std::numeric_limits<NumberType>::quiet_NaN();
@@ -314,11 +314,11 @@ namespace rawrbox {
 
 				omega = static_cast<NumberType>(std::acos(cosom)); // extract theta from dot product's cos theta
 				sinom = static_cast<NumberType>(std::sin(omega));
-				sclp = static_cast<NumberType>(std::sin((ONE<NumberType> - pFactor) * omega) / sinom);
+				sclp = static_cast<NumberType>(std::sin((rawrbox::ONE<NumberType> - pFactor) * omega) / sinom);
 				sclq = static_cast<NumberType>(std::sin(pFactor * omega) / sinom);
 			} else {
 				// Very close, do linear interp (because it's faster)
-				sclp = ONE<NumberType> - pFactor;
+				sclp = rawrbox::ONE<NumberType> - pFactor;
 				sclq = pFactor;
 			}
 			// NOLINTEND(clang-analyzer-deadcode.DeadStores)
@@ -341,19 +341,19 @@ namespace rawrbox {
 		}
 
 		void rotate(NumberType angle, rawrbox::AXIS axis) {
-			NumberType halfAngle = angle / TWO<NumberType>;
+			NumberType halfAngle = angle / rawrbox::TWO<NumberType>;
 			auto cosHalfAngle = static_cast<NumberType>(std::cos(halfAngle));
 			auto sinHalfAngle = static_cast<NumberType>(std::sin(halfAngle));
 
 			switch (axis) {
 				case AXIS::X:
-					*this = Vector4_t<NumberType>(cosHalfAngle, sinHalfAngle * ONE<NumberType>, ZERO<NumberType>, ZERO<NumberType>) * (*this);
+					*this = Vector4_t<NumberType>(cosHalfAngle, sinHalfAngle * rawrbox::ONE<NumberType>, rawrbox::ZERO<NumberType>, rawrbox::ZERO<NumberType>) * (*this);
 					return;
 				case AXIS::Y:
-					*this = Vector4_t<NumberType>(cosHalfAngle, ZERO<NumberType>, sinHalfAngle * ONE<NumberType>, ZERO<NumberType>) * (*this);
+					*this = Vector4_t<NumberType>(cosHalfAngle, rawrbox::ZERO<NumberType>, sinHalfAngle * rawrbox::ONE<NumberType>, rawrbox::ZERO<NumberType>) * (*this);
 					return;
 				case AXIS::Z:
-					*this = Vector4_t<NumberType>(cosHalfAngle, ZERO<NumberType>, ZERO<NumberType>, sinHalfAngle * ONE<NumberType>) * (*this);
+					*this = Vector4_t<NumberType>(cosHalfAngle, rawrbox::ZERO<NumberType>, rawrbox::ZERO<NumberType>, sinHalfAngle * rawrbox::ONE<NumberType>) * (*this);
 					return;
 			}
 		}
@@ -451,10 +451,10 @@ namespace rawrbox {
 
 		VecType operator-() const { return VecType(-this->x, -this->y, -this->z, -this->w); }
 
-		Vector3_t<NumberType> operator*(const Vector3_t<NumberType>& other) const {
-			float num = this->x * TWO<NumberType>;
-			float num2 = this->y * TWO<NumberType>;
-			float num3 = this->z * TWO<NumberType>;
+		rawrbox::Vector3_t<NumberType> operator*(const rawrbox::Vector3_t<NumberType>& other) const {
+			float num = this->x * rawrbox::TWO<NumberType>;
+			float num2 = this->y * rawrbox::TWO<NumberType>;
+			float num3 = this->z * rawrbox::TWO<NumberType>;
 			float num4 = this->x * num;
 			float num5 = this->y * num2;
 			float num6 = this->z * num3;
@@ -465,19 +465,19 @@ namespace rawrbox {
 			float num11 = this->w * num2;
 			float num12 = this->w * num3;
 
-			Vector3_t<NumberType> result = {};
-			result.x = (ONE<NumberType> - (num5 + num6)) * other.x + (num7 - num12) * other.y + (num8 + num11) * other.z;
-			result.y = (num7 + num12) * other.x + (ONE<NumberType> - (num4 + num6)) * other.y + (num9 - num10) * other.z;
-			result.z = (num8 - num11) * other.x + (num9 + num10) * other.y + (ONE<NumberType> - (num4 + num5)) * other.z;
+			rawrbox::Vector3_t<NumberType> result = {};
+			result.x = (rawrbox::ONE<NumberType> - (num5 + num6)) * other.x + (num7 - num12) * other.y + (num8 + num11) * other.z;
+			result.y = (num7 + num12) * other.x + (rawrbox::ONE<NumberType> - (num4 + num6)) * other.y + (num9 - num10) * other.z;
+			result.z = (num8 - num11) * other.x + (num9 + num10) * other.y + (rawrbox::ONE<NumberType> - (num4 + num5)) * other.z;
 			return result;
 		}
 		// -------
 	};
 
-	using Vector4f = Vector4_t<float>;
-	using Vector4i = Vector4_t<int>;
-	using Vector4d = Vector4_t<double>;
-	using Vector4u = Vector4_t<uint32_t>;
-	using Vector4f16 = Vector4_t<uint16_t>;
-	using Vector4 = Vector4f;
+	using Vector4f = rawrbox::Vector4_t<float>;
+	using Vector4i = rawrbox::Vector4_t<int>;
+	using Vector4d = rawrbox::Vector4_t<double>;
+	using Vector4u = rawrbox::Vector4_t<uint32_t>;
+	using Vector4f16 = rawrbox::Vector4_t<uint16_t>;
+	using Vector4 = rawrbox::Vector4f;
 } // namespace rawrbox

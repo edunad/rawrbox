@@ -39,15 +39,15 @@ namespace rawrbox {
 	enum class ENGINE_THREADS;
 
 	// ------EVENTS
-	using OnFocusCallback = rawrbox::Event<Window&, bool>;
-	using OnCharCallback = rawrbox::Event<Window&, uint32_t>;
-	using OnResizeCallback = rawrbox::Event<Window&, const Vector2u&, const Vector2u&>;
-	using OnScrollCallback = rawrbox::Event<Window&, const Vector2i&, const Vector2i&>;
-	using OnMouseMoveCallback = rawrbox::Event<Window&, const Vector2i&>;
-	using OnWindowMoveCallback = rawrbox::Event<Window&, const Vector2i&>;
-	using OnKeyCallback = rawrbox::Event<Window&, uint32_t, uint32_t, uint32_t, uint32_t>;
-	using OnMouseKeyCallback = rawrbox::Event<Window&, const Vector2i&, uint32_t, uint32_t, uint32_t>;
-	using OnWindowClose = rawrbox::Event<Window&>;
+	using OnFocusCallback = rawrbox::Event<rawrbox::Window&, bool>;
+	using OnCharCallback = rawrbox::Event<rawrbox::Window&, uint32_t>;
+	using OnResizeCallback = rawrbox::Event<rawrbox::Window&, const rawrbox::Vector2u&, const rawrbox::Vector2u&>;
+	using OnScrollCallback = rawrbox::Event<rawrbox::Window&, const rawrbox::Vector2i&, const rawrbox::Vector2i&>;
+	using OnMouseMoveCallback = rawrbox::Event<rawrbox::Window&, const rawrbox::Vector2i&>;
+	using OnWindowMoveCallback = rawrbox::Event<rawrbox::Window&, const rawrbox::Vector2i&>;
+	using OnKeyCallback = rawrbox::Event<rawrbox::Window&, uint32_t, uint32_t, uint32_t, uint32_t>;
+	using OnMouseKeyCallback = rawrbox::Event<rawrbox::Window&, const rawrbox::Vector2i&, uint32_t, uint32_t, uint32_t>;
+	using OnWindowClose = rawrbox::Event<rawrbox::Window&>;
 	// --------------------
 
 	struct WindowSettings {
@@ -204,15 +204,15 @@ namespace rawrbox {
 		// ---------------
 
 		// ------CALLBACKS
-		OnKeyCallback onKey;
-		OnCharCallback onChar;
-		OnFocusCallback onFocus;
-		OnResizeCallback onResize;
-		OnScrollCallback onMouseScroll;
-		OnMouseKeyCallback onMouseKey;
-		OnMouseMoveCallback onMouseMove;
-		OnWindowMoveCallback onWindowMove;
-		OnWindowClose onWindowClose;
+		rawrbox::OnKeyCallback onKey;
+		rawrbox::OnCharCallback onChar;
+		rawrbox::OnFocusCallback onFocus;
+		rawrbox::OnResizeCallback onResize;
+		rawrbox::OnScrollCallback onMouseScroll;
+		rawrbox::OnMouseKeyCallback onMouseKey;
+		rawrbox::OnMouseMoveCallback onMouseMove;
+		rawrbox::OnWindowMoveCallback onWindowMove;
+		rawrbox::OnWindowClose onWindowClose;
 		// --------------------
 
 		void init(uint32_t width, uint32_t height, uint32_t flags = WindowFlags::NONE);

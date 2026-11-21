@@ -83,7 +83,7 @@ namespace rawrbox {
 	};
 
 	struct GLTFExtras {
-		GLTFImporter* importer = nullptr;
+		rawrbox::GLTFImporter* importer = nullptr;
 		std::unordered_set<size_t> additiveAnimations = {};
 	};
 

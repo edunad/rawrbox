@@ -19,7 +19,7 @@ namespace rawrbox {
 		rawrbox::Vector3_t<NumberType> size = {};
 
 		BBOX_t() = default;
-		constexpr BBOX_t(const Vector3_t<NumberType>& _min, const Vector3_t<NumberType>& _max, const Vector3_t<NumberType>& _size) : min(_min), max(_max), size(_size) {}
+		constexpr BBOX_t(const rawrbox::Vector3_t<NumberType>& _min, const rawrbox::Vector3_t<NumberType>& _max, const rawrbox::Vector3_t<NumberType>& _size) : min(_min), max(_max), size(_size) {}
 
 		[[nodiscard]] static BBOXType infinite() {
 			constexpr NumberType low = std::numeric_limits<NumberType>::lowest();
@@ -118,8 +118,8 @@ namespace rawrbox {
 		BBOXType operator*(const rawrbox::Vector3_t<NumberType>& other) const { return BBOXType(this->min * other, this->max * other, this->size * other); }
 	};
 
-	using BBOXd = BBOX_t<double>;
-	using BBOXf = BBOX_t<float>;
-	using BBOXi = BBOX_t<int>;
-	using BBOX = BBOXf;
+	using BBOXd = rawrbox::BBOX_t<double>;
+	using BBOXf = rawrbox::BBOX_t<float>;
+	using BBOXi = rawrbox::BBOX_t<int>;
+	using BBOX = rawrbox::BBOXf;
 } // namespace rawrbox

@@ -40,8 +40,8 @@ namespace rawrbox {
 
 	class ConsoleCommand {
 	public:
-		std::optional<ConsoleVariable> var = {};
-		std::optional<ConsoleFunction> method = {};
+		std::optional<rawrbox::ConsoleVariable> var = {};
+		std::optional<rawrbox::ConsoleFunction> method = {};
 
 		std::string description;
 		uint32_t flags = ConsoleFlags::NONE;
@@ -73,7 +73,7 @@ namespace rawrbox {
 
 	class ConsoleLog {
 	public:
-		PrintType type;
+		rawrbox::PrintType type;
 
 		std::string timestamp;
 		std::string log;
@@ -96,7 +96,7 @@ namespace rawrbox {
 	class Console {
 		std::vector<rawrbox::ConsoleLog> _log = {};
 		std::mutex _logLock = {};
-		std::unordered_map<std::string, ConsoleCommand> _commands = {};
+		std::unordered_map<std::string, rawrbox::ConsoleCommand> _commands = {};
 
 		std::pair<bool, std::string> run(const std::vector<std::string>& args);
 
@@ -114,12 +114,12 @@ namespace rawrbox {
 		virtual ~Console() = default;
 
 		virtual std::vector<rawrbox::ConsoleLog> getLogs();
-		virtual void print(const std::string& message, PrintType type = PrintType::LOG);
+		virtual void print(const std::string& message, rawrbox::PrintType type = PrintType::LOG);
 		virtual void clear();
 
 		// COMMANDS ----
-		[[nodiscard]] virtual const std::unordered_map<std::string, ConsoleCommand>& getCommands() const;
-		[[nodiscard]] virtual std::string getCommandValue(const ConsoleCommand& cmd) const;
+		[[nodiscard]] virtual const std::unordered_map<std::string, rawrbox::ConsoleCommand>& getCommands() const;
+		[[nodiscard]] virtual std::string getCommandValue(const rawrbox::ConsoleCommand& cmd) const;
 		[[nodiscard]] virtual std::vector<std::string> getCommandStr() const;
 
 		virtual std::unordered_map<std::string, rawrbox::ConsoleCommand> findCommand(const std::string& cmd, unsigned int limit = 0);
@@ -137,14 +137,14 @@ namespace rawrbox {
 
 		virtual bool removeCommand(const std::string& id);
 
-		bool registerCommand(std::string key, const ConsoleFunction& func, std::string description = "", uint32_t flags = ConsoleFlags::NONE) {
+		bool registerCommand(std::string key, const rawrbox::ConsoleFunction& func, std::string description = "", uint32_t flags = ConsoleFlags::NONE) {
 			std::ranges::transform(key, key.begin(), [](const char c) { return static_cast<char>(std::tolower(c)); });
 			if (this->_commands.contains(key)) {
 				this->print(fmt::format("Console command `{}` has already been registered.", key), PrintType::ERR);
 				return false;
 			}
 
-			this->_commands[key] = ConsoleCommand(std::move(description), flags);
+			this->_commands[key] = rawrbox::ConsoleCommand(std::move(description), flags);
 			this->_commands[key].method = func;
 
 			return true;
@@ -158,7 +158,7 @@ namespace rawrbox {
 				return false;
 			}
 
-			this->_commands[key] = ConsoleCommand(std::move(description), flags);
+			this->_commands[key] = rawrbox::ConsoleCommand(std::move(description), flags);
 			this->_commands[key].var = &ref;
 
 			return true;

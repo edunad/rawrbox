@@ -69,7 +69,7 @@ namespace rawrbox {
 		bool operator!=(const RectType& other) const { return !this->operator==(other); }
 	};
 
-	using Rectf = Rect_t<float>;
-	using Recti = Rect_t<int>;
-	using Rectu = Rect_t<uint32_t>;
+	using Rectf = rawrbox::Rect_t<float>;
+	using Recti = rawrbox::Rect_t<int>;
+	using Rectu = rawrbox::Rect_t<uint32_t>;
 } // namespace rawrbox

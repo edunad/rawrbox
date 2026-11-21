@@ -289,15 +289,15 @@ namespace rawrbox {
 		}
 	};
 
-	using Colorf = Color_t<float>;
-	using Colori = Color_t<int>;
-	using Colord = Color_t<double>;
-	using Color = Colorf;
+	using Colorf = rawrbox::Color_t<float>;
+	using Colori = rawrbox::Color_t<int>;
+	using Colord = rawrbox::Color_t<double>;
+	using Color = rawrbox::Colorf;
 
 	template <class NumberType>
 	class Colors_t {
 	private:
-		using ColorType = Color_t<NumberType>;
+		using ColorType = rawrbox::Color_t<NumberType>;
 
 	public:
 		[[nodiscard]] static inline constexpr ColorType Black() {
@@ -385,8 +385,8 @@ namespace rawrbox {
 		}
 	};
 
-	using Colorsf = Colors_t<float>;
-	using Colorsi = Colors_t<int>;
-	using Colorsd = Colors_t<double>;
-	using Colors = Colorsf;
+	using Colorsf = rawrbox::Colors_t<float>;
+	using Colorsi = rawrbox::Colors_t<int>;
+	using Colorsd = rawrbox::Colors_t<double>;
+	using Colors = rawrbox::Colorsf;
 } // namespace rawrbox

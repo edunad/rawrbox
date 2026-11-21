@@ -298,9 +298,9 @@ namespace rawrbox {
 		// -------
 	};
 
-	using Vector2f = Vector2_t<float>;
-	using Vector2i = Vector2_t<int>;
-	using Vector2u = Vector2_t<uint32_t>;
-	using Vector2f16 = Vector2_t<uint16_t>;
-	using Vector2 = Vector2f;
+	using Vector2f = rawrbox::Vector2_t<float>;
+	using Vector2i = rawrbox::Vector2_t<int>;
+	using Vector2u = rawrbox::Vector2_t<uint32_t>;
+	using Vector2f16 = rawrbox::Vector2_t<uint16_t>;
+	using Vector2 = rawrbox::Vector2f;
 } // namespace rawrbox

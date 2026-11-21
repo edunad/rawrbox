@@ -43,7 +43,7 @@ namespace rawrbox {
 
 		[[nodiscard]] const std::array<rawrbox::Vector3f, 4>& getPoints() const;
 
-		rawrbox::Vector3f getNormal(float t, Vector3 up);
+		rawrbox::Vector3f getNormal(float t, rawrbox::Vector3 up);
 		rawrbox::Vector3f getTangent(float t);
 
 		static rawrbox::Vector3f calculateNormal(rawrbox::Vector3f tangent, rawrbox::Vector3f up);

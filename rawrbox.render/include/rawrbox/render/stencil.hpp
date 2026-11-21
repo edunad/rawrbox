@@ -176,12 +176,12 @@ namespace rawrbox {
 
 		// Outline handling ----
 		std::vector<rawrbox::StencilOutline> _outlines = {}; // thickness, stipple
-		StencilOutline _outline = {};
+		rawrbox::StencilOutline _outline = {};
 		// ----------
 
 		// Rotation handling ----
 		std::vector<rawrbox::StencilRotation> _rotations = {};
-		StencilRotation _rotation = {};
+		rawrbox::StencilRotation _rotation = {};
 		// ----------
 
 		// Scale handling ----

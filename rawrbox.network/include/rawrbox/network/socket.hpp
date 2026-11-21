@@ -60,7 +60,7 @@ namespace rawrbox {
 		sockaddr_in6 fromAddr6 = {};
 		unsigned long fromAddr_len = 0;
 
-		SockState state = SockState::skDISCONNECTED;
+		rawrbox::SockState state = SockState::skDISCONNECTED;
 		int sock = -1;
 
 		int lastCode = 0;

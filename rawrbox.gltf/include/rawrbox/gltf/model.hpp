@@ -8,7 +8,7 @@
 #include <rawrbox/render/models/model.hpp>
 
 namespace rawrbox {
-	template <typename M = MaterialUnlit>
+	template <typename M = rawrbox::MaterialUnlit>
 		requires(std::derived_from<M, rawrbox::MaterialBase>)
 	class GLTFModel : public rawrbox::Model<M> {
 	protected:

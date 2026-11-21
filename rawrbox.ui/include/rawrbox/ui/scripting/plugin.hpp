@@ -45,7 +45,7 @@ namespace rawrbox {
 			rawrbox::UIDropdownWrapper::registerLua(L);
 			// ------
 
-			rawrbox::UIWrapper::registerLua(L, _root);
+			rawrbox::UIWrapper::registerLua(L, this->_root);
 		}
 
 		void loadLibraries(lua_State* L) override {

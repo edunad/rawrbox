@@ -33,7 +33,7 @@ namespace rawrbox {
 		constexpr Vector3_t(NumberType val) : x(val), y(val), z(val) {}
 		constexpr Vector3_t(NumberType _x, NumberType _y, NumberType _z) : x(_x), y(_y), z(_z) {}
 		constexpr Vector3_t(const std::array<NumberType, 3>& val) : x(val[0]), y(val[1]), z(val[2]) {}
-		constexpr Vector3_t(Vector2_t<NumberType> xy, NumberType _z = 0) : x(xy.x), y(xy.y), z(_z) {}
+		constexpr Vector3_t(rawrbox::Vector2_t<NumberType> xy, NumberType _z = 0) : x(xy.x), y(xy.y), z(_z) {}
 		// NOLINTEND(hicpp-explicit-conversions)
 
 		static VecType zero() { return {}; }
@@ -62,12 +62,12 @@ namespace rawrbox {
 		[[nodiscard]] Vector3_t<NumberType> zxy() const { return Vector3_t<NumberType>(this->z, this->x, this->y); }
 		[[nodiscard]] Vector3_t<NumberType> zyx() const { return Vector3_t<NumberType>(this->z, this->y, this->x); }
 
-		[[nodiscard]] Vector2_t<NumberType> xy() const { return Vector2_t<NumberType>(this->x, this->y); }
-		[[nodiscard]] Vector2_t<NumberType> yx() const { return Vector2_t<NumberType>(this->y, this->x); }
-		[[nodiscard]] Vector2_t<NumberType> xz() const { return Vector2_t<NumberType>(this->x, this->z); }
-		[[nodiscard]] Vector2_t<NumberType> yz() const { return Vector2_t<NumberType>(this->y, this->z); }
-		[[nodiscard]] Vector2_t<NumberType> zx() const { return Vector2_t<NumberType>(this->z, this->x); }
-		[[nodiscard]] Vector2_t<NumberType> zy() const { return Vector2_t<NumberType>(this->z, this->y); }
+		[[nodiscard]] rawrbox::Vector2_t<NumberType> xy() const { return rawrbox::Vector2_t<NumberType>(this->x, this->y); }
+		[[nodiscard]] rawrbox::Vector2_t<NumberType> yx() const { return rawrbox::Vector2_t<NumberType>(this->y, this->x); }
+		[[nodiscard]] rawrbox::Vector2_t<NumberType> xz() const { return rawrbox::Vector2_t<NumberType>(this->x, this->z); }
+		[[nodiscard]] rawrbox::Vector2_t<NumberType> yz() const { return rawrbox::Vector2_t<NumberType>(this->y, this->z); }
+		[[nodiscard]] rawrbox::Vector2_t<NumberType> zx() const { return rawrbox::Vector2_t<NumberType>(this->z, this->x); }
+		[[nodiscard]] rawrbox::Vector2_t<NumberType> zy() const { return rawrbox::Vector2_t<NumberType>(this->z, this->y); }
 
 		[[nodiscard]] std::array<NumberType, 3> data() const { return {this->x, this->y, this->z}; }
 
@@ -174,10 +174,10 @@ namespace rawrbox {
 		{
 			auto denominator = static_cast<NumberType>(std::sqrt(this->sqrMagnitude() * target.sqrMagnitude()));
 			if (denominator < 1e-15F)
-				return ZERO<NumberType>;
+				return rawrbox::ZERO<NumberType>;
 
-			NumberType dot = std::clamp<NumberType>(this->dot(target) / denominator, -ONE<NumberType>, ONE<NumberType>);
-			return std::acos(dot) * (ONE<NumberType> / (rawrbox::pi<NumberType> * static_cast<NumberType>(2.F / 360.F)));
+			NumberType dot = std::clamp<NumberType>(this->dot(target) / denominator, -rawrbox::ONE<NumberType>, rawrbox::ONE<NumberType>);
+			return std::acos(dot) * (rawrbox::ONE<NumberType> / (rawrbox::pi<NumberType> * static_cast<NumberType>(2.F / 360.F)));
 		}
 
 		[[nodiscard]] VecType rotateAroundOrigin(const VecType& axis, float theta) const
@@ -186,7 +186,7 @@ namespace rawrbox {
 			auto cos_theta = static_cast<NumberType>(std::cos(static_cast<float>(theta)));
 			auto sin_theta = static_cast<NumberType>(std::sin(static_cast<float>(theta)));
 
-			return ((*this) * cos_theta) + (this->cross(axis) * sin_theta) + (axis * this->dot(axis)) * (ONE<NumberType> - cos_theta);
+			return ((*this) * cos_theta) + (this->cross(axis) * sin_theta) + (axis * this->dot(axis)) * (rawrbox::ONE<NumberType> - cos_theta);
 		}
 
 		[[nodiscard]] VecType normalized() const
@@ -308,10 +308,10 @@ namespace rawrbox {
 		// -------
 	};
 
-	using Vector3f = Vector3_t<float>;
-	using Vector3i = Vector3_t<int>;
-	using Vector3d = Vector3_t<double>;
-	using Vector3u = Vector3_t<uint32_t>;
-	using Vector3f16 = Vector3_t<uint16_t>;
-	using Vector3 = Vector3f;
+	using Vector3f = rawrbox::Vector3_t<float>;
+	using Vector3i = rawrbox::Vector3_t<int>;
+	using Vector3d = rawrbox::Vector3_t<double>;
+	using Vector3u = rawrbox::Vector3_t<uint32_t>;
+	using Vector3f16 = rawrbox::Vector3_t<uint16_t>;
+	using Vector3 = rawrbox::Vector3f;
 } // namespace rawrbox

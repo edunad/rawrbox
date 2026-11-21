@@ -361,8 +361,8 @@ namespace rawrbox {
 			float hSize = 0.5F;
 			auto offset = rawrbox::Vector3f(0, hSize / 2.F, 0) * size;
 
-			mesh.merge(generateCone<M>(pos + offset, rawrbox::Vector3f(hSize, 1.F, hSize) * size, 6, cl));
-			mesh.merge(generateCube<M>(pos - offset, rawrbox::Vector3f(0.15F, hSize, 0.15F) * size, cl));
+			mesh.merge(MeshUtils::generateCone<M>(pos + offset, rawrbox::Vector3f(hSize, 1.F, hSize) * size, 6, cl));
+			mesh.merge(MeshUtils::generateCube<M>(pos - offset, rawrbox::Vector3f(0.15F, hSize, 0.15F) * size, cl));
 
 			// AABB ---
 			mesh.bbox.min = rawrbox::Vector3f(-hSize, -hSize, -hSize) * size;
@@ -634,18 +634,18 @@ namespace rawrbox {
 
 					if constexpr (supportsNormals<typename M::vertexBufferType>) {
 						mesh.vertices.push_back(rawrbox::VertexNormData(
-						    Vector3f(posDiv.x + pos.x, pos.y, posDiv.y + pos.z),
+						    rawrbox::Vector3f(posDiv.x + pos.x, pos.y, posDiv.y + pos.z),
 						    rawrbox::Vector2(uvScale * xF,
 							uvScale * yF),
 						    rawrbox::Vector3f(0, 1, 0), {}));
 					} else if constexpr (supportsUVs<typename M::vertexBufferType>) {
 						mesh.vertices.push_back(rawrbox::VertexUVData(
-						    pos + Vector3f(posDiv.x + pos.x, pos.y, posDiv.y + pos.z),
+						    pos + rawrbox::Vector3f(posDiv.x + pos.x, pos.y, posDiv.y + pos.z),
 						    rawrbox::Vector2(uvScale * xF,
 							uvScale * yF)));
 					} else {
 						mesh.vertices.push_back(rawrbox::VertexData(
-						    pos + Vector3f(posDiv.x + pos.x, pos.y, posDiv.y + pos.z)));
+						    pos + rawrbox::Vector3f(posDiv.x + pos.x, pos.y, posDiv.y + pos.z)));
 					}
 				}
 			}

@@ -12,7 +12,7 @@ namespace rawrbox {
 
 			luabridge::getGlobalNamespace(L)
 			    .beginClass<AABBT>(name.c_str())
-			    .template addConstructor<void(), void(AABBT), void(T, T, T, T), void(const Vector2_t<T>&, const Vector2_t<T>&)>()
+			    .template addConstructor<void(), void(AABBT), void(T, T, T, T), void(const rawrbox::Vector2_t<T>&, const rawrbox::Vector2_t<T>&)>()
 
 			    .addProperty("position", &AABBT::pos)
 			    .addProperty("size", &AABBT::size)
@@ -25,7 +25,7 @@ namespace rawrbox {
 			    .addFunction("empty", &AABBT::empty)
 
 			    .addFunction("contains",
-				luabridge::overload<const Vector2_t<T>&>(&AABBT::contains),
+				luabridge::overload<const rawrbox::Vector2_t<T>&>(&AABBT::contains),
 				luabridge::overload<const AABBT&>(&AABBT::contains))
 
 			    .addFunction("intersects", &AABBT::intersects)

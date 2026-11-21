@@ -68,10 +68,10 @@ namespace rawrbox {
 		// VEC
 		static rawrbox::Vector3f applyRotation(const rawrbox::Vector3f& vert, const rawrbox::Vector4f& ang);
 
-		static Vector2f toRad(const Vector2f& vec);
-		static Vector2f toDeg(const Vector2f& vec);
+		static rawrbox::Vector2f toRad(const rawrbox::Vector2f& vec);
+		static rawrbox::Vector2f toDeg(const rawrbox::Vector2f& vec);
 
-		static Vector3f toRad(const Vector3f& vec);
-		static Vector3f toDeg(const Vector3f& vec);
+		static rawrbox::Vector3f toRad(const rawrbox::Vector3f& vec);
+		static rawrbox::Vector3f toDeg(const rawrbox::Vector3f& vec);
 	};
 } // namespace rawrbox

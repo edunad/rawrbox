@@ -131,7 +131,7 @@ namespace rawrbox {
 			this->setKeyframe(this->_keyframes[this->_index]);
 		};
 
-		virtual void setKeyframe(UIAnimKeyframe& frame) {
+		virtual void setKeyframe(rawrbox::UIAnimKeyframe& frame) {
 			if (this->_element == nullptr) throw std::runtime_error("[RawrBox-UI] UI element not set!");
 			if (frame.pos.has_value()) {
 				if constexpr (isMovable<T>) {
@@ -152,7 +152,7 @@ namespace rawrbox {
 			}
 		}
 
-		virtual void lerpKeyframe(UIAnimKeyframe& prevKey, UIAnimKeyframe& newKey, float time) {
+		virtual void lerpKeyframe(rawrbox::UIAnimKeyframe& prevKey, rawrbox::UIAnimKeyframe& newKey, float time) {
 			if (this->_element == nullptr) throw std::runtime_error("[RawrBox-UI] UI element not set!");
 			if (prevKey.pos.has_value() && newKey.pos.has_value()) {
 				if constexpr (isMovable<T>) {

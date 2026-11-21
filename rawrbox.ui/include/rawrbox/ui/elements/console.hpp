@@ -44,8 +44,8 @@ namespace rawrbox {
 		bool _isDirty = false;
 
 		virtual void updateEntries();
-		virtual void drawPrimitives(rawrbox::Stencil& stencil, const std::vector<ConsoleEntry>& entries);
-		virtual void drawText(rawrbox::Stencil& stencil, const std::vector<ConsoleEntry>& entries);
+		virtual void drawPrimitives(rawrbox::Stencil& stencil, const std::vector<rawrbox::ConsoleEntry>& entries);
+		virtual void drawText(rawrbox::Stencil& stencil, const std::vector<rawrbox::ConsoleEntry>& entries);
 
 	public:
 		UIConsole(rawrbox::UIRoot* root, rawrbox::Console& console);

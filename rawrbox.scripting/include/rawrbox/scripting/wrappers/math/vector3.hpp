@@ -8,7 +8,7 @@ namespace rawrbox {
 		template <typename T = int>
 			requires(std::is_integral_v<T> || std::is_floating_point_v<T>)
 		static void registerTemplate(lua_State* L, const std::string& name) {
-			using VEC = Vector3_t<T>;
+			using VEC = rawrbox::Vector3_t<T>;
 
 			auto classDef = luabridge::getGlobalNamespace(L)
 					    .beginClass<VEC>(name.c_str());
@@ -102,7 +102,7 @@ namespace rawrbox {
 
 			    .addFunction("__unm", [](VEC& v) { return -v; });
 
-			if constexpr (!std::is_same_v<VEC, Vector3_t<int>>) {
+			if constexpr (!std::is_same_v<VEC, rawrbox::Vector3_t<int>>) {
 				classDef
 				    .addFunction("angle", &VEC::angle)
 				    .addFunction("rotateAroundOrigin", &VEC::rotateAroundOrigin)
