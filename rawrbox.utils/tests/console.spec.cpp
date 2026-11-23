@@ -56,6 +56,23 @@ TEST_CASE("CONSOLE should behave as expected", "[rawrbox::CONSOLE]") {
 		REQUIRE(console->getLogs().empty() == true);
 	}
 
+	SECTION("rawrbox::Console::executeLaunchArgs") {
+		std::vector<std::vector<std::string>> received = {};
+		console->registerCommand("record", [&received](const std::vector<std::string>& args) {
+			received.push_back(args);
+			return std::make_pair<bool, std::string>(true, "");
+		});
+
+		const std::vector<std::string> args = {"game.exe", "--test", "tests", "+record", "dev_maps", "default", "+", "+record"};
+		REQUIRE(console->executeLaunchArgs(args) == 2);
+
+		REQUIRE(received.size() == 2);
+		REQUIRE(received[0] == std::vector<std::string>{"record", "dev_maps", "default"});
+		REQUIRE(received[1] == std::vector<std::string>{"record"});
+
+		REQUIRE(console->executeLaunchArgs({}) == 0);
+	}
+
 	SECTION("rawrbox::executeCommand") {
 		REQUIRE(console->getLogs().empty() == true);
 

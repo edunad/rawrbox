@@ -36,6 +36,7 @@ namespace rawrbox {
 	    ".jpeg",
 	    ".bmp",
 	    ".gif",
+	    ".webp",
 
 	    // Supported models
 	    ".fbx",
@@ -45,12 +46,14 @@ namespace rawrbox {
 	    ".3ds",
 	    ".mdl",
 	    ".md5mesh",
+	    ".glb",
 
 	    // Supported file formats
 	    ".json",
 	    ".txt",
 	    ".md",
-	    ".map"};
+	    ".map",
+	    ".vpk"};
 
 	struct WorkshopModConfig {
 		std::optional<std::string> id;

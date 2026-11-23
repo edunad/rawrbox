@@ -171,6 +171,7 @@ namespace rawrbox {
 		static void loadBytecode(lua_State* L, const std::string& chunkID, const std::string& bytecode);
 
 		static lua_State* loadThread(lua_State* L, const std::string& chunkID, const std::string& bytecode);
+		[[nodiscard]] static luabridge::LuaRef toMainThread(const luabridge::LuaRef& ref);
 
 		static void resume(lua_State* L, lua_State* from);
 		static void run(lua_State* L);

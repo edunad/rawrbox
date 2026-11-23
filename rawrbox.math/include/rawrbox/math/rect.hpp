@@ -1,5 +1,6 @@
 #pragma once
 
+#include <rawrbox/math/rect_iterator.hpp>
 #include <rawrbox/math/vector2.hpp>
 
 #include <algorithm>
@@ -32,6 +33,10 @@ namespace rawrbox {
 			return this->min.x > this->max.x || this->min.y > this->max.y;
 		}
 
+		[[nodiscard]] bool contains(const rawrbox::Vector2_t<NumberType>& point) const {
+			return point.x >= this->min.x && point.x <= this->max.x && point.y >= this->min.y && point.y <= this->max.y;
+		}
+
 		[[nodiscard]] bool overlaps(const RectType& other) const {
 			if (this->isEmpty() || other.isEmpty()) return false;
 			return this->min.x <= other.max.x && other.min.x <= this->max.x && this->min.y <= other.max.y && other.min.y <= this->max.y;
@@ -49,6 +54,17 @@ namespace rawrbox {
 			this->max = {std::max(this->max.x, other.max.x), std::max(this->max.y, other.max.y)};
 		}
 
+		void include(const rawrbox::Vector2_t<NumberType>& point) {
+			if (this->isEmpty()) {
+				this->min = point;
+				this->max = point;
+				return;
+			}
+
+			this->min = {std::min(this->min.x, point.x), std::min(this->min.y, point.y)};
+			this->max = {std::max(this->max.x, point.x), std::max(this->max.y, point.y)};
+		}
+
 		[[nodiscard]] RectType clamp(const RectType& bounds) const {
 			return {std::max(this->min.x, bounds.min.x), std::max(this->min.y, bounds.min.y), std::min(this->max.x, bounds.max.x), std::min(this->max.y, bounds.max.y)};
 		}
@@ -63,6 +79,23 @@ namespace rawrbox {
 		[[nodiscard]] RectType expand(NumberType amount) const {
 			if (this->isEmpty()) return *this;
 			return {this->min.x - amount, this->min.y - amount, this->max.x + amount, this->max.y + amount};
+		}
+
+		[[nodiscard]] auto points() const
+			requires std::is_integral_v<NumberType>
+		{
+			if (this->isEmpty()) return rawrbox::RectRange_t<NumberType>{};
+			return rawrbox::RectRange_t<NumberType>{{this->min, this->min.x, this->max.x}, {{this->min.x, this->max.y + 1}, this->min.x, this->max.x}};
+		}
+
+		RectType operator+(const rawrbox::Vector2_t<NumberType>& offset) const {
+			if (this->isEmpty()) return *this;
+			return {this->min + offset, this->max + offset};
+		}
+
+		RectType operator-(const rawrbox::Vector2_t<NumberType>& offset) const {
+			if (this->isEmpty()) return *this;
+			return {this->min - offset, this->max - offset};
 		}
 
 		bool operator==(const RectType& other) const { return this->min == other.min && this->max == other.max; }

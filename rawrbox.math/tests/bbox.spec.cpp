@@ -2,7 +2,8 @@
 
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/matchers/catch_matchers.hpp>
-#include <catch2/matchers/catch_matchers_floating_point.hpp>
+
+#include <array>
 
 TEST_CASE("BBOX should behave as expected", "[rawrbox::BBOX]") {
 	SECTION("rawrbox::BBOX") {
@@ -41,6 +42,13 @@ TEST_CASE("BBOX should behave as expected", "[rawrbox::BBOX]") {
 
 		REQUIRE(bbox.contains(rawrbox::Vector3f(0.5F, 0.5F, 0.5F)) == true);
 		REQUIRE(bbox.contains(rawrbox::Vector3f(1.5F, 1.5F, 1.5F)) == false);
+	}
+
+	SECTION("rawrbox::BBOX::BBOX(min, max)") {
+		rawrbox::BBOX bbox({-1.F, 0.F, 2.F}, {3.F, 4.F, 5.F});
+
+		REQUIRE(bbox.size == rawrbox::Vector3f(4.F, 4.F, 3.F));
+		REQUIRE_FALSE(bbox.isEmpty());
 	}
 
 	SECTION("rawrbox::BBOX::combine") {
@@ -110,6 +118,36 @@ TEST_CASE("BBOX should behave as expected", "[rawrbox::BBOX]") {
 		REQUIRE_FALSE(rawrbox::BBOX({-1, -1, -front * 10.F - 1.F}, {1, 1, -front * 10.F + 1.F}, {2, 2, 2}).inFrustum(proj));
 		REQUIRE_FALSE(rawrbox::BBOX({30, -1, front * 10.F - 1.F}, {32, 1, front * 10.F + 1.F}, {2, 2, 2}).inFrustum(proj));
 		REQUIRE_FALSE(rawrbox::BBOX({-1, -1, front * 200.F - 1.F}, {1, 1, front * 200.F + 1.F}, {2, 2, 2}).inFrustum(proj));
+	}
+
+	SECTION("rawrbox::BBOX::inPlanes") {
+		const rawrbox::BBOX bbox({0.F, 0.F, 0.F}, {1.F, 1.F, 1.F});
+
+		constexpr std::array<rawrbox::Vector4f, 2> slab = {rawrbox::Vector4f(1.F, 0.F, 0.F, -0.5F), rawrbox::Vector4f(-1.F, 0.F, 0.F, 2.F)};
+		constexpr std::array<rawrbox::Vector4f, 1> past = {rawrbox::Vector4f(1.F, 0.F, 0.F, -1.5F)};
+		constexpr std::array<rawrbox::Vector4f, 1> zero = {rawrbox::Vector4f(0.F, 0.F, 0.F, 0.F)};
+
+		REQUIRE(bbox.inPlanes(slab));
+		REQUIRE_FALSE(bbox.inPlanes(past));
+
+		REQUIRE(bbox.inPlanes(zero));
+		REQUIRE(bbox.inPlanes({}));
+
+		REQUIRE(rawrbox::BBOX::infinite().inPlanes(past));
+
+		const auto proj = rawrbox::Matrix4x4::mtxProj(90.F, 1.F, 0.1F, 100.F);
+		const auto planes = proj.getFrustumPlanes();
+		const float front = rawrbox::Matrix4x4::MTX_RIGHT_HANDED ? -1.F : 1.F;
+
+		const std::array<rawrbox::BBOX, 4> boxes = {
+		    rawrbox::BBOX({-1, -1, (front * 10.F) - 1.F}, {1, 1, (front * 10.F) + 1.F}),
+		    rawrbox::BBOX({-1, -1, (-front * 10.F) - 1.F}, {1, 1, (-front * 10.F) + 1.F}),
+		    rawrbox::BBOX({30, -1, (front * 10.F) - 1.F}, {32, 1, (front * 10.F) + 1.F}),
+		    rawrbox::BBOX({-1, -1, (front * 200.F) - 1.F}, {1, 1, (front * 200.F) + 1.F})};
+
+		for (const auto& box : boxes) {
+			REQUIRE(box.inPlanes(planes) == box.inFrustum(proj));
+		}
 	}
 
 	SECTION("rawrbox::BBOX::operator==") {

@@ -178,6 +178,21 @@ namespace rawrbox {
 		return {this->mtx[8], this->mtx[9], this->mtx[10]};
 	}
 
+	std::array<rawrbox::Vector4f, 6> Matrix4x4::getFrustumPlanes() const {
+		const auto x = rawrbox::Vector4f{this->mtx[0], this->mtx[4], this->mtx[8], this->mtx[12]};
+		const auto y = rawrbox::Vector4f{this->mtx[1], this->mtx[4 + 1], this->mtx[8 + 1], this->mtx[12 + 1]};
+		const auto z = rawrbox::Vector4f{this->mtx[2], this->mtx[4 + 2], this->mtx[8 + 2], this->mtx[12 + 2]};
+		const auto w = rawrbox::Vector4f{this->mtx[3], this->mtx[4 + 3], this->mtx[8 + 3], this->mtx[12 + 3]};
+
+		std::array<rawrbox::Vector4f, 6> planes = {w + x, w - x, w + y, w - y, w + z, w - z};
+		for (auto& plane : planes) {
+			const float length = std::sqrt((plane.x * plane.x) + (plane.y * plane.y) + (plane.z * plane.z));
+			if (length > 0.F) plane = plane / length;
+		}
+
+		return planes;
+	}
+
 	void Matrix4x4::decompose(rawrbox::Vector3f& pos, rawrbox::Vector4f& rotation, rawrbox::Vector3f& scale) const {
 		pos = this->getPos();
 		rotation = this->getRotation();

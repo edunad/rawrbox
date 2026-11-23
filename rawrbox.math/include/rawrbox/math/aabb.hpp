@@ -38,7 +38,7 @@ namespace rawrbox {
 			return this->pos.y + this->size.y;
 		}
 
-		[[nodiscard]] bool valid() const { return this->size.x > this->pos.x && this->size.y > this->pos.y; }
+		[[nodiscard]] bool valid() const { return this->size.x > 0 && this->size.y > 0; }
 		[[nodiscard]] bool empty() const { return this->pos == 0 && this->size == 0; }
 		[[nodiscard]] bool contains(const rawrbox::Vector2_t<NumberType>& pos_) const {
 			return pos_.x >= this->pos.x &&                // left
@@ -48,6 +48,10 @@ namespace rawrbox {
 		}
 
 		[[nodiscard]] bool contains(const AABB_t<NumberType>& b) const {
+			return b.pos.x >= this->pos.x && b.pos.y >= this->pos.y && b.right() <= this->right() && b.bottom() <= this->bottom();
+		}
+
+		[[nodiscard]] bool overlaps(const AABB_t<NumberType>& b) const {
 			return (this->pos.x <= (b.pos.x + b.size.x) && (this->pos.x + this->size.x) >= b.pos.x &&
 				this->pos.y <= (b.pos.y + b.size.y) && (this->pos.y + this->size.y) >= b.pos.y);
 		}
@@ -63,7 +67,7 @@ namespace rawrbox {
 		[[nodiscard]] static AABB_t<NumberType> intersects(const AABB_t<NumberType>& a, const AABB_t<NumberType>& b) {
 			AABB_t<NumberType> result;
 
-			if (a.contains(b)) {
+			if (a.overlaps(b)) {
 				result.pos.x = std::max(a.pos.x, b.pos.x);
 				result.size.x = std::min(a.pos.x + a.size.x, b.pos.x + b.size.x) - result.pos.x;
 				result.pos.y = std::max(a.pos.y, b.pos.y);

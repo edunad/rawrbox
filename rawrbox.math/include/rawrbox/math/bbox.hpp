@@ -2,9 +2,11 @@
 
 #include <rawrbox/math/matrix4x4.hpp>
 #include <rawrbox/math/vector3.hpp>
+#include <rawrbox/math/vector4.hpp>
 
 #include <algorithm>
 #include <limits>
+#include <span>
 
 namespace rawrbox {
 	template <class NumberType>
@@ -19,6 +21,7 @@ namespace rawrbox {
 		rawrbox::Vector3_t<NumberType> size = {};
 
 		BBOX_t() = default;
+		BBOX_t(const rawrbox::Vector3_t<NumberType>& _min, const rawrbox::Vector3_t<NumberType>& _max) : min(_min), max(_max), size(_max - _min) {}
 		constexpr BBOX_t(const rawrbox::Vector3_t<NumberType>& _min, const rawrbox::Vector3_t<NumberType>& _max, const rawrbox::Vector3_t<NumberType>& _size) : min(_min), max(_max), size(_size) {}
 
 		[[nodiscard]] static BBOXType infinite() {
@@ -48,7 +51,7 @@ namespace rawrbox {
 			this->size = this->max - this->min;
 		}
 
-		bool contains(const rawrbox::Vector3_t<NumberType>& pos) {
+		[[nodiscard]] bool contains(const rawrbox::Vector3_t<NumberType>& pos) const {
 			return pos.x >= this->min.x && pos.x <= this->max.x && pos.y >= this->min.y && pos.y <= this->max.y && pos.z >= this->min.z && pos.z <= this->max.z;
 		}
 
@@ -108,6 +111,20 @@ namespace rawrbox {
 			}
 
 			return false;
+		}
+
+		[[nodiscard]] bool inPlanes(std::span<const rawrbox::Vector4_t<NumberType>> planes) const
+			requires std::is_floating_point_v<NumberType>
+		{
+			if (this->isInfinite()) return true;
+
+			return std::ranges::none_of(planes, [this](const rawrbox::Vector4_t<NumberType>& plane) {
+				const NumberType x = plane.x > NumberType(0) ? this->max.x : this->min.x;
+				const NumberType y = plane.y > NumberType(0) ? this->max.y : this->min.y;
+				const NumberType z = plane.z > NumberType(0) ? this->max.z : this->min.z;
+
+				return (plane.x * x) + (plane.y * y) + (plane.z * z) + plane.w < NumberType(0);
+			});
 		}
 		// -----------
 

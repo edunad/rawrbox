@@ -22,9 +22,27 @@ TEST_CASE("AABB should behave as expected", "[rawrbox::AABB]") {
 		REQUIRE(aabb.contains(rawrbox::Vector2f(8.F, 8.F)) == true);
 		REQUIRE(aabb.contains(rawrbox::Vector2f(12.F, 12.F)) == false);
 
-		REQUIRE(aabb.contains(rawrbox::AABB{5.F, 5.F, 10.F, 10.F}) == true);
-		REQUIRE(aabb.contains(rawrbox::AABB{10.F, 2.F, 4.F, 4.F}) == true);
+		REQUIRE(aabb.contains(rawrbox::AABB{2.F, 2.F, 4.F, 4.F}) == true);
+		REQUIRE(aabb.contains(rawrbox::AABB{0.F, 0.F, 10.F, 10.F}) == true);
+		REQUIRE(aabb.contains(rawrbox::AABB{5.F, 5.F, 10.F, 10.F}) == false);
 		REQUIRE(aabb.contains(rawrbox::AABB{11.F, 2.F, 4.F, 4.F}) == false);
+	}
+
+	SECTION("rawrbox::AABB::overlaps") {
+		REQUIRE(aabb.overlaps(rawrbox::AABB{5.F, 5.F, 10.F, 10.F}) == true);
+		REQUIRE(aabb.overlaps(rawrbox::AABB{10.F, 2.F, 4.F, 4.F}) == true);
+		REQUIRE(aabb.overlaps(rawrbox::AABB{11.F, 2.F, 4.F, 4.F}) == false);
+	}
+
+	SECTION("rawrbox::AABB::intersects") {
+		REQUIRE(rawrbox::AABB::intersects(aabb, rawrbox::AABB{5.F, 5.F, 10.F, 10.F}) == rawrbox::AABB{5.F, 5.F, 5.F, 5.F});
+		REQUIRE(rawrbox::AABB::intersects(aabb, rawrbox::AABB{11.F, 2.F, 4.F, 4.F}).empty());
+	}
+
+	SECTION("rawrbox::AABB::valid") {
+		REQUIRE(aabb.valid());
+		REQUIRE(rawrbox::AABB{20.F, 20.F, 1.F, 1.F}.valid());
+		REQUIRE_FALSE(rawrbox::AABB{5.F, 5.F, 0.F, 3.F}.valid());
 	}
 
 	SECTION("rawrbox::AABB::combine") {

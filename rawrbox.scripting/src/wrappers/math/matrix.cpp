@@ -1,6 +1,8 @@
 #include <rawrbox/math/matrix4x4.hpp>
 #include <rawrbox/scripting/wrappers/math/matrix.hpp>
 
+#include <LuaBridge/Array.h>
+
 namespace rawrbox {
 	void MatrixWrapper::registerLua(lua_State* L) {
 		luabridge::getGlobalNamespace(L)
@@ -21,6 +23,7 @@ namespace rawrbox {
 
 		    .addFunction("getPos", &rawrbox::Matrix4x4::getPos)
 		    .addFunction("getScale", &rawrbox::Matrix4x4::getScale)
+		    .addFunction("getFrustumPlanes", &rawrbox::Matrix4x4::getFrustumPlanes)
 
 		    .addFunction("rotate", &rawrbox::Matrix4x4::rotate)
 		    .addFunction("rotateX", &rawrbox::Matrix4x4::rotateX)

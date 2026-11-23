@@ -485,6 +485,10 @@ namespace rawrbox {
 		rawrbox::LuaUtils::resume(thread, L);
 	}
 
+	luabridge::LuaRef LuaUtils::toMainThread(const luabridge::LuaRef& ref) {
+		return {lua_mainthread(ref.state()), ref};
+	}
+
 	lua_State* LuaUtils::loadThread(lua_State* L, const std::string& chunkID, const std::string& bytecode) {
 		if (L == nullptr) throw std::runtime_error("Invalid lua state");
 

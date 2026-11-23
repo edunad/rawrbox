@@ -53,7 +53,7 @@ namespace rawrbox {
 	void Hooks::add(const std::string& id, const std::string& name, const luabridge::LuaRef& func) {
 		if (!func.isCallable()) throw std::runtime_error("Invalid callback");
 
-		const luabridge::LuaRef handler(lua_mainthread(func.state()), func);
+		const luabridge::LuaRef handler = rawrbox::LuaUtils::toMainThread(func);
 
 		HookList& list = Hooks::_hooks[id];
 		std::vector<rawrbox::Hook> arr = list == nullptr ? std::vector<rawrbox::Hook>{} : *list; // Copy

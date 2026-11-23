@@ -4,6 +4,10 @@ set(output_target RAWRBOX.WEBM)
 # --------------
 
 # LIBS ---
+
+# libwebm appends (/W4, -Wall) ...
+set(RAWRBOX_WEBM_CXX_FLAGS "$CACHE{CMAKE_CXX_FLAGS}")
+
 CPMAddPackage(
         NAME
         libwebm
@@ -19,6 +23,8 @@ CPMAddPackage(
         "ENABLE_TESTS OFF"
         "ENABLE_SAMPLE_PROGRAMS OFF"
 )
+
+set(CMAKE_CXX_FLAGS "${RAWRBOX_WEBM_CXX_FLAGS}" CACHE STRING "Flags used by the CXX compiler during all build types." FORCE)
 
 if (libwebm_ADDED)
     target_include_directories(webm PUBLIC ${libwebm_SOURCE_DIR})

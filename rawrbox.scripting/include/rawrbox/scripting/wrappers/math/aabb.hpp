@@ -23,10 +23,12 @@ namespace rawrbox {
 			    .addFunction("left", &AABBT::left)
 			    .addFunction("bottom", &AABBT::bottom)
 			    .addFunction("empty", &AABBT::empty)
+			    .addFunction("valid", &AABBT::valid)
 
 			    .addFunction("contains",
 				luabridge::overload<const rawrbox::Vector2_t<T>&>(&AABBT::contains),
 				luabridge::overload<const AABBT&>(&AABBT::contains))
+			    .addFunction("overlaps", &AABBT::overlaps)
 
 			    .addFunction("intersects", &AABBT::intersects)
 			    .addFunction("mask", &AABBT::mask)

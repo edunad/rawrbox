@@ -28,7 +28,7 @@ namespace rawrbox {
 		// ----------
 
 		const auto id = ++HTTPGlobal::_id;
-		HTTPGlobal::_callbacks.emplace(id, callback);
+		HTTPGlobal::_callbacks.emplace(id, rawrbox::LuaUtils::toMainThread(callback));
 
 		rawrbox::HTTP::request(
 		    url, static_cast<rawrbox::HTTPMethod>(method), headerMap, [id](int code, const std::map<std::string, std::string>& headerResp, const std::string& resp) {

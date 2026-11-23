@@ -61,6 +61,27 @@ namespace rawrbox {
 		    "Prints on the console");
 	}
 
+	// LAUNCH ARGS ----
+	size_t Console::executeLaunchArgs(const std::span<const std::string> args) {
+		std::vector<std::vector<std::string>> commands = {};
+
+		for (const auto& arg : args) {
+			if (arg.starts_with('+')) {
+				if (arg.size() > 1) commands.push_back({arg.substr(1)});
+				continue;
+			}
+
+			if (!commands.empty() && !arg.empty()) commands.back().push_back(arg);
+		}
+
+		for (const auto& command : commands) {
+			this->printExecuteCommand(command);
+		}
+
+		return commands.size();
+	}
+	// -------------
+
 	// CFG ----
 	bool Console::executeCFG(const std::string& id) {
 		auto p = std::filesystem::path(fmt::format("cfg/{}.cfg", id));

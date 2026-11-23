@@ -85,7 +85,7 @@ namespace rawrbox {
 				merged = false;
 
 				for (auto it = this->_dirty.begin(); it != this->_dirty.end(); ++it) {
-					if (!area.contains(*it)) continue;
+					if (!area.overlaps(*it)) continue;
 
 					area.combine(*it);
 					this->_dirty.erase(it);

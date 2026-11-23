@@ -77,8 +77,30 @@ TEST_CASE("Matrix4x4 should behave as expected", "[rawrbox::Matrix4x4]") {
 		REQUIRE_THAT(rotation.w, Catch::Matchers::WithinAbs(2.0F, 0.0001F));
 	}
 
+	SECTION("rawrbox::Matrix4x4::getFrustumPlanes") {
+		const auto planes = rawrbox::Matrix4x4().getFrustumPlanes();
+
+		REQUIRE(planes[0] == rawrbox::Vector4f(1.F, 0.F, 0.F, 1.F));
+		REQUIRE(planes[1] == rawrbox::Vector4f(-1.F, 0.F, 0.F, 1.F));
+		REQUIRE(planes[2] == rawrbox::Vector4f(0.F, 1.F, 0.F, 1.F));
+		REQUIRE(planes[3] == rawrbox::Vector4f(0.F, -1.F, 0.F, 1.F));
+		REQUIRE(planes[4] == rawrbox::Vector4f(0.F, 0.F, 1.F, 1.F));
+		REQUIRE(planes[5] == rawrbox::Vector4f(0.F, 0.F, -1.F, 1.F));
+
+		const auto proj = rawrbox::Matrix4x4::mtxProj(90.F, 1.F, 0.1F, 100.F).getFrustumPlanes();
+		const float front = rawrbox::Matrix4x4::MTX_RIGHT_HANDED ? -1.F : 1.F;
+		const rawrbox::Vector3f ahead = {0.F, 0.F, front * 10.F};
+		const rawrbox::Vector3f behind = {0.F, 0.F, -front * 10.F};
+
+		for (const auto& plane : proj) {
+			REQUIRE_THAT((plane.x * plane.x) + (plane.y * plane.y) + (plane.z * plane.z), Catch::Matchers::WithinAbs(1.F, 0.0001F));
+			REQUIRE((plane.x * ahead.x) + (plane.y * ahead.y) + (plane.z * ahead.z) + plane.w >= 0.F);
+		}
+
+		REQUIRE((proj[4].x * behind.x) + (proj[4].y * behind.y) + (proj[4].z * behind.z) + proj[4].w < 0.F);
+	}
+
 	SECTION("rawrbox::Matrix4x4::getForward") {
-		// Test case 1: Identity matrix
 		rawrbox::Matrix4x4 identityMatrix;
 
 		rawrbox::Vector3f forward = identityMatrix.getForward();
@@ -86,7 +108,6 @@ TEST_CASE("Matrix4x4 should behave as expected", "[rawrbox::Matrix4x4]") {
 		REQUIRE_THAT(forward.y, Catch::Matchers::WithinAbs(0.0F, 0.0001F));
 		REQUIRE_THAT(forward.z, Catch::Matchers::WithinAbs(1.0F, 0.0001F));
 
-		// Test case 2: Custom matrix
 		rawrbox::Matrix4x4 customMatrix;
 		customMatrix.mtx = {
 		    1.0f,

@@ -13,6 +13,7 @@
 #include <fstream>
 #include <limits>
 #include <memory>
+#include <optional>
 #include <string>
 
 namespace rawrbox {
@@ -157,6 +158,33 @@ TEST_CASE("Lua Utils should behave as expected", "[rawrbox::LuaUtils]") {
 		lua_State* plain = luaL_newstate();
 		REQUIRE(rawrbox::Mod::fromState(plain) == nullptr);
 		lua_close(plain);
+	}
+
+	SECTION("rawrbox::LuaUtils::toMainThread") {
+		lua_State* L = luaL_newstate();
+		luaL_openlibs(L);
+
+		std::optional<luabridge::LuaRef> rooted = std::nullopt;
+		{
+			lua_State* thread = rawrbox::LuaUtils::loadThread(L, "toMainThread", rawrbox::LuaUtils::compile("return function() return 2 end"));
+			REQUIRE(lua_resume(thread, L, 0) == LUA_OK);
+
+			const auto onThread = luabridge::LuaRef::fromStack(thread, -1);
+			REQUIRE(onThread.state() == thread);
+
+			rooted = rawrbox::LuaUtils::toMainThread(onThread);
+			REQUIRE(rooted->state() == L);
+		}
+
+		lua_pop(L, 1);
+		lua_gc(L, LUA_GCCOLLECT, 0);
+
+		const auto result = rooted->call<int>();
+		REQUIRE(result);
+		REQUIRE(result.value() == 2);
+
+		rooted.reset();
+		lua_close(L);
 	}
 
 	SECTION("rawrbox::LuaUtils::loadThread") {

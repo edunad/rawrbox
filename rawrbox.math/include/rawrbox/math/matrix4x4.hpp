@@ -54,6 +54,8 @@ namespace rawrbox {
 		[[nodiscard]] rawrbox::Vector4f getRotation() const;
 		[[nodiscard]] rawrbox::Vector3f getForward() const;
 
+		[[nodiscard]] std::array<rawrbox::Vector4f, 6> getFrustumPlanes() const;
+
 		void decompose(rawrbox::Vector3f& pos, rawrbox::Vector4f& rotation, rawrbox::Vector3f& scale) const;
 
 		rawrbox::Matrix4x4& rotate(const rawrbox::Vector4f& rot);

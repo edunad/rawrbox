@@ -443,15 +443,15 @@ namespace rawrbox {
 
 		auto mod = std::make_unique<rawrbox::Mod>(id, modFolder, std::move(metadata.value()));
 
-		// Prepare env ----------
-		SCRIPTING::loadLibraries(*mod);
-		SCRIPTING::loadTypes(*mod);
-		SCRIPTING::loadGlobals(*mod);
-		SCRIPTING::loadI18N(*mod);
-		SCRIPTING::loadModifiers(*mod);
-		// ----------
-
 		try {
+			// Prepare env ----------
+			SCRIPTING::loadLibraries(*mod);
+			SCRIPTING::loadTypes(*mod);
+			SCRIPTING::loadGlobals(*mod);
+			SCRIPTING::loadI18N(*mod);
+			SCRIPTING::loadModifiers(*mod);
+			// ----------
+
 			mod->init(); // Sandbox env
 			if (!SCRIPTING::_safeEnv) lua_setsafeenv(mod->getEnvironment(), LUA_GLOBALSINDEX, 0);
 

@@ -2,6 +2,8 @@
 
 #include <catch2/catch_test_macros.hpp>
 
+#include <vector>
+
 TEST_CASE("Rect should behave as expected", "[rawrbox::Rect]") {
 	SECTION("rawrbox::Rect") {
 		rawrbox::Recti rect(1, 2, 3, 4);
@@ -18,6 +20,17 @@ TEST_CASE("Rect should behave as expected", "[rawrbox::Rect]") {
 		REQUIRE(rect.isEmpty());
 		REQUIRE(flipped.isEmpty());
 		REQUIRE(rawrbox::Recti(2, 2, 2, 2).isEmpty() == false);
+	}
+
+	SECTION("rawrbox::Rect::contains") {
+		rawrbox::Recti rect(1, 2, 3, 4);
+
+		REQUIRE(rect.contains({1, 2}));
+		REQUIRE(rect.contains({3, 4}));
+		REQUIRE(rect.contains({2, 3}));
+		REQUIRE_FALSE(rect.contains({0, 2}));
+		REQUIRE_FALSE(rect.contains({3, 5}));
+		REQUIRE_FALSE(rawrbox::Recti::empty().contains({0, 0}));
 	}
 
 	SECTION("rawrbox::Rect::overlaps") {
@@ -43,6 +56,19 @@ TEST_CASE("Rect should behave as expected", "[rawrbox::Rect]") {
 		REQUIRE(rect == rawrbox::Recti(0, 3, 4, 8));
 	}
 
+	SECTION("rawrbox::Rect::include") {
+		auto rect = rawrbox::Recti::empty();
+
+		rect.include({2, 3});
+		REQUIRE(rect == rawrbox::Recti(2, 3, 2, 3));
+
+		rect.include({0, 5});
+		REQUIRE(rect == rawrbox::Recti(0, 3, 2, 5));
+
+		rect.include({1, 4});
+		REQUIRE(rect == rawrbox::Recti(0, 3, 2, 5));
+	}
+
 	SECTION("rawrbox::Rect::clamp") {
 		rawrbox::Recti bounds(0, 0, 31, 31);
 
@@ -59,6 +85,34 @@ TEST_CASE("Rect should behave as expected", "[rawrbox::Rect]") {
 		REQUIRE(rawrbox::Recti(1, 2, 3, 4).pack() == 0x04030201U);
 		REQUIRE(rawrbox::Recti(0, 0, 255, 255).pack() == 0xFFFF0000U);
 		REQUIRE(rawrbox::Recti::empty().pack() == 0x0000FFFFU);
+	}
+
+	SECTION("rawrbox::Rect::points") {
+		std::vector<rawrbox::Vector2i> points = {};
+		for (const auto& cell : rawrbox::Recti(1, 2, 2, 3).points()) {
+			points.push_back(cell);
+		}
+
+		REQUIRE(points == std::vector<rawrbox::Vector2i>{{1, 2}, {2, 2}, {1, 3}, {2, 3}});
+
+		size_t single = 0;
+		for ([[maybe_unused]] const auto& cell : rawrbox::Recti(4, 4, 4, 4).points()) {
+			++single;
+		}
+
+		size_t none = 0;
+		for ([[maybe_unused]] const auto& cell : rawrbox::Recti::empty().points()) {
+			++none;
+		}
+
+		REQUIRE(single == 1);
+		REQUIRE(none == 0);
+	}
+
+	SECTION("rawrbox::Rect::operator+") {
+		REQUIRE(rawrbox::Recti(1, 2, 3, 4) + rawrbox::Vector2i(2, -1) == rawrbox::Recti(3, 1, 5, 3));
+		REQUIRE(rawrbox::Recti(1, 2, 3, 4) - rawrbox::Vector2i(1, 1) == rawrbox::Recti(0, 1, 2, 3));
+		REQUIRE((rawrbox::Recti::empty() + rawrbox::Vector2i(5, 5)).isEmpty());
 	}
 
 	SECTION("rawrbox::Rect::operator==") {

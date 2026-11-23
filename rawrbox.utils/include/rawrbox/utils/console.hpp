@@ -11,6 +11,7 @@
 #include <iomanip>
 #include <mutex>
 #include <optional>
+#include <span>
 #include <sstream>
 #include <string>
 #include <unordered_map>
@@ -130,6 +131,10 @@ namespace rawrbox {
 
 		// CFG ----
 		virtual bool executeCFG(const std::string& id);
+		// -------------
+
+		// LAUNCH ARGS SUPPORT ----
+		virtual size_t executeLaunchArgs(std::span<const std::string> args);
 		// -------------
 
 		virtual void printExecuteCommand(const std::vector<std::string>& args);
