@@ -1,8 +1,9 @@
 #include <rawrbox/math/utils/yuv.hpp>
 
-#include <algorithm>
 #include <cmath>
+#include <cstddef>
 #include <stdexcept>
+#include <type_traits>
 
 namespace rawrbox {
 	// PRIVATE ---
@@ -60,54 +61,103 @@ namespace rawrbox {
 	}
 
 	template <typename T>
-	void YUVUtils::convertRows(const rawrbox::YUVImage& image, const rawrbox::YUVUtils::Coefficients& coeff, uint8_t* dst, uint32_t dstPitch, bool flipY) {
+	void YUVUtils::convertPlanes(const rawrbox::YUVImage& image, const rawrbox::YUVUtils::Coefficients& coeff, uint8_t* dst, uint32_t dstPitch, bool flipY) {
 		const bool rgb = image.space == rawrbox::YUVColorSpace::RGB;
-		const bool hasAlpha = image.planes[3] != nullptr;
-		const int32_t round = 1 << (coeff.shift - 1U);
 
-		for (uint32_t y = 0; y < image.size.y; y++) {
+		if (image.planes[3] == nullptr) {
+			if (rgb) {
+				rawrbox::YUVUtils::convertRows<T, void, true>(image, coeff, dst, dstPitch, flipY);
+			} else {
+				rawrbox::YUVUtils::convertRows<T, void, false>(image, coeff, dst, dstPitch, flipY);
+			}
+		} else if (image.wideAlpha) {
+			if (rgb) {
+				rawrbox::YUVUtils::convertRows<T, uint16_t, true>(image, coeff, dst, dstPitch, flipY);
+			} else {
+				rawrbox::YUVUtils::convertRows<T, uint16_t, false>(image, coeff, dst, dstPitch, flipY);
+			}
+		} else {
+			if (rgb) {
+				rawrbox::YUVUtils::convertRows<T, uint8_t, true>(image, coeff, dst, dstPitch, flipY);
+			} else {
+				rawrbox::YUVUtils::convertRows<T, uint8_t, false>(image, coeff, dst, dstPitch, flipY);
+			}
+		}
+	}
+
+	template <typename T, typename A, bool RGB>
+	void YUVUtils::convertRows(const rawrbox::YUVImage& image, const rawrbox::YUVUtils::Coefficients& coeff, uint8_t* dst, uint32_t dstPitch, bool flipY) {
+		constexpr bool alpha = !std::is_void_v<A>;
+		using AlphaT = std::conditional_t<alpha, A, uint8_t>;
+
+		const uint32_t width = image.size.x;
+		const uint32_t height = image.size.y;
+
+		const uint32_t shiftX = image.chromaShift.x;
+		const uint32_t shiftY = image.chromaShift.y;
+
+		const uint32_t block = 1U << shiftX;
+
+		const int32_t yScale = coeff.y;
+
+		const int32_t yOffset = coeff.yOffset;
+		const int32_t cOffset = RGB ? coeff.yOffset : coeff.cOffset;
+
+		const int32_t rFactor = RGB ? coeff.y : coeff.crR;
+		const int32_t bFactor = RGB ? coeff.y : coeff.cbB;
+
+		const int32_t gFactorU = RGB ? 0 : coeff.cbG;
+		const int32_t gFactorV = RGB ? 0 : coeff.crG;
+
+		const uint32_t shift = coeff.shift;
+		const uint32_t alphaShift = coeff.alphaShift;
+		const int32_t round = 1 << (shift - 1U);
+
+		for (uint32_t y = 0; y < height; y++) {
 			const auto* yRow = reinterpret_cast<const T*>(image.planes[0] + static_cast<ptrdiff_t>(y) * image.strides[0]);
-			const auto* uRow = reinterpret_cast<const T*>(image.planes[1] + static_cast<ptrdiff_t>(y >> image.chromaShift.y) * image.strides[1]);
-			const auto* vRow = reinterpret_cast<const T*>(image.planes[2] + static_cast<ptrdiff_t>(y >> image.chromaShift.y) * image.strides[2]);
+			const auto* uRow = reinterpret_cast<const T*>(image.planes[1] + static_cast<ptrdiff_t>(y >> shiftY) * image.strides[1]);
+			const auto* vRow = reinterpret_cast<const T*>(image.planes[2] + static_cast<ptrdiff_t>(y >> shiftY) * image.strides[2]);
 
-			const uint8_t* aRow = hasAlpha ? image.planes[3] + static_cast<ptrdiff_t>(y) * image.strides[3] : nullptr;
-			uint8_t* out = dst + static_cast<size_t>(flipY ? image.size.y - 1U - y : y) * dstPitch;
+			[[maybe_unused]] const AlphaT* aRow = nullptr;
+			if constexpr (alpha) aRow = reinterpret_cast<const AlphaT*>(image.planes[3] + static_cast<ptrdiff_t>(y) * image.strides[3]);
 
-			for (uint32_t x = 0; x < image.size.x; x++) {
-				const int32_t lum = static_cast<int32_t>(yRow[x]) - coeff.yOffset;
-				const int32_t cb = static_cast<int32_t>(uRow[x >> image.chromaShift.x]);
-				const int32_t cr = static_cast<int32_t>(vRow[x >> image.chromaShift.x]);
+			uint8_t* out = dst + static_cast<size_t>(flipY ? height - 1U - y : y) * dstPitch;
 
-				int32_t r = 0;
-				int32_t g = 0;
-				int32_t b = 0;
+			for (uint32_t x = 0; x < width;) {
+				const int32_t u = static_cast<int32_t>(uRow[x >> shiftX]) - cOffset;
+				const int32_t v = static_cast<int32_t>(vRow[x >> shiftX]) - cOffset;
 
-				if (rgb) {
-					r = coeff.y * (cr - coeff.yOffset);
-					g = coeff.y * lum;
-					b = coeff.y * (cb - coeff.yOffset);
-				} else {
-					const int32_t base = coeff.y * lum;
-					const int32_t u = cb - coeff.cOffset;
-					const int32_t v = cr - coeff.cOffset;
+				const int32_t rChroma = rFactor * v;
+				const int32_t gChroma = gFactorU * u + gFactorV * v;
+				const int32_t bChroma = bFactor * u;
 
-					r = base + coeff.crR * v;
-					g = base - coeff.cbG * u - coeff.crG * v;
-					b = base + coeff.cbB * u;
+				const uint32_t end = width - x > block ? x + block : width;
+
+				for (; x < end; x++) {
+					const int32_t lum = yScale * (static_cast<int32_t>(yRow[x]) - yOffset);
+					const int32_t base = RGB ? 0 : lum; // GBR
+
+					int32_t b = (base + bChroma + round) >> shift;
+					int32_t g = (lum - gChroma + round) >> shift;
+					int32_t r = (base + rChroma + round) >> shift;
+
+					b &= ~(b >> 31);
+					g &= ~(g >> 31);
+					r &= ~(r >> 31);
+
+					out[0] = static_cast<uint8_t>(b | ((255 - b) >> 31));
+					out[1] = static_cast<uint8_t>(g | ((255 - g) >> 31));
+					out[2] = static_cast<uint8_t>(r | ((255 - r) >> 31));
+
+					if constexpr (alpha) {
+						const int32_t a = static_cast<int32_t>(aRow[x]) >> alphaShift;
+						out[3] = static_cast<uint8_t>(a | ((255 - a) >> 31));
+					} else {
+						out[3] = 0xFF;
+					}
+
+					out += 4;
 				}
-
-				out[0] = static_cast<uint8_t>(std::clamp((b + round) >> coeff.shift, 0, 255));
-				out[1] = static_cast<uint8_t>(std::clamp((g + round) >> coeff.shift, 0, 255));
-				out[2] = static_cast<uint8_t>(std::clamp((r + round) >> coeff.shift, 0, 255));
-
-				if (hasAlpha) {
-					const int32_t alpha = image.wideAlpha ? reinterpret_cast<const uint16_t*>(aRow)[x] : aRow[x];
-					out[3] = static_cast<uint8_t>(std::clamp(alpha >> coeff.alphaShift, 0, 255));
-				} else {
-					out[3] = 0xFF;
-				}
-
-				out += 4;
 			}
 		}
 	}
@@ -123,9 +173,9 @@ namespace rawrbox {
 
 		const auto coeff = rawrbox::YUVUtils::getCoefficients(image);
 		if (image.wide) {
-			rawrbox::YUVUtils::convertRows<uint16_t>(image, coeff, dst, dstPitch, flipY);
+			rawrbox::YUVUtils::convertPlanes<uint16_t>(image, coeff, dst, dstPitch, flipY);
 		} else {
-			rawrbox::YUVUtils::convertRows<uint8_t>(image, coeff, dst, dstPitch, flipY);
+			rawrbox::YUVUtils::convertPlanes<uint8_t>(image, coeff, dst, dstPitch, flipY);
 		}
 	}
 } // namespace rawrbox

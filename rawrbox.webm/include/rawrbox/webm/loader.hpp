@@ -7,6 +7,7 @@
 #include <mkvparser/mkvparser.h>
 
 #include <filesystem>
+#include <limits>
 #include <string>
 #include <unordered_map>
 
@@ -15,6 +16,7 @@ namespace rawrbox {
 	namespace WEBMLoadFlags {
 		const uint32_t NONE = 0;
 		const uint32_t PRELOAD = 1 << 1;
+		const uint32_t PAUSE_WHEN_HIDDEN = 1 << 2; // TextureWEBM: holds playback (no decoding) while nothing draws it. Only for meshes / stencil / imgui, decals and particle emitters cache the texture id
 	}; // namespace WEBMLoadFlags
 	// NOLINTEND{unused-const-variable}
 
@@ -56,6 +58,9 @@ namespace rawrbox {
 	private:
 		class VFSReader; // Reads through the VFS (loose or VPK), defined in loader.cpp
 
+		static constexpr double DECODE_BUDGET_MIN_TIME = 0.1; // TODO: Move to defs?
+		static constexpr size_t DECODE_BUDGET_EXTRA_FRAMES = 4;
+
 		std::filesystem::path _filePath = {};
 		uint32_t _flags = 0;
 
@@ -65,6 +70,7 @@ namespace rawrbox {
 
 		bool _dirty = false;
 		float _speed = 1.F;
+		float _avgDelta = 0.F; // Smoothed update delta, a single hitch barely moves it
 
 		uint64_t _time = 0;
 		uint64_t _endTime = 0;
@@ -104,12 +110,12 @@ namespace rawrbox {
 		void readBlockExtra(long long pos, long long stop, rawrbox::WEBMBlockAdditional& additional) const;
 
 		[[nodiscard]] bool isKeyFrame(long long pos, long len) const;
-		
+
 		[[nodiscard]] rawrbox::WEBMColorHint getColorHint() const;
 		[[nodiscard]] uint64_t getFrameDuration() const;
 
 		void readFrame(size_t index);
-		void present(size_t target);
+		void present(size_t target, size_t maxFrames = std::numeric_limits<size_t>::max());
 
 		[[nodiscard]] size_t findFrame(uint64_t time) const;
 		[[nodiscard]] size_t findKeyFrame(size_t index) const;

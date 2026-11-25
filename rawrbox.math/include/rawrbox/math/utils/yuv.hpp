@@ -9,8 +9,8 @@ namespace rawrbox {
 
 	enum class YUVLuminanceScale : int {
 		UNKNOWN = -1,
-		FULL = 0, /** Luminance values range from [0, 255] */
-		ITU = 1   /** Luminance values range from [16, 235], the range from ITU-R BT.601 */
+		FULL = 0,
+		ITU = 1 // ITU-R BT.601
 	};
 
 	enum class YUVColorSpace : int {
@@ -42,7 +42,7 @@ namespace rawrbox {
 	class YUVUtils {
 		struct Coefficients {
 			int32_t y = 0;
-			
+
 			int32_t crR = 0;
 			int32_t cbG = 0;
 			int32_t crG = 0;
@@ -58,6 +58,9 @@ namespace rawrbox {
 		static rawrbox::YUVUtils::Coefficients getCoefficients(const rawrbox::YUVImage& image);
 
 		template <typename T>
+		static void convertPlanes(const rawrbox::YUVImage& image, const rawrbox::YUVUtils::Coefficients& coeff, uint8_t* dst, uint32_t dstPitch, bool flipY);
+
+		template <typename T, typename A, bool RGB>
 		static void convertRows(const rawrbox::YUVImage& image, const rawrbox::YUVUtils::Coefficients& coeff, uint8_t* dst, uint32_t dstPitch, bool flipY);
 
 	public:

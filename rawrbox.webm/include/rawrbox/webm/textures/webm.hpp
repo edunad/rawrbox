@@ -3,6 +3,7 @@
 #include <rawrbox/render/textures/animated.hpp>
 #include <rawrbox/webm/loader.hpp>
 
+#include <atomic>
 #include <filesystem>
 
 namespace rawrbox {
@@ -10,6 +11,11 @@ namespace rawrbox {
 	private:
 		uint32_t _flags = 0;
 		bool _started = false;
+
+		// Auto pause
+		mutable std::atomic<bool> _wasDrawn = false;
+		uint32_t _hiddenFrames = 0;
+		// ---------
 
 		std::unique_ptr<rawrbox::WEBM> _webm = nullptr;
 
@@ -42,6 +48,7 @@ namespace rawrbox {
 		[[nodiscard]] uint32_t total() const override;
 		[[nodiscard]] const rawrbox::WEBMInfo& getInfo() const;
 		[[nodiscard]] uint64_t getTime() const;
+		[[nodiscard]] uint32_t getTextureID() const override;
 		// ----
 
 		// RENDER -----

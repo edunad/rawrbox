@@ -6,11 +6,13 @@
 #include <rawrbox/utils/vfs.hpp>
 #include <rawrbox/webm/textures/webm.hpp>
 
+#include <algorithm>
+
 namespace rawrbox {
 	TextureWEBM::TextureWEBM(const std::filesystem::path& filePath, uint32_t flags, bool useFallback) : rawrbox::TextureAnimatedBase(filePath, useFallback), _flags(flags) {
 		this->internalLoad({}, useFallback);
 	}
-	
+
 	TextureWEBM::~TextureWEBM() {
 		this->_webm.reset();
 	}
@@ -82,6 +84,13 @@ namespace rawrbox {
 			this->_started = true;
 			return;
 		}
+
+		// Check last draw time ------
+		if ((this->_flags & rawrbox::WEBMLoadFlags::PAUSE_WHEN_HIDDEN) != 0) {
+			this->_hiddenFrames = this->_wasDrawn.exchange(false, std::memory_order_relaxed) ? 0U : std::min(this->_hiddenFrames + 1U, 3U);
+			if (this->_hiddenFrames == 3) return;
+		}
+		// ---------------------------
 
 		if (!this->_webm->update(rawrbox::DELTA_TIME)) return;
 
@@ -155,6 +164,11 @@ namespace rawrbox {
 	uint64_t TextureWEBM::getTime() const {
 		if (this->_webm == nullptr) return 0;
 		return this->_webm->getTime();
+	}
+
+	uint32_t TextureWEBM::getTextureID() const {
+		this->_wasDrawn.store(true, std::memory_order_relaxed); // Meh, but it's called when something wants to draw it i guess.
+		return rawrbox::TextureAnimatedBase::getTextureID();
 	}
 	// ----
 

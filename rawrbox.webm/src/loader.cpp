@@ -2,11 +2,13 @@
 #include <rawrbox/utils/vfs.hpp>
 #include <rawrbox/webm/loader.hpp>
 
-#include <common/webmids.h>
-#include <fmt/format.h>
 #include <tracy/Tracy.hpp>
 
+#include <common/webmids.h>
+#include <fmt/format.h>
+
 #include <algorithm>
+#include <cmath>
 #include <iterator>
 #include <utility>
 
@@ -217,6 +219,16 @@ namespace rawrbox {
 		this->_frame = {};
 		this->_decoder.reset();
 
+		// Done decoding, destroy the block ------
+		for (auto& entry : this->_entries) {
+			entry.block = nullptr;
+		}
+
+		this->_video = nullptr;
+		this->_segment.reset();
+		this->_reader.reset();
+		// ---------
+
 		this->_logger->debug("Done pre-loading '{}'", fmt::styled(this->_filePath.generic_string(), fmt::fg(fmt::color::light_coral)));
 	}
 
@@ -390,8 +402,8 @@ namespace rawrbox {
 		if (entry.alphaLen > 0 && this->_reader->Read(entry.alphaPos, entry.alphaLen, this->_frame.alpha.data()) != 0) RAWRBOX_CRITICAL("Failed to read alpha frame {}", index);
 	}
 
-	void WEBM::present(const size_t target) {
-		if (target < this->_cursor || target >= this->_entries.size()) return;
+	void WEBM::present(const size_t target, const size_t maxFrames) {
+		if (target < this->_cursor || target >= this->_entries.size() || maxFrames == 0) return;
 
 		if (this->isPreLoaded()) {
 			this->_shown = target;
@@ -402,18 +414,19 @@ namespace rawrbox {
 		}
 
 		const size_t start = std::max(this->_cursor, this->findKeyFrame(target));
+		const size_t end = target - start >= maxFrames ? start + maxFrames - 1 : target;
 		bool visible = false;
 
-		for (size_t i = start; i <= target; i++) {
+		for (size_t i = start; i <= end; i++) {
 			this->readFrame(i);
 			visible = this->_decoder->decode(this->_frame);
 		}
 
-		this->_cursor = target + 1;
+		this->_cursor = end + 1;
 		if (!visible) return;
 
 		this->_decoder->convert(this->_image);
-		this->_shown = target;
+		this->_shown = end;
 		this->_dirty = true;
 	}
 
@@ -444,6 +457,7 @@ namespace rawrbox {
 
 		this->_ended = false;
 		this->_dirty = false;
+		this->_avgDelta = 0.F;
 
 		this->_info = {};
 		this->_frame = {};
@@ -466,7 +480,13 @@ namespace rawrbox {
 		if (this->_entries.empty()) RAWRBOX_CRITICAL("Video not loaded! Did you call 'load' ?");
 
 		if (!this->_paused && !this->_ended) {
+			// Catch up ---
+			const double delta = std::max(static_cast<double>(this->_avgDelta), DECODE_BUDGET_MIN_TIME);
+			const size_t budget = static_cast<size_t>(std::ceil(delta * this->_info.frameRate * static_cast<double>(this->_speed))) + DECODE_BUDGET_EXTRA_FRAMES;
+
+			this->_avgDelta += (deltaTime - this->_avgDelta) * 0.1F;
 			this->_time += static_cast<uint64_t>(static_cast<double>(deltaTime) * 1000000000.0 * static_cast<double>(this->_speed));
+			// ---------
 
 			const bool reachedEnd = this->_time >= this->_endTime;
 			if (reachedEnd) {
@@ -479,7 +499,12 @@ namespace rawrbox {
 				}
 			}
 
-			this->present(this->_ended ? this->_entries.size() - 1 : this->findFrame(this->_time));
+			if (this->_ended) {
+				this->present(this->_entries.size() - 1); // Last update, it has to land on the final frame
+			} else {
+				this->present(this->findFrame(this->_time), budget);
+			}
+
 			if (reachedEnd) this->onEnd();
 		}
 
