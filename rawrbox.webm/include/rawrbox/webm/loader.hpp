@@ -16,7 +16,7 @@ namespace rawrbox {
 	namespace WEBMLoadFlags {
 		const uint32_t NONE = 0;
 		const uint32_t PRELOAD = 1 << 1;
-		const uint32_t PAUSE_WHEN_HIDDEN = 1 << 2; // TextureWEBM: holds playback (no decoding) while nothing draws it. Only for meshes / stencil / imgui, decals and particle emitters cache the texture id
+		const uint32_t PAUSE_WHEN_HIDDEN = 1 << 2;
 	}; // namespace WEBMLoadFlags
 	// NOLINTEND{unused-const-variable}
 
@@ -70,7 +70,7 @@ namespace rawrbox {
 
 		bool _dirty = false;
 		float _speed = 1.F;
-		float _avgDelta = 0.F; // Smoothed update delta, a single hitch barely moves it
+		float _avgDelta = 0.F;
 
 		uint64_t _time = 0;
 		uint64_t _endTime = 0;
@@ -87,7 +87,8 @@ namespace rawrbox {
 
 		std::vector<rawrbox::WEBMImage> _preloadedFrames = {};
 
-		std::unique_ptr<VFSReader> _reader; // No initializer, VFSReader is incomplete here
+		std::unique_ptr<VFSReader> _reader;
+
 		std::unique_ptr<mkvparser::Segment> _segment = nullptr;
 		std::unique_ptr<rawrbox::WEBMDecoder> _decoder = nullptr;
 

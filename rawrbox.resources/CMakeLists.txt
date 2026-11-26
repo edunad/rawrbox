@@ -21,9 +21,18 @@ target_compile_definitions(${output_target} PUBLIC RAWRBOX_RESOURCES)
 target_link_libraries(${output_target} PUBLIC RAWRBOX.UTILS ${RAWRBOX_EXTRA_LIBS})
 
 
+if(RAWRBOX_BUILD_RAWRBOX_SCRIPTING)
+    add_resources(FOLDER lua)
+endif()
+
 set_lib_runtime_mt(${output_target})
 # --------------
 
 # TEST ----
 include(../cmake/catch2.cmake)
+
+if(RAWRBOX_BUILD_TESTING AND RAWRBOX_BUILD_RAWRBOX_SCRIPTING)
+    add_custom_target(${output_target}-TESTS-LUA COMMAND ${CMAKE_COMMAND} -E copy_directory "${CMAKE_CURRENT_LIST_DIR}/lua" "${CMAKE_CURRENT_BINARY_DIR}/lua")
+    add_dependencies(${output_target}-TESTS ${output_target}-TESTS-LUA)
+endif()
 # --------------
