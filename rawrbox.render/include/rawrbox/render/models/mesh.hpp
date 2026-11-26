@@ -37,6 +37,7 @@ namespace rawrbox {
 		float specularFactor = 0.5F;
 		float emissionFactor = 1.0F;
 
+		rawrbox::Colorf emissionColor = rawrbox::Colors::White();
 		float alphaCutoff = 0.5F;
 
 		[[nodiscard]] rawrbox::Vector4f getTextureData() const {
@@ -44,7 +45,7 @@ namespace rawrbox {
 		}
 
 		[[nodiscard]] rawrbox::Vector4f getData() const {
-			return {this->alphaCutoff, 0.F, 0.F, 0.F};
+			return {this->alphaCutoff, this->emissionColor.r, this->emissionColor.g, this->emissionColor.b};
 		}
 
 		[[nodiscard]] rawrbox::Vector4_t<uint32_t> getTextureIDs() const {
@@ -57,10 +58,10 @@ namespace rawrbox {
 		}
 
 		[[nodiscard]] bool canMerge(const rawrbox::MeshTextures& other) const {
-			return this->roughnessFactor == other.roughnessFactor && this->metalnessFactor == other.metalnessFactor && this->specularFactor == other.specularFactor && this->emissionFactor == other.emissionFactor && this->alphaCutoff == other.alphaCutoff;
+			return this->roughnessFactor == other.roughnessFactor && this->metalnessFactor == other.metalnessFactor && this->specularFactor == other.specularFactor && this->emissionFactor == other.emissionFactor && this->emissionColor == other.emissionColor && this->alphaCutoff == other.alphaCutoff;
 		}
 
-		bool operator==(const rawrbox::MeshTextures& other) const { return this->texture == other.texture && this->normal == other.normal && this->specularFactor == other.specularFactor && this->roughtMetal == other.roughtMetal && this->emission == other.emission; }
+		bool operator==(const rawrbox::MeshTextures& other) const { return this->texture == other.texture && this->normal == other.normal && this->specularFactor == other.specularFactor && this->roughtMetal == other.roughtMetal && this->emission == other.emission && this->emissionColor == other.emissionColor; }
 		bool operator!=(const rawrbox::MeshTextures& other) const { return !this->operator==(other); }
 	};
 
@@ -230,6 +231,9 @@ namespace rawrbox {
 			this->textures.emission = ptr;
 			this->textures.emissionFactor = factor;
 		}
+
+		[[nodiscard]] virtual const rawrbox::Colorf& getEmissionColor() const { return this->textures.emissionColor; }
+		virtual void setEmissionColor(const rawrbox::Colorf& emission) { this->textures.emissionColor = emission; }
 
 		[[nodiscard]] virtual const rawrbox::TextureBase* getRoughtMetalTexture() const { return this->textures.roughtMetal; }
 		virtual void setRoughtMetalTexture(rawrbox::TextureBase* ptr, float roughness = 0.5F, float metalness = 0.5F) {

@@ -47,8 +47,9 @@ namespace rawrbox {
 				// --------
 
 				// EMISSION -----
-				if (mat->emissive != nullptr) {
-					mesh.setEmissionTexture(mat->emissive, mat->emissionFactor);
+				if (mat->emissionColor.rgb() != rawrbox::Vector3f{}) {
+					mesh.setEmissionTexture(mat->emissive != nullptr ? mat->emissive : rawrbox::WHITE_TEXTURE.get(), mat->emissionFactor);
+					mesh.setEmissionColor(mat->emissionColor);
 				}
 				// --------
 			}

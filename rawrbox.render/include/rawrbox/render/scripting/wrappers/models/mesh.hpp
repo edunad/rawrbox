@@ -63,6 +63,8 @@ namespace rawrbox {
 
 			    .addFunction("getEmissionTexture", &MeshC::getEmissionTexture)
 			    .addFunction("setEmissionTexture", &MeshC::setEmissionTexture)
+			    .addFunction("getEmissionColor", &MeshC::getEmissionColor)
+			    .addFunction("setEmissionColor", &MeshC::setEmissionColor)
 
 			    .addFunction("getRoughtMetalTexture", &MeshC::getRoughtMetalTexture)
 			    .addFunction("setRoughtMetalTexture", &MeshC::setRoughtMetalTexture)

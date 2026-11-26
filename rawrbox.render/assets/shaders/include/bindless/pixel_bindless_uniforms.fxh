@@ -19,6 +19,7 @@ ConstantBuffer<ConstantsStruct> Constants;
 #define SpecularFactor  Constants.textureData.z
 #define EmissionFactor  Constants.textureData.w
 
-#define AlphaCutoff  Constants.pixelData.x
+#define AlphaCutoff   Constants.pixelData.x
+#define EmissionColor Constants.pixelData.yzw
 
 #endif

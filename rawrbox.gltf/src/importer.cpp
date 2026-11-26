@@ -513,7 +513,7 @@ namespace rawrbox {
 			}
 
 			mat->emissionFactor = material.emissiveStrength;
-			mat->emissionColor = rawrbox::Colorf(material.emissiveFactor.x(), material.emissiveFactor.y(), material.emissiveFactor.z(), alpha);
+			mat->emissionColor = rawrbox::Colorf(material.emissiveFactor.x(), material.emissiveFactor.y(), material.emissiveFactor.z(), alpha).toSRGB();
 			// ---------
 
 			// SPECULAR ---
