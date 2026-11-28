@@ -314,6 +314,47 @@ void ApplyLights(uint mask, uint bin, inout LightResult lighting, float3 specula
 	}
 }
 
+// DIFFUSE (NON-PBR) SUPPORT ---
+    #ifndef LIGHT_DIFFUSE_SCALE
+        #define LIGHT_DIFFUSE_SCALE(light) 1.0
+    #endif
+
+    float3 GetLightDiffuse(Light light, float3 N, float3 worldPos) {
+        float3 L;
+        float attenuation = GetAttenuation(light, worldPos, L);
+
+        return GetLightRadiance(light) * (attenuation * saturate(dot(N, L)) * LIGHT_DIFFUSE_SCALE(light));
+    }
+
+    #if defined(INCLUDED_BINNING) && defined(INCLUDED_CAMERA)
+
+    float3 ApplyDiffuseLights(float3 worldPos, float3 N, float2 pixel) {
+        float3 diffuse = float3(0.0, 0.0, 0.0);
+        if (TOTAL_LIGHTS <= TOTAL_DIRECTIONAL_LIGHTS) return diffuse;
+
+        uint tileIndex = GetTileIndex(pixel);
+        uint2 range = UnpackZBin(LightZBins[GetZBin(GetViewDepth(worldPos))]);
+
+        for (uint bin = range.x / BIN_BITS; bin <= range.y / BIN_BITS; ++bin) {
+            uint mask = LightTiles[tileIndex * LIGHT_BINS + bin] & GetBinMask(bin, range);
+
+            while (mask) {
+                uint bitIndex = firstbitlow(mask);
+                mask ^= 1u << bitIndex;
+
+                uint index = bitIndex + bin * BIN_BITS;
+                if (index >= TOTAL_LIGHTS) break;
+
+                diffuse += GetLightDiffuse(GetLight(index), N, worldPos);
+            }
+        }
+
+        return diffuse;
+    }
+
+    #endif
+// ----------------
+
 			#endif
 
 		#endif
